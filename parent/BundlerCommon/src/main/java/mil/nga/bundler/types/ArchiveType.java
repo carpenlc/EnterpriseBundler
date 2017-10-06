@@ -12,7 +12,9 @@ public enum ArchiveType {
     ZIP("zip"),
     TAR("tar"),
     GZIP("gz"),
-    BZIP2("bz2");
+    BZIP2("bz2"),
+    CPIO("cpio"),
+    AR("ar");
     
     /**
      * The text field.

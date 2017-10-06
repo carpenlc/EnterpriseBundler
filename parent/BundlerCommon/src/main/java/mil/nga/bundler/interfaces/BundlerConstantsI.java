@@ -16,6 +16,11 @@ public interface BundlerConstantsI {
     public static final double AVERAGE_COMPRESSION_PERCENTAGE = 8.4;
     
     /**
+     * The number of bytes in a megabyte.
+     */
+    public static final long BYTES_PER_MEGABYTE = 1048576;
+    
+    /**
      * The length (in Base64 characters) of the job ID.  The job ID is used 
      * as the primary key value for archive jobs.
      */
@@ -32,6 +37,17 @@ public interface BundlerConstantsI {
      * HTTP/HTTPS access to the output archives).
      */
     public static final String BASE_URL_PROPERTY = "bundler.base_url";
+    
+    /**
+     * Property identifying the IAM role to use for accessing the S3 
+     * file system.
+     */
+    public static final String IAM_ROLE_PROPERTY = "aws.iam_role";
+    
+    /**
+     * Property identifying the AWS s3 end-point.
+     */
+    public static final String S3_END_POINT_PROPERTY = "aws.s3_endpoint";
     
     /**
      * The name of the JMS Connection factory.
@@ -53,7 +69,7 @@ public interface BundlerConstantsI {
      * Default maximum size for the archive if it wasn't supplied by the 
      * caller (in MB).
      */
-    public static final int DEFAULT_MAX_ARCHIVE_SIZE = 400;
+    public static final int DEFAULT_ARCHIVE_SIZE = 400;
     
     /**
      * Extension for the generated hash files.
@@ -97,13 +113,14 @@ public interface BundlerConstantsI {
     /**
      * The name of the properties file to load.
      */
-    public static final String PROPERTY_FILE_NAME = "/mnt/eng2/gateway/bundler/bundler.properties";
+    public static final String PROPERTY_FILE_NAME = 
+            "bundler.properties";
     
     /**
      * If this property is set, the bundler will serialize the input bundle 
      * requests to disk.  This feature was implemented to support debugging.
      */
-    public static final String BUNDLE_REQUEST_OUTPUT_LOCATION_PROP = 
+    public static final String BUNDLE_REQUEST_DIRECTORY_PROP = 
             "bundler.request_output_location";
     
     /**

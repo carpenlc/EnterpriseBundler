@@ -1,16 +1,18 @@
 package mil.nga.bundler.archive;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.text.DecimalFormat;
 import java.util.List;
 
-import mil.nga.bundler.types.ArchiveType;
 import mil.nga.bundler.interfaces.BundlerI;
 import mil.nga.bundler.exceptions.ArchiveException;
-import mil.nga.bundler.model.FileEntry;
+import mil.nga.bundler.model.ArchiveElement;
+import mil.nga.bundler.types.ArchiveType;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
@@ -20,17 +22,21 @@ import org.slf4j.LoggerFactory;
 /**
  * Concrete implementation of the Bundler class that will handle creation 
  * of an output compressed GZip archive.  This class is used in conjunction 
- * with the TAR archiver.  First, the TAR archive is created, then the output 
- * TAR archive is run through GZip compressor. 
+ * with the TAR archiver.  Compression is a two-step process.  First, the 
+ * intermediate TAR archive is created, then the output TAR archive is run 
+ * through GZip compressor.  
+ * 
+ * This compressor seems to be ever-so-slightly slower than the other compression
+ * algorithms, but the output has better compression.
  * 
  * @author L. Craig Carpenter
  */
 public class GZipArchiver extends Compressor implements BundlerI {
-    
+
     /**
      * Set up the Log4j system for use throughout the class
      */        
-    Logger LOGGER = LoggerFactory.getLogger(GZipArchiver.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(GZipArchiver.class);
     
     /** 
      * The archive type handled by this class
@@ -39,158 +45,105 @@ public class GZipArchiver extends Compressor implements BundlerI {
     
     /**
      * Default constructor
-     * @param tracker Handle to the external job tracker assigned to this 
-     * archive job (may be null)
      */
     public GZipArchiver() { }
     
     /**
-     * Compress the data contained in the input file using the GZip 
+     * Compress the data contained in the input file using the GZip
      * compression algorithms storing the compressed data in the file
      * specified by the outputFile parameter. 
      * 
-     * @param inputFile The input TAR archive
+     * @param inputFile The input TAR archive.
      * @param outputFile The compressed output file.
      */
     @Override
-    public void compress(File inputFile, File outputFile) 
+    public void compress(URI inputFile, URI outputFile) 
             throws IOException {
         
-        BufferedInputStream        bIn     = null;
-        GzipCompressorOutputStream gzOut   = null;
-        
-        try {
-            // Create the input stream
-            bIn = new BufferedInputStream(
-                    new FileInputStream(inputFile));
-            
-            // Create the output stream
-            gzOut = new GzipCompressorOutputStream(
-                    new FileOutputStream(outputFile));
-            
+        try (
+        	// s3fs file system provider does not currently support OpenOptions.
+        	// work around by not supplying them.
+            //BufferedInputStream bIn = new BufferedInputStream(
+            //        Files.newInputStream(
+            //                Paths.get(inputFile),
+            //                StandardOpenOption.READ));
+            BufferedInputStream bIn = new BufferedInputStream(
+                    Files.newInputStream(Paths.get(inputFile)));
+            GzipCompressorOutputStream bzOut = new GzipCompressorOutputStream(
+                    Files.newOutputStream(
+                            Paths.get(outputFile), 
+                            StandardOpenOption.CREATE, 
+                            StandardOpenOption.WRITE))) {
             // Pipe the input stream to the output stream
-            compress(bIn, gzOut);
-        }
-        finally {
-            if (gzOut != null) {
-                try { gzOut.close(); } catch (Exception e) {}
-            }
-            if (bIn != null) {
-                try { bIn.close(); } catch (Exception e) {}
-            }
-        }
-    }
-    
-
-    /**
-     * Bundle the files that exist in the input directory.   The files will
-     * be bundled in a single TAR archive, then compressed using the GZIP 
-     * algorithm.
-     * 
-     * @param directory The directory to be archived
-     * @param outputFile Full path of the output archive file (may or may not
-     * include the extension)
-     * @throws IOException Raised if there are issues constructing the output
-     * archive.
-     */
-    @Override
-    public void bundle(String directory, String outputFile) 
-            throws ArchiveException, IOException {
-        
-        String method  = "bundle() - ";
-        String tarName = null;
-        File   tarFile = null;
-
-        LOGGER.info(method + "Creating intermediate TAR file.");
-        super.bundle(directory, outputFile);
-        
-        tarName = super.getArchiveName();
-        tarFile = new File(tarName);
-        
-        if (tarFile.exists()) {
-            
-            LOGGER.info(method 
-                    + "Intermediate TAR file created successfully.  File "
-                    + "created:  " 
-                    + tarFile.getAbsolutePath()
-                    + "Creating output GZip file.");
-            compress(tarFile, this._type);
-            
-        }
-        else {
-            LOGGER.error(method 
-                    + "The intermediate TAR file could not be created.  "
-                    + "Unable to construct the output GZip file.");
+            compress(bIn, bzOut);
         }
     }
     
     /**
-     * Bundle each file in the input list.  Each entry in the list should 
-     * be the full path to file that should be added to the archive.  The 
-     * files will be bundled in a single TAR archive, then compressed using 
-     * the GZIP algorithm.
+     * Implementation of BundlerI interface.  It is responsible for driving 
+     * the creation of the output compressed file.  
      * 
-     * @param files List of files (full path) to be added to the archive.
-     * @param outputFile Full path of the output archive file (may or may not
-     * include the extension)
-     * @throws IOException Raised if there are issues constructing the output
-     * archive.
+     * @param files List of files to Archive.
+     * @param outputFile The output file in which the input list of files 
+     * will be archived.
+     * @throws ArchiveException Thrown if there are problems creating either
+     * of the output archive files.
+     * @throws IOException Thrown if there are problems accessing any of the
+     * target files.
      */
-    public void bundle(List<String> files, String outputFile, String baseDir) 
-            throws ArchiveException, IOException { 
-        
-        String method  = "bundle() - ";
-        String tarName = null;
-        File   tarFile = null;
-
-        LOGGER.info(method + "Creating intermediate TAR file.");
-        super.bundle(files, outputFile, baseDir);
-        
-        tarName = super.getArchiveName();
-        tarFile = new File(tarName);
-        
-        if (tarFile.exists()) {
-            LOGGER.info(method 
-                    + "Intermediate TAR file created successfully.  File "
-                    + "created:  " 
-                    + tarFile.getAbsolutePath()
-                    + "Creating output GZip file.");
-            compress(tarFile, this._type);
-        }
-        else {
-            LOGGER.error(method 
-                    + "The intermediate TAR file could not be created.  "
-                    + "Unable to construct the output GZip file.");
-        }
-    }
-    
     @Override
-    public void bundle(List<FileEntry> files, String outputFile) 
+    public void bundle(List<ArchiveElement> files, URI outputFile) 
             throws ArchiveException, IOException {
         
-        String method  = "bundle() - ";
-        String tarName = null;
-        File   tarFile = null;
-
-        LOGGER.info(method + "Creating intermediate TAR file.");
+        long initialSize    = -1;
+        long compressedSize = -1;
+        long startTime      = System.currentTimeMillis();
+        
+        LOGGER.info(_type.getText() + " : Creating intermediate TAR file.");
         super.bundle(files, outputFile);
         
-        tarName = super.getArchiveName();
-        tarFile = new File(tarName);
-        
-        if (tarFile.exists()) {
-            LOGGER.info(method 
-                    + "Intermediate TAR file created successfully.  File "
-                    + "created [  " 
-                    + tarFile.getAbsolutePath()
-                    + " ].  Creating output GZip file.");
-            compress(tarFile, this._type);
+        // Save a handle to the intermediate TAR file.
+        URI intermediateTARFile = getOutputFile();
+        if (Files.exists(Paths.get(intermediateTARFile))) {
+            initialSize = Files.size(Paths.get(intermediateTARFile));
+            LOGGER.info(_type.getText() 
+                    + " : Intermediate TAR file created successfully.  File "
+                    + "created [ " 
+                    + intermediateTARFile.toString()
+                    + " ]. Creating compressed output file.");
+            compress(intermediateTARFile, _type);
+            
+            if (Files.exists(Paths.get(getOutputFile()))) {
+                compressedSize = Files.size(Paths.get(getOutputFile()));
+            }
+            else {
+                LOGGER.error(_type.getText()
+                        + " : Unknown error occurred during compression.  Target "
+                        + "output file [ "
+                        + getOutputFile().toString()
+                        + " ] does not exist.");
+            }
         }
-        else {
-            LOGGER.error(method 
-                    + "The intermediate TAR file could not be created.  "
-                    + "Unable to construct the output GZip file.");
+        
+        // Output the amount of compression obtained.
+        if ((initialSize > 0) && (compressedSize > 0)) {
+            double percentCompressed = ((double)initialSize - (double)compressedSize) /
+                    (double)initialSize;
+            DecimalFormat df = new DecimalFormat("##.##%");
+            LOGGER.info(_type.getText()
+                    + " : Output compressed file created [ "
+                    + getOutputFile().toString()
+                    + " ].  Compression percentage obtained [ "
+                    + df.format(percentCompressed)
+                    + " ].");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(_type.getText()
+                        + " : Output compressed file [ "
+                        + getOutputFile().toString()
+                        + " ] created in [ "
+                        + (System.currentTimeMillis() - startTime)
+                        + " ] ms.");
+            }
         }
     }
-    
 }

@@ -4,18 +4,28 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import mil.nga.bundler.types.ArchiveType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract intermediate class used in conjunction with the compression-based
+ * algorithms that rely on the creation of an intermediate archive before 
+ * proceeding with compression.  
+ * 
+ * @author L. Craig Carpenter
+ */
 public abstract class Compressor extends TarArchiver {
 
     /**
      * Set up the Log4j system for use throughout the class
      */        
-    Logger LOGGER = LoggerFactory.getLogger(Compressor.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(Compressor.class);
     
     /**
      * Buffer size to use when creating the output compressed file.
@@ -24,7 +34,7 @@ public abstract class Compressor extends TarArchiver {
     protected static final int BUFFER_SIZE = 8192;
     
     /**
-     * Default constructor
+     * Default no-arg constructor
      */
     public Compressor() { }
     
@@ -48,38 +58,39 @@ public abstract class Compressor extends TarArchiver {
     }
     
     /**
+     * Orchestration method that drives the generation of the final output
+     * compressed file.
      * 
-     * @param tarFile
-     * @param type
+     * @param tarFile Intermediate TAR file.
+     * @param type Compression algorithm to use in creating the output 
+     * compressed file.
+     * @throws IOException Thrown if there are errors interacting with the
+     * file system.
      */
-    protected void compress(File tarFile, ArchiveType type) throws IOException {
+    protected void compress(URI tarFile, ArchiveType type) 
+            throws IOException {
         
-        String method         = "compress() - ";
-        String compressedName = null;
-        File   compressedFile = null;
+        URI compressedFile = null;
         
         // Reset the output archive name
-        super.setArchiveName(tarFile.getAbsolutePath(), type.getText());
-        
-        compressedName = super.getArchiveName();
-        compressedFile = new File(compressedName);
+        setOutputFile(tarFile, type.getText());
+        compressedFile = getOutputFile();
         
         // Compress the tar file.
         compress(tarFile, compressedFile);
 
         // Check that the output compressed file was created, then
         // delete the intermediate TAR file.
-        if (compressedFile.exists()) {
-            LOGGER.info(method 
-                    + "Compressed file created successfully.  File created: " 
-                    + compressedFile.getAbsolutePath() 
-                    + "Deleting the intermediate TAR file.");
-            tarFile.delete();
+        if (Files.exists(Paths.get(compressedFile))) {
+            LOGGER.info("Compressed file created successfully.  "
+                    + "File created [ " 
+                    + compressedFile.toString()
+                    + " ] Deleting the intermediate TAR file.");
+            Files.deleteIfExists(Paths.get(tarFile));
         }
         else {
-            LOGGER.error(method
-                    + "Unknown error encountered.  Unable to create "
-                    + "the output GZip file.");
+            LOGGER.error("Output compressed file does not exist.  Unknown "
+                    + "error encountered.");
         }
     }
     
@@ -91,6 +102,6 @@ public abstract class Compressor extends TarArchiver {
      * @param inputFile The input TAR archive
      * @param outputFile The compressed output file.
      */
-    public abstract void compress(File inputFile, File outputFile) throws 
+    public abstract void compress(URI inputFile, URI outputFile) throws 
             IOException;
 }

@@ -40,7 +40,7 @@ import mil.nga.bundler.types.ArchiveType;
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = BundleRequestMessage.BundleRequestMessageBuilder.class)
-public class BundleRequestMessage implements Serializable {
+public class BundleRequestMessage implements Serializable, BundlerConstantsI {
 
     /**
      * Eclipse-generated serialVersionUID
@@ -341,7 +341,7 @@ public class BundleRequestMessage implements Serializable {
         private void validateBundleRequestMessageObject() throws IllegalStateException {
         	
         	if ((maxSize <= MIN_ARCHIVE_SIZE) || (maxSize > MAX_ARCHIVE_SIZE)) {
-        		maxSize = DEFAULT_MAX_ARCHIVE_SIZE;
+        		maxSize = DEFAULT_ARCHIVE_SIZE;
         	}
         	if ((userName == null) || (userName.isEmpty())) {
         		userName = DEFAULT_USERNAME;

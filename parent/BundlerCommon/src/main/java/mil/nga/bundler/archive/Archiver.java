@@ -1,16 +1,20 @@
 package mil.nga.bundler.archive;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.regex.Pattern;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import mil.nga.bundler.model.ArchiveElement;
+import mil.nga.bundler.types.ArchiveType;
 
 /**
  * This is class was designed to encapsulate the logic used for creating the 
@@ -21,14 +25,19 @@ import org.slf4j.LoggerFactory;
 public abstract class Archiver {
     
     /**
-     * Set up the Log4j system for use throughout the class
-     */        
-    Logger LOGGER = LoggerFactory.getLogger(Archiver.class);
+     * Default name to use if the output file is not supplied.
+     */
+    public static final String DEFAULT_ARCHIVE_FILENAME = "archive";
     
     /**
-     * Protected internal member holding the archive file name.
+     * Set up the Log4j system for use throughout the class
+     */        
+    final static Logger LOGGER = LoggerFactory.getLogger(Archiver.class);
+    
+    /**
+     * URI defining the output file to construct.
      */
-    protected String _archiveName = null;
+    protected URI outputFile = null;
     
     /**
      * Default constructor.
@@ -36,203 +45,144 @@ public abstract class Archiver {
     public Archiver() { }
     
     /**
-     * Add a single file to the output stream.
+     * This method will copy the contents of the file identified by 
+     * the input URL into the input output stream object.
      * 
-     * @param out The appropriate ArchiveOutputStream
-     * @param file Abstract reference to the file to add
+     * @param out The target archive output stream.
+     * @param file The file to copy.
      */
-    public void addOneFile(ArchiveOutputStream out, File file) {
-        
-        String          method = "addOneFile() - ";
-        FileInputStream fis    = null;
-        
-        try {
-            
-            fis = new FileInputStream(file);
-            IOUtils.copy(fis, out);
-            out.closeArchiveEntry();
-            
-        }
-        catch (IOException ioe) {
-            LOGGER.error(method 
-                    + "An unexpected IOException was encountered while "
-                    + "attempting to add file [ "
-                    + file.getAbsolutePath()
-                    + " ] to the target archive.  Output archive may be " 
-                    + "corrupt.", ioe);
-        }
-        finally {
-            
-            // Ensure the current ArchiveEntry is closed.
+    public void copyOneFile(ArchiveOutputStream out, URI file) {
+        if (file != null) {
             if (out != null) {
-                try { out.closeArchiveEntry(); } catch (Exception e) {}
-            }
-            // Ensure the stream is closed
-            if (fis != null) {
-                try { fis.close(); } catch (Exception e) {}
-            }
-            
-        }
-    }
-    
-    /**
-     * This will be called recursively.
-     * 
-     * @param out The output stream for the target archive type.
-     * @param path The full path to the file to add.
-     * @param base The parent directory associated with the input file.
-     */
-    public void addFile(
-            ArchiveOutputStream out, 
-            String path, 
-            String base) throws IOException {
-        
-        String method    = "addFile() - ";
-        
-        // Check the input file name
-        if ((path == null) || (path.trim().equalsIgnoreCase(""))) {
-            LOGGER.warn(method
-                    + "The input file path is null or not defined.  " 
-                    + "skipping file processing.");
-            return;
-        }
-    
-        File file = new File(path);
-        
-        // Ensure the file exists
-        if (!file.exists()) {
-            LOGGER.warn(method 
-                    + "Input file does not exist on the file system.  " 
-                    + "File requested [ "
-                    + path
-                    + " ] Skipping file processing.");
-            return;
-        }
-        // Ensure the file can be processed
-        if (!(file.isFile() || file.isDirectory())) {
-            LOGGER.warn(method
-                    + "An unknown file was encountered.  The file specified "
-                    + " by path [ "
-                    + path 
-                    + " ] was not identified as either a regular file or "
-                    + " a directory.  Skipping file processing.");
-            return;
-        }
-        
-        // Start the entry
-        String entryName = base + file.getName();
-        out.putArchiveEntry(getArchiveEntry(file, entryName));
-        
-        // If the input file is an actual file, add it to the output
-        // stream.
-        if (file.isFile()) {
-            addOneFile(out, file);
-        }
-        
-        // If the input file is a directory, make a recursive call to get
-        // to the actual files
-        else if (file.isDirectory()) {
-            
-            // Close the current entry
-            out.closeArchiveEntry();
-            
-            // Attempt to process children
-            File[] children = file.listFiles();
-            if ((children != null) && (children.length > 0)) {
-                for (File child : children) {
-                    addFile(out, 
-                            child.getAbsolutePath(), 
-                            entryName + File.separator);
+                Path p = Paths.get(file);
+                try {
+                    Files.copy(p, out);
+                    out.closeArchiveEntry();
+                }
+                catch (IOException ioe) {
+                    LOGGER.error("Unexpected IOException encountered while "
+                            + "copying file [ "
+                            + file.toString()
+                            + " ].  To the archive output stream.  Exception "
+                            + "message => [ "
+                            + ioe.getMessage()
+                            + " ].");
                 }
             }
-            else {
-                LOGGER.warn(method 
-                        + "Target directory does not contain any files.  "
-                        + "Current directory [ " 
-                        + path
-                        + " ].");
+            else { 
+                LOGGER.error("Client supplied OutputStream is null.  Copy " 
+                        + "into archive will not occur.");
             }
-        }
-    }
-    
-    /**
-     * This method is used to calculate the entry path to be added to the
-     * output archive.  This class will also enforce the requirement that 
-     * entry paths cannot exceed 100 characters.
-     * 
-     * @param path The absolute path to the file that will be added to the
-     * archive file.
-     * @param baseDir The base directory.
-     * @return The entry path for the target file.
-     */
-    public static String getEntryPath(String targetPath, String baseDir) {
-
-        if ((baseDir == null) || (baseDir.isEmpty())) {
-            return targetPath;
-        }
-        
-        // find common path
-        String[] target = targetPath.split(Pattern.quote(File.separator));
-        String[] base = baseDir.split(Pattern.quote(File.separator));
-
-        String common = "";
-        int commonIndex = 0;
-        for (int i = 0; i < target.length && i < base.length; i++) {
-            if (target[i].equals(base[i])) {
-                common += target[i] + File.separator;
-                commonIndex++;
-            }
-        }
-        
-        String relative = "";
-        // is the target a child directory of the base directory?
-        // i.e., target = /a/b/c/d, base = /a/b/
-        if (commonIndex == base.length) {
-            relative = targetPath.substring(common.length());
-            // relative = "." + File.separator + targetPath.substring(common.length());
         }
         else {
-            // determine how many directories we have to backtrack
-            for (int i = 1; i <= commonIndex; i++) {
-                relative += "";
-                //relative += ".." + File.separator;
-            }
-            relative += targetPath.substring(common.length());
+            LOGGER.error("Input file URI is null.  Nothing to copy.");
         }
-
-        return relative;
+    }
+    
+    
+    /**
+     * This method is part of the implementation of the Observer design 
+     * pattern. This allows users of classes extending from Archiver to 
+     * be notified when processing associated with a given file are 
+     * complete.
+     * 
+     * TODO: Complete implementation.
+     * 
+     * @param value
+     */
+    public void notify(ArchiveElement value) {
+        LOGGER.info("Archive of file => [ "
+                + value.toString() 
+                + " ] complete.");
     }
     
     /**
-     * Ensure the output archive file contains the proper file extension 
-     * based on the archive type being created. 
      * 
-     * @param outputFile The name of the output file that will be created.
-     * @param extension The extension the output file needs to receive.
-     * @return An output filename with the correct extension.
+     * @return The full URI of the target output file.
      */
-    protected String setArchiveName(String outputFile, String extension) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(outputFile);
-        if (!outputFile.endsWith(extension)) {
-            if (!outputFile.endsWith(".")) {
-                sb.append(".");
+    public URI getOutputFile() {
+        if (outputFile == null) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Output archive file not specified.  "
+                        + "Generating a default file name.");
             }
-            sb.append(extension);
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append("file://");
+            sb.append(System.getProperty("java.io.tmpdir"));
+            if (!sb.toString().endsWith("/")) {
+                sb.append("/");
+            }
+            sb.append(DEFAULT_ARCHIVE_FILENAME);
+            sb.append("_");
+            sb.append(System.nanoTime());
+            sb.append(".");
+            sb.append(getArchiveType().getText());
+            outputFile = URI.create(sb.toString());
         }
-        this._archiveName = sb.toString();
-        return this._archiveName;
+        
+        return outputFile;
     }
     
     /**
-     * Getter method for the archive name.  This was added as a convenience 
-     * method for testing.  The archive filename will not be available until 
-     * after one of the <code>bundle</code> methods is called.
+     * Setter method for the full URI of the output file.  This method will 
+     * ensure that the output file has the correct file extension.
      * 
-     * @return The archive name created by the bundler.
+     * @param value The URI of the output file.
      */
-    public String getArchiveName() {
-        return this._archiveName;
+    public void setOutputFile(URI value) {
+        if (value != null) {
+            try {
+                StringBuilder sb = new StringBuilder();
+                sb.append(value.getPath());
+                if (!sb.toString().endsWith(getArchiveType().getText())) {
+                    if (!sb.toString().endsWith(".")) {
+                        sb.append(".");
+                    }
+                    sb.append(getArchiveType().getText());
+                }
+                outputFile = new URI(
+                        value.getScheme(), 
+                        value.getAuthority(),  
+                        sb.toString(), 
+                        value.getQuery(), 
+                        value.getFragment());
+            }
+            // We're creating a URI from an existing URI so we should never 
+            // get this exception.
+            catch (URISyntaxException use) { }
+        }
+    }
+    
+    /**
+     * Setter method for the full URI of the output file.  This method will 
+     * ensure that the output file has the correct file extension.
+     * 
+     * @param value The URI of the output file.
+     * @param type The type of output file that is going to be created.
+     */
+    public void setOutputFile(URI value, String type) {
+        if (value != null) {
+            try {
+                StringBuilder sb = new StringBuilder();
+                sb.append(value.getPath());
+                if (!sb.toString().endsWith(type)) {
+                    if (!sb.toString().endsWith(".")) {
+                        sb.append(".");
+                    }
+                    sb.append(type);
+                }
+                outputFile = new URI(
+                        value.getScheme(), 
+                        value.getAuthority(), 
+                        sb.toString(), 
+                        value.getQuery(), 
+                        value.getFragment());
+            }
+            // We're creating a URI from an existing URI so we should never 
+            // get this exception.
+            catch (URISyntaxException use) { }
+        }
     }
     
     /**
@@ -244,6 +194,15 @@ public abstract class Archiver {
      * @return A concrete ArchiveEntry object (ZipArchiveEntry 
      * or TarArchiveEntry)
      */
-    public abstract ArchiveEntry getArchiveEntry(File file, String name);
+    public abstract ArchiveEntry getArchiveEntry(URI file, String entryPath) throws IOException ;
     
+    /**
+     * Subclasses must provide a method identifying the type of archive that 
+     * will be created.
+     * 
+     * @return The archive type.
+     */
+    public abstract ArchiveType getArchiveType();
+
+
 }

@@ -2,10 +2,10 @@ package mil.nga.bundler.archive;
 
 import mil.nga.bundler.interfaces.BundlerI;
 import mil.nga.bundler.types.ArchiveType;
-import mil.nga.bundler.archive.BZip2Archiver;
-import mil.nga.bundler.archive.GZipArchiver;
+//import mil.nga.bundler.archive.BZip2Archiver;
+//import mil.nga.bundler.archive.GZipArchiver;
 import mil.nga.bundler.archive.TarArchiver;
-import mil.nga.bundler.archive.ZipArchiver;
+//import mil.nga.bundler.archive.ZipArchiver;
 import mil.nga.bundler.exceptions.UnknownArchiveTypeException;
 
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ public class ArchiveFactory {
     /**
      * Set up the Log4j system for use throughout the class
      */        
-    Logger LOGGER = LoggerFactory.getLogger(
+    final static Logger LOGGER = LoggerFactory.getLogger(
             ArchiveFactory.class);
     
     /**
@@ -39,7 +39,7 @@ public class ArchiveFactory {
      * 
      * @return The Singleton instance.
      */
-    public static ArchiveFactory getFactory() {
+    public static ArchiveFactory getInstance() {
         return ArchiveFactoryHolder.getSingleton();
     }
     
@@ -51,7 +51,7 @@ public class ArchiveFactory {
      * @return A concrete class implementing the logic required for 
      * constructing an output archive file.
      */
-    public BundlerI getInstance(
+    public BundlerI getBundler(
             ArchiveType type) throws UnknownArchiveTypeException {
         
         String method = "getInstance() - ";
@@ -60,6 +60,18 @@ public class ArchiveFactory {
                 LOGGER.debug(method + "Client requested ZIP archive format.");
             }
             return new ZipArchiver();
+        }
+        else if (type.equals(ArchiveType.AR)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(method + "Client requested AR archive format.");
+            }
+            return new ArArchiver();
+        }
+        else if (type.equals(ArchiveType.CPIO)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(method + "Client requested CPIO archive format.");
+            }
+            return new CpioArchiver();
         }
         else if (type.equals(ArchiveType.TAR)) {
             if (LOGGER.isDebugEnabled()) {
@@ -79,7 +91,6 @@ public class ArchiveFactory {
             }
             return new BZip2Archiver();
         }
-        
         String msg = "An archive type was requested that is not yet supported!"
             + "  Archive supplied [ " 
             + type.getText()

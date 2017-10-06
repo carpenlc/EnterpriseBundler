@@ -40,7 +40,7 @@
         <s3fs.version>1.5.3</s3fs.version>
         <aws.sdk.version>1.11.128</aws.sdk.version>
         <commons.codec.version>1.10</commons.codec.version>
-        <commons.compress.version>1.6</commons.compress.version>
+        <commons.compress.version>1.14</commons.compress.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
@@ -166,11 +166,11 @@
                     <artifactId>maven-install-plugin</artifactId>
                     <version>2.5.1</version>
                     <configuration>
-                        <groupId>com.upplication</groupId>
-                        <artifactId>s3fs</artifactId>
-                        <version>1.5.3</version>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                        <version>${commons.compress.version}</version>
                         <packaging>jar</packaging>
-                        <file>${basedir}/lib/s3fs-1.5.3.jar</file>
+                        <file>${basedir}/lib/commons-compress-1.14.jar</file>
                         <generatePom>true</generatePom>
                     </configuration>
                     <executions>
@@ -181,6 +181,45 @@
                                 <goal>install-file</goal>
                             </goals>
                             <phase>validate</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.1</version>
+                    <executions>
+                        <execution>
+                            <id>install-commons-compress-lib</id>
+                            <inherited>false</inherited>
+                            <goals>
+                                <goal>install-file</goal>
+                            </goals>
+                            <phase>validate</phase>
+                            <configuration>
+                                <groupId>org.apache.commons</groupId>
+                                <artifactId>commons-compress</artifactId>
+                                <version>${commons.compress.version}</version>
+                                <packaging>jar</packaging>
+                                <file>${basedir}/lib/commons-compress-1.14.jar</file>
+                                <generatePom>true</generatePom>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>install-s3fs-lib</id>
+                            <inherited>false</inherited>
+                            <goals>
+                                <goal>install-file</goal>
+                            </goals>
+                            <phase>validate</phase>
+                            <configuration>
+                                <groupId>com.upplication</groupId>
+                                <artifactId>s3fs</artifactId>
+                                <version>${s3fs.version}</version>
+                                <packaging>jar</packaging>
+                                <file>${basedir}/lib/s3fs-1.5.3.jar</file>
+                                <generatePom>true</generatePom>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>

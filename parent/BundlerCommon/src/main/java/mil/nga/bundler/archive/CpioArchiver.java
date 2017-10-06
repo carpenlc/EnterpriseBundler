@@ -9,8 +9,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.cpio.CpioArchiveEntry;
+import org.apache.commons.compress.archivers.cpio.CpioArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,26 +21,26 @@ import mil.nga.bundler.types.ArchiveType;
 
 /**
  * Concrete class implementing the logic to create an archive file in 
- * ZIP format.
+ * CPIO (i.e. tape archive) format.
  * 
  * @author L. Craig Carpenter
  */
-public class ZipArchiver extends Archiver implements BundlerI {
+public class CpioArchiver extends Archiver implements BundlerI {
     
     /**
      * Set up the Log4j system for use throughout the class
      */        
-    final static Logger LOGGER = LoggerFactory.getLogger(ZipArchiver.class);
+    final static Logger LOGGER = LoggerFactory.getLogger(CpioArchiver.class);
     
     /** 
      * The archive type handled by this class
      */
-    final private ArchiveType type = ArchiveType.ZIP;
+    final private ArchiveType type = ArchiveType.CPIO;
     
     /**
      * Default constructor
      */
-    public ZipArchiver( ) { }
+    public CpioArchiver( ) { }
     
     /**
      * Required concrete method used to construct the type-appropriate 
@@ -52,8 +52,9 @@ public class ZipArchiver extends Archiver implements BundlerI {
      * @return The type-appropriate archive entry.
      */
     @Override
-    public ArchiveEntry getArchiveEntry(URI file, String entryPath) throws IOException {
-        return new ZipArchiveEntry(file, entryPath);
+    public ArchiveEntry getArchiveEntry(URI file, String entryPath) 
+            throws IOException {
+        return new CpioArchiveEntry(file, entryPath);
     }
     
     /**
@@ -66,8 +67,8 @@ public class ZipArchiver extends Archiver implements BundlerI {
     }
     
     /**
-     * Execute the "bundle" operation to ZIP all of the required input files 
-     * into a single output Archive.
+     * Execute the "bundle" operation to create a single CPIO file containing 
+     * all of the required input files.
      * 
      * @param files List of files to Archive.
      * @param outputFile The output file in which the input list of files 
@@ -80,7 +81,7 @@ public class ZipArchiver extends Archiver implements BundlerI {
     @Override
     public void bundle(List<ArchiveElement> files, URI outputFile) 
             throws ArchiveException, IOException {
-        
+
         long startTime = System.currentTimeMillis();
         
         setOutputFile(outputFile);
@@ -96,28 +97,28 @@ public class ZipArchiver extends Archiver implements BundlerI {
             Files.deleteIfExists(Paths.get(getOutputFile()));
             
             // Construct the output stream to the target archive file.
-            try (ZipArchiveOutputStream zaos = 
-                    new ZipArchiveOutputStream(
+            try (CpioArchiveOutputStream cpioaos = 
+                    new CpioArchiveOutputStream(
                             new BufferedOutputStream(
                                     Files.newOutputStream(
                                             Paths.get(getOutputFile()), 
                                             StandardOpenOption.CREATE, 
                                             StandardOpenOption.WRITE)))) {
                 for (ArchiveElement element : files) {
-                    zaos.putArchiveEntry(
+                    cpioaos.putArchiveEntry(
                             getArchiveEntry(
                                     element.getURI(),
                                     element.getEntryPath()));
-                    copyOneFile(zaos, element.getURI());
+                    copyOneFile(cpioaos, element.getURI());
                     notify(element);
                 }
-            }
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Output archive [ "
-                        + getOutputFile()
-                        + " ] created in [ "
-                        + (System.currentTimeMillis() - startTime)
-                        + " ] ms.");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Output archive [ "
+                            + getOutputFile()
+                            + " ] created in [ "
+                            + (System.currentTimeMillis() - startTime)
+                            + " ] ms.");
+                }
             }
         }
         else {
