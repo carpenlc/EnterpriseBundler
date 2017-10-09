@@ -1,8 +1,9 @@
 package mil.nga.bundler;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystemNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,20 +11,15 @@ import org.slf4j.LoggerFactory;
 import mil.nga.PropertyLoader;
 import mil.nga.bundler.exceptions.PropertiesNotLoadedException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
-import mil.nga.util.FileUtils;
+import mil.nga.bundler.types.ArchiveType;
+import mil.nga.util.JobIDGenerator;
+import mil.nga.util.URIUtils;
 
 /**
- * Class responsible for generating a staging directory and target filename
- * for output archive files.  The staging directory that is created will follow
- * a simple pattern:
+ * Class used in the generation of output file names/URIs for individual 
+ * bundler jobs.
  * 
- * <prefix>_<hostname>_<random chars>
- * 
- * The output archive file created will also have a simple pattern:
- * 
- * <prefix>_data_archive
- * 
- * @author carpenlc
+ * @author L. Craig Carpenter
  */
 public class FileNameGenerator 
         extends PropertyLoader 
@@ -36,94 +32,140 @@ public class FileNameGenerator
             FileNameGenerator.class);
     
     /**
-     * The location of the staging directory to use for generating the 
-     * output archive files.
+     * The job ID that will be used in the generation of output file names.
      */
-    private String _stagingDirectory = null;
+    private String jobID;
+    
+    /**
+     * Staging area used for the output archives.
+     */
+    private String stagingArea;
+    
+    /**
+     * The template to use for the output filename.
+     */
+    private String filenameTemplate;
+    
+    /**
+     * Archive type that will be created.
+     */
+    private ArchiveType type;
     
     /**
      * The file path separator
      */
-    private String _pathSeparator = null;
-    
+    private String pathSeparator = null;
     
     /**
-     * Default constructor
+     * Default constructor that sets the value for the staging area.  If 
+     * the staging area is not read from the Properties file, the JVM 
+     * temporary directory is used.
      */
     private FileNameGenerator() {
         super(PROPERTY_FILE_NAME);
+        
+        String stagingArea = null;
+        pathSeparator = System.getProperty("file.separator");
+        
         try {
-            _pathSeparator = System.getProperty("file.separator");
-            setStagingDirectory(getProperty(STAGING_DIRECTORY_PROPERTY));
+            stagingArea = getProperty(STAGING_DIRECTORY_PROPERTY);
         }
         catch (PropertiesNotLoadedException pnle) {
             LOGGER.warn("An unexpected PropertiesNotLoadedException " 
                     + "was encountered.  Please ensure the application "
-                    + "is properly configured.  Exception message [ "
+                    + "is properly configured.  Using value of [ "
+                    + "java.io.tmpdir"
+                    + " ] for staging area.  Exception message => [ "
                     + pnle.getMessage()
                     + " ].");
         }
+        setStagingArea(stagingArea);
     }
     
     /**
-     * Return a singleton instance to the FileGenerator object.
-     * @return The FileGenerator
+     * Alternate constructor allowing clients to specify the ArchiveType on 
+     * construction.  The other required parameters (job ID and file name) 
+     * will be default values.
+     * 
+     * @param type The archive type.
      */
-    public static FileNameGenerator getInstance() {
-        return FileNameGeneratorHolder.getFactorySingleton();
+    public FileNameGenerator(ArchiveType type) {
+        this();
+        setArchiveType(type);
+        setJobID(null);
+        setTemplateName(null);
     }
     
     /**
-     * Calculate a unique token used to make directories and/or filenames 
-     * unique.
-     * @return A unique string.
+     * Alternate constructor allowing clients to specify the ArchiveType and 
+     * job ID on construction.  The other required parameters (file name) 
+     * will be default values.
+     * 
+     * @param type The archive type.
+     * @param jobID The job ID to utilize.
      */
-    public String getUniqueToken() {
-        return FileUtils.generateUniqueToken(UNIQUE_TOKEN_LENGTH);
+    public FileNameGenerator(ArchiveType type, String jobID) {
+        this();
+        setArchiveType(type);
+        setJobID(jobID);
+        setTemplateName(null);
     }
     
     /**
-     * Calculate the name for a directory that will be used to store the 
-     * output archive files.  Important note:  This method will return a 
-     * different value for the archive directory every time it's called.
-     *   
-     * @return A full path to an output directory.
+     * Alternate constructor allowing clients to specify the ArchiveType,  
+     * job ID, and file name on construction.  
+     * 
+     * @param type The archive type.
+     * @param jobID The job ID to utilize.
+     * @param fileName The template to use when generating the output file name.
      */
-    public String getArchiveDirectory() {
-        
-        String        method = "getArchiveDirectory() - ";
-        StringBuilder sb     = new StringBuilder();
-        
-        sb.append(getStagingDirectory());
-        if (!sb.toString().endsWith(_pathSeparator)) {
-            sb.append(_pathSeparator);
+    public FileNameGenerator(ArchiveType type, String jobID, String fileName) {
+        this();
+        setArchiveType(type);
+        setJobID(jobID);
+        setTemplateName(fileName);
+    }
+    
+    /**
+     * Public method used to return the name of the target output directory.
+     * @return The output directory path.
+     */
+    public URI getOutputDirectory() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(stagingArea);
+        if (!sb.toString().endsWith(pathSeparator)) {
+            sb.append(pathSeparator);
         }
-        sb.append(DEFAULT_FILENAME_PREFIX);
-        sb.append("_");
-        sb.append(FileUtils.getHostName());
-        sb.append("_");
-        sb.append(getUniqueToken());
-        
-        // Make sure the directory is unique
-        File file = new File(sb.toString());
-        if (file.exists()) {
-            return getArchiveDirectory();
+        sb.append(jobID);
+        return getURI(sb.toString());
+    }
+    
+    /**
+     * Public method used to generate the URI of the target output file.
+     * 
+     * @param ID The archive ID.
+     * @return The URI of the output filename.
+     */
+    public URI getOutputFile(int ID) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(stagingArea);
+        if (!sb.toString().endsWith(pathSeparator)) {
+            sb.append(pathSeparator);
         }
-        else {
-            // Updated to ensure directory permissions are wide open
-            file.setExecutable(true, false);
-            file.setReadable(true, false);
-            file.setWritable(true, false);
-            file.mkdir();
-            if (!file.exists()) {
-                LOGGER.error(method
-                        + "Unable to create the output archive directory.  "
-                        + "Attempted to create [" 
-                        + file.getAbsolutePath()
-                        + "].");
-            }
+        if (!jobID.isEmpty()) {
+	        sb.append(jobID);
+	        if (!sb.toString().endsWith(pathSeparator)) {
+	            sb.append(pathSeparator);
+	        }
         }
-        return sb.toString();
+        sb.append(filenameTemplate);
+        if (ID > 0) {
+            sb.append("_");
+            sb.append(ID);
+        }
+        sb.append(".");
+        sb.append(type.getText().toLowerCase());
+        return getURI(sb.toString());
     }
     
     /**
@@ -131,7 +173,7 @@ public class FileNameGenerator
      * 
      * @return The archive filename.
      */
-    public String getFilename() {
+    public static String getFileName() {
         StringBuilder sb = new StringBuilder();
         sb.append(DEFAULT_FILENAME_PREFIX);
         sb.append("_data_archive");
@@ -139,171 +181,153 @@ public class FileNameGenerator
     }
     
     /**
-     * By appending a random string to the end of the filename, this method 
-     * will create a unique filename. 
-     * @return A unique filename.
-     */
-    public String getUniqueFilename() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(DEFAULT_FILENAME_PREFIX);
-        sb.append("_data_archive_");
-        sb.append(getUniqueToken());
-        return sb.toString();
-    }
-    
-    /**
-     * Create a filename based on the input parameters.
+     * Create a full URI based on an input String-based file path.
      * 
-     * @param template The base name of the file.
-     * @param index The index to add.
-     * @param extension The file extension.
-     * @return A filename consisting of the concatenated parts.
+     * @param filePath Path to a target file.
+     * @return Associated URI to the same target file.
+     * @throws FileNotFoundException Thrown if the target file does not exist.
+     * @throws FileSystemNotFoundException Thrown if the input URI resides on 
+     * a file system that is not available.
      */
-    public String createFilename(
-            String template,
-            long   index,
-            String extension) {
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append(template);
-        if (index > 0) {
-            sb.append("_");
-            sb.append(index);
-        }
-        sb.append(".");
-        sb.append(extension);
-        return sb.toString();    
-    }
-    
-    /**
-     * Method to calculate the archive filename based on an archive filename
-     * requested by the client.
-     * 
-     * @param filename The client-requested name for the output file. 
-     * @return The full path to the output archive file.
-     */
-    public String getArchiveFile(String filename) {
-        if ((filename == null) || 
-                (filename.trim().equalsIgnoreCase(""))) {
-            filename = getFilename();
-        }
-        
-        // If there is an extension on the filename, strip it off.
-        if (filename.contains(".")) {
-            filename = filename.substring(0, filename.lastIndexOf('.'));
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append(getArchiveDirectory());
-        sb.append(_pathSeparator);
-        sb.append(filename);
-        return sb.toString();
-    }
-    
-    /**
-     * Calculate the full path to the output archive file.
-     * 
-     * @return The full path to the target output archive file.
-     */
-    public String getArchiveFile() {
-        
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append(getArchiveDirectory());
-        sb.append(_pathSeparator);
-        sb.append(getFilename());
-        return sb.toString();
-    }
-    
-    /**
-     * Calculate a regular expression that can be used to search for 
-     * bundler staging directories.  
-     * 
-     * @return A REGEX used to search for staging directories.
-     */
-    public static List<String> getRegEx() {
-        
-        List<String> regexes = new ArrayList<String>();
-        StringBuilder sb           = new StringBuilder();
-        
-        sb.append(DEFAULT_FILENAME_PREFIX);
-        sb.append("_");
-        sb.append(FileUtils.getHostName());
-        sb.append("_");
-        sb.append("[A-Z0-9]{");
-        sb.append(2*UNIQUE_TOKEN_LENGTH);
-        sb.append("}+");
-        regexes.add(sb.toString());
-        sb = new StringBuilder();
-        sb.append(DEFAULT_FILENAME_PREFIX);
-        sb.append("_");
-        sb.append(FileUtils.getHostName());
-        sb.append("_");
-        sb.append("[A-Z0-9]{");
-        sb.append(4*UNIQUE_TOKEN_LENGTH);
-        sb.append("}+");
-        regexes.add(sb.toString());
-        return regexes;
-    }
-    
-    /**
-     * Getter method for the target staging directory.
-     * 
-     * @return The location to use for staging archives.
-     */
-    public String getStagingDirectory() {
-        if ((_stagingDirectory == null) || 
-                (_stagingDirectory.equalsIgnoreCase(""))) {
-            _stagingDirectory = System.getProperty("java.io.tmpdir");
-        }
-        return _stagingDirectory;
-    }
-    
-    /**
-     * Setter method for the staging directory.  If the input directory is 
-     * not supplied, the location specified by the <code>java.io.tmpdir</code>
-     * is used.
-     * 
-     * @param dir Location for the staging directory.
-     */
-    public void setStagingDirectory(String dir) {
-        
-        if ((dir == null) || (dir.trim().equalsIgnoreCase(""))) {
-            _stagingDirectory = System.getProperty("java.io.tmpdir");
-            LOGGER.warn("Application property [ " 
-                    + STAGING_DIRECTORY_PROPERTY
-                    + " ] is not defined.  Using system property [ "
-                    + _stagingDirectory
-                    + " ].");
+    private URI getURI(String filePath) 
+            throws FileSystemNotFoundException {
+        URI uri = null;
+        if ((filePath != null) && (!filePath.isEmpty())) {
+            uri = URIUtils.getInstance().getURI(filePath);
         }
         else {
-            _stagingDirectory = dir;
+        	LOGGER.warn("Input file path is null.  Unable to create URI.");
+        }
+        return uri;
+    }
+    
+    /**
+     * Generate the staging directory from the JVM properties information.
+     * @return A staging directory on the local server.
+     */
+    private String genStagingAreaFromJVM () {
+        StringBuilder sb = new StringBuilder();
+        sb.append("file://");
+        sb.append(System.getProperty("java.io.tmpdir"));
+        if (!sb.toString().endsWith(pathSeparator)) {
+            sb.append(pathSeparator);
+        }
+        return sb.toString();
+    }
+    
+    /**
+     * Setter method for the archive type.
+     * @param type The output archive type.
+     */
+    private void setArchiveType(ArchiveType type) {
+        if (type == null) {
+            type = ArchiveType.ZIP;
+        }
+        else {
+            this.type = type;
         }
     }
     
-    
-    /** 
-     * Static inner class used to construct the factory singleton.  This
-     * class exploits that fact that inner classes are not loaded until they 
-     * referenced therefore enforcing thread safety without the performance 
-     * hit imposed by the use of the "synchronized" keyword.
-     * 
-     * @author L. Craig Carpenter
+    /**
+     * Setter method for the template name used for output archive files.
+     * @param value The user-supplied template filename.
      */
-    public static class FileNameGeneratorHolder {
-        
-        /**
-         * Reference to the Singleton instance of the factory
-         */
-        private static FileNameGenerator _factory = new FileNameGenerator();
-        
-        /**
-         * Accessor method for the singleton instance of the factory object.
-         * 
-         * @return The singleton instance of the factory.
-         */
-        public static FileNameGenerator getFactorySingleton() {
-            return _factory;
+    private void setTemplateName(String value) {
+        if ((value == null) || (value.isEmpty())) {
+            filenameTemplate = getFileName();
         }
+        else {
+            // Take whatever the user requested and strip off the extension.
+            if (value.contains(".")) {
+                filenameTemplate = value.substring(0, value.lastIndexOf('.'));
+            }
+            else {
+                filenameTemplate = value;
+            }
+        }
+    }
+    
+    /**
+     * Setter method for the job ID field.  Modified to allow for a "empty" 
+     * value for the job ID.  If the job ID is empty the output files will 
+     * be written directly to the staging area. 
+     * @param value The job ID.
+     */
+    private void setJobID(String value) {
+        if (value == null) {
+            jobID = JobIDGenerator.generateUniqueToken(2*UNIQUE_TOKEN_LENGTH);
+        }
+        else {
+            jobID = value;
+        }
+    }
+    
+    /**
+     * Public method used to set the target staging area.  This was modified 
+     * to allow public access in the event offline tools want to specify an 
+     * output location other than default staging area.
+     * 
+     * @param value The value of the staging area retrieved from the 
+     * properties file.
+     */
+    public void setStagingArea(String value) {
+        StringBuilder sb = new StringBuilder();
+        if ((value == null) || (value.isEmpty())) {
+            sb.append(genStagingAreaFromJVM());
+        }
+        else {
+            sb.append(value);
+            if (!sb.toString().endsWith(pathSeparator)) {
+                sb.append(pathSeparator);
+            }
+        }
+        stagingArea = sb.toString();
+    }
+
+    /**
+     * Print out the parameters that will be utilized in constructing 
+     * the output file names.
+     */
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("FileNameGenerator Parameters : ");
+    	sb.append("Archive Type => [ ");
+    	sb.append(type.getText());
+    	sb.append(" ], Job ID => [ ");
+    	sb.append(jobID);
+    	sb.append(" ], filename template => [ ");
+    	sb.append(filenameTemplate);
+    	sb.append(" ], staging area => [ ");
+    	sb.append(stagingArea);
+    	sb.append(" ].");
+    	return sb.toString();
+    }
+    
+    public static void main (String[] args) {
+        
+        FileNameGenerator generator = new FileNameGenerator(ArchiveType.BZIP2);
+        System.out.println(generator.getOutputDirectory());
+        System.out.println(generator.getOutputFile(0));
+        System.out.println(generator.getOutputFile(1));
+        System.out.println(generator.getOutputFile(2));
+        
+        generator = new FileNameGenerator(ArchiveType.ZIP, "", "test_output_archive");
+        generator.setStagingArea("/mnt/public/data_bundles/test");
+        System.out.println(generator.getOutputDirectory());
+        System.out.println(generator.getOutputFile(0));
+        System.out.println(generator.getOutputFile(1));
+        System.out.println(generator.getOutputFile(2));
+        
+        generator = new FileNameGenerator(ArchiveType.TAR, "ABCDEFGHIJKLMNOPQRSTUV");
+        System.out.println(generator.getOutputDirectory());
+        System.out.println(generator.getOutputFile(0));
+        System.out.println(generator.getOutputFile(1));
+        System.out.println(generator.getOutputFile(2));
+        
+        generator = new FileNameGenerator(ArchiveType.ZIP, "ABCDEFGHIJKLMNOPQRSTUV", "test_output_archive");
+        System.out.println(generator.getOutputDirectory());
+        System.out.println(generator.getOutputFile(0));
+        System.out.println(generator.getOutputFile(1));
+        System.out.println(generator.getOutputFile(2));
     }
 }

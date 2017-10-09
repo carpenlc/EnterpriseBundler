@@ -131,6 +131,29 @@ public class FileEntry implements Serializable {
         setSize(size);
     }
     
+    /**
+     * Alternate constructor allowing clients to supply all relevant params
+     * on construction. 
+     * 
+     * @param jobID The target job ID
+     * @param archiveID The ID of the archive.
+     * @param path The full path to a file (String URI)
+     * @param entryPath The archive entry path for a file.
+     * @param size The size of the target file.
+     */
+    public FileEntry(
+            String jobID, 
+            long   archiveID, 
+            String path, 
+            String entryPath,
+            long   size) {
+        super();
+        setJobID(jobID);
+        setArchiveID(archiveID);
+        setFilePath(path);
+        setEntryPath(entryPath);
+        setSize(size);
+    }
     
     /**
      * Alternate constructor allowing clients to supply the actual file

@@ -35,7 +35,7 @@ public class Job implements Serializable {
             orphanRemoval=true,
             fetch=FetchType.EAGER)
     @JoinColumn(name="JOB_ID")
-    List<Archive> archives = new ArrayList<Archive>();
+    List<ArchiveJob> archives = new ArrayList<ArchiveJob>();
     
     /**
      * The target size of each output archive.
@@ -133,9 +133,9 @@ public class Job implements Serializable {
      * Add an archive to the list of archive jobs to process.
      * @param archive An archive job.
      */
-    public void addArchive(Archive archive) {
+    public void addArchive(ArchiveJob archive) {
         if (archives == null) {
-            archives = new ArrayList<Archive>();
+            archives = new ArrayList<ArchiveJob>();
         }
         archives.add(archive);
     }
@@ -156,10 +156,10 @@ public class Job implements Serializable {
      * @return The requested Archive object, or null if the archive cannot 
      * be found.
      */
-    public Archive getArchive(long archiveID) {
-        Archive archive = null;
+    public ArchiveJob getArchive(long archiveID) {
+        ArchiveJob archive = null;
         if ((archives != null) && (archives.size() > 0)) {
-            for (Archive current : archives) {
+            for (ArchiveJob current : archives) {
                 if (current.getArchiveID() == archiveID) {
                     archive = current;
                     break;
@@ -182,7 +182,7 @@ public class Job implements Serializable {
      * Getter method for the list of archives to be created by the job.
      * @return The list of bundles created.
      */
-    public List<Archive> getArchives() {
+    public List<ArchiveJob> getArchives() {
             return archives;
     }
     
@@ -293,7 +293,7 @@ public class Job implements Serializable {
      * Setter method for the list of Archives created by this job.
      * @param values List of Archive objects.
      */
-    public void setArchives(List<Archive> values) {
+    public void setArchives(List<ArchiveJob> values) {
         archives = values;
     }
     
@@ -444,7 +444,7 @@ public class Job implements Serializable {
         sb.append("----------------------------------------");
         sb.append(newLine);
         if ((getArchives() != null) && (getArchives().size() > 0)) {
-            for (Archive arch : getArchives()) {
+            for (ArchiveJob arch : getArchives()) {
                 if (arch != null) {
                     sb.append(arch.toString());
                 }

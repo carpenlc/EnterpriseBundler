@@ -98,7 +98,7 @@ public class FileRequest implements Serializable {
     
     /**
      * Internal static class implementing the Builder creation pattern for 
-     * new QueryRequestAccelerator objects.  
+     * new <code>FileRequest</code> objects.  
      * 
      * @author L. Craig Carpenter
      */
@@ -169,7 +169,6 @@ public class FileRequest implements Serializable {
         private void validateFileRequestObject(
                 FileRequest object) 
                     throws IllegalStateException {
-            
             if (object != null) {
             	if (object.file == null) {
             		throw new IllegalStateException("Input file name is null "

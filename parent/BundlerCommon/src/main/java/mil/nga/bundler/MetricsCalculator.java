@@ -5,7 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.model.BundlerMetrics;
 import mil.nga.bundler.types.JobStateType;
@@ -36,10 +36,10 @@ public class MetricsCalculator {
      * size of the output archive file.
      * @param list A list of Archives contained in the job.
      */
-    private long getCompressedSize(List<Archive> list) {
+    private long getCompressedSize(List<ArchiveJob> list) {
         long accumulator = 0;
         if ((list != null) && (list.size() > 0)) {
-            for (Archive archive : list) {
+            for (ArchiveJob archive : list) {
                 if (archive.getArchiveState() == JobStateType.COMPLETE) {
                     accumulator += archive.getSize();
                 }

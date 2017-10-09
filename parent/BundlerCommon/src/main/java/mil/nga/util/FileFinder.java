@@ -1,8 +1,11 @@
 package mil.nga.util;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.ArrayList;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -25,96 +28,59 @@ import java.nio.file.attribute.BasicFileAttributes;
 public class FileFinder {
 
     /**
-     * Default search pattern.
-     */
-    public static final String DEFAULT_PATTERN = "*";
-    
-	/**
-	 * Execute a search on the filesystem for files that match the input 
-	 * pattern.
-	 * 
-	 * @param path The starting location for the search.
-	 * @param pattern The file pattern to look for.
-	 * @exception IOException Thrown during the search process.
-	 */
-	public static List<Path> find(String path, String pattern) 
-			throws IOException {
-		
-		Path start = null;
-		
-		if ((path == null) || (path.isEmpty())) {
-			start = Paths.get("");
-		}
-		else {
-			start = Paths.get(path);
-		}
-		
-		Finder finder = new Finder(pattern);
-		Files.walkFileTree(start, finder);
-		return finder.getResults();
-	}
-	
-	/**
-     * This method accepts as input a starting directorty name.  It then walks
-     * through the filesystem returning a list of all regular files (omitting 
-     * directories.)
+     * Execute a search on the filesystem for files that match the input 
+     * pattern.
      * 
      * @param path The starting location for the search.
+     * @param pattern The file pattern to look for.
      * @exception IOException Thrown during the search process.
      */
-	public static List<String> find(String path) throws IOException {
-	   
-	    List<String> files = new ArrayList<String>();
-	    if ((path == null) || (path.isEmpty())) { 
-	        path = "";
-	    }
-	    Finder finder = new Finder("*");
-	    Files.walkFileTree(Paths.get(path), finder);
-	    List<Path> paths = finder.getResults();
-	    if ((paths != null) && (!paths.isEmpty())) { 
-	        for (Path p : paths) {
-	            files.add(p.toAbsolutePath().toString());
-	        }
-	    }
-	    
-	    return files;
-	    
-	}
-	
-	/**
-	 * Internal class that extends the SimpleFileVisitor class that implements
-	 * the actual search.
-	 * 
-	 * @author carpenlc
-	 *
-	 */
-	public static class Finder extends SimpleFileVisitor<Path> {
-		
-		/**
-		 * Internal PathMatcher object.
-		 */
-		private final PathMatcher _matcher;
-		
-		/**
-		 * Accumulator saving the list of matches found on the file system.
-		 */
-		private List<Path> _matches = null;
-		
-		/**
-		 * Constructor setting up the search.
-		 * 
-		 * @param pattern The global search pattern to utilize for the search.
-		 * @throws IOException Thrown if the client-supplied pattern is not
-		 * defined.
-		 */
-		public Finder(String pattern) throws IOException {
-			if ((pattern == null) || (pattern.isEmpty())) {
-				pattern = DEFAULT_PATTERN;
-			}
-			_matcher = FileSystems.getDefault().getPathMatcher(
-						"glob:" + pattern);
-		}
-		
+    public static List<Path> find(URI uri, String pattern) 
+            throws IOException {
+        
+        Path start = null;
+
+        start = Paths.get(uri);
+        
+        Finder finder = new Finder(uri, pattern);
+        Files.walkFileTree(start, finder);
+        return finder.getResults();
+    }
+    
+    /**
+     * Internal class that extends the SimpleFileVisitor class that implements
+     * the actual search.
+     * 
+     * @author L. Craig Carpenter
+     *
+     */
+    public static class Finder extends SimpleFileVisitor<Path> {
+        
+        /**
+         * Internal PathMatcher object.
+         */
+        private final PathMatcher _matcher;
+        
+        /**
+         * Accumulator saving the list of matches found on the file system.
+         */
+        private List<Path> _matches = null;
+        
+        /**
+         * Constructor setting up the search.
+         * 
+         * @param pattern The global search pattern to utilize for the search.
+         * @throws IOException Thrown if the client-supplied pattern is not
+         * defined.
+         */
+        public Finder(URI uri, String pattern) throws IOException {
+            if ((pattern == null) || (pattern.isEmpty())) {
+                throw new IOException("Usage error:  Search pattern not defined.");
+            }
+            _matcher = FileSystems.getFileSystem(uri).getPathMatcher(
+                        "glob:" + pattern);
+        }
+        
         /** 
          * Compares the glob pattern against the file and/or directory name.
          * 
@@ -122,13 +88,11 @@ public class FileFinder {
          */
         public void find(Path file) {
             Path name = file.getFileName();
-            if ((name != null) 
-                    && (_matcher.matches(name)
-                            && (!Files.isDirectory(file)))) {
+            if ((name != null) && (_matcher.matches(name))) {
                 if (_matches == null) {
-                	_matches = new ArrayList<Path>();
+                    _matches = new ArrayList<Path>();
                 }
-            	_matches.add(file);
+                _matches.add(file);
             }
         }
         
@@ -139,7 +103,7 @@ public class FileFinder {
          * (may be null). 
          */
         public List<Path> getResults() {
-        	return _matches;
+            return _matches;
         }
         
         /**
@@ -158,7 +122,7 @@ public class FileFinder {
          */
         @Override
         public FileVisitResult visitFile(
-        		Path file,
+                Path file,
                 BasicFileAttributes attrs) {
             find(file);
             return FileVisitResult.CONTINUE;
@@ -171,35 +135,102 @@ public class FileFinder {
         public FileVisitResult visitFileFailed(Path file,
                 IOException exc) {
             System.err.println("WARN:  Find command failed visiting file.  " 
-            		+ "Error message [ " 
-            		+ exc.getMessage()
-            		+ " ].");
+                    + "Error message [ " 
+                    + exc.getMessage()
+                    + " ].");
+            exc.printStackTrace();
             return FileVisitResult.CONTINUE;
         }
-	}
-	
-	
-	public static void main(String[] args) {
-	    
-	    
-	    
-	    
-	    
-	    try {
-    	    List<Path> list = FileFinder.find("/mnt/raster/cadrg/cdrgxpk100k_7", "*");
-    	    if ((list != null) && (!list.isEmpty())) {
-    	        for (Path path : list) {
-    	            System.out.println(path.toAbsolutePath());
-    	        }
-    	    }
-    	    
-    	    List<String> strings = FileFinder.find("/mnt/raster/cadrg/cdrgxpk100k_7");
-            for (String path : strings) {
-                System.out.println(path);
+    }
+    
+    /**
+     * If clients did not supply the "scheme" for the URI, this method is 
+     * invoked to generate a URI with the local file system scheme.
+     * 
+     * @param uri The input URI (which was lacking a scheme).
+     * @return Newly constructed URI pointing to the local file system.
+     */
+    protected static URI getURI(Path p, URI uri) {
+        URI newURI = null;
+        if (uri != null) {
+            try {
+                /*
+                System.out.println("Creating URI => "
+                        + "scheme [ "
+                        + uri.getScheme()
+                        + " ], authority [ "
+                        + uri.getAuthority()
+                        + " ], path [ "
+                        + p.toString()
+                        + " ], query [ "
+                        + uri.getQuery()
+                        + " ] fragment [ "
+                        + uri.getFragment()
+                        + " ].");
+                */
+                newURI = new URI(
+                        uri.getScheme(), 
+                        uri.getAuthority(), 
+                        p.toString(),
+                        uri.getQuery(), 
+                        uri.getFragment());
             }
-	    }
-	    catch (IOException ioe) {
-	        ioe.printStackTrace();
-	    }
-	}
+            // This exception can never be thrown here so just eat it.
+            catch (URISyntaxException use) { }
+        }
+        return newURI;
+    }
+    
+    /**
+     * Convert a list of <code>Path</code> objects into a list of 
+     * <code>URI</code> objects. 
+     * 
+     * @param paths List of Path objects.
+     * @param uri The base URI.
+     * @return A list of URI objects.  This method may return an empty
+     * list, but it will not return null.
+     */
+    public static List<URI> toURIList(List<Path> paths, URI uri) {
+        List<URI> uris = new ArrayList<URI>();
+        if ((paths != null) && (!paths.isEmpty())) {
+            for (Path p : paths) {
+                uris.add(getURI(p, uri));
+            }
+        }
+        return uris;
+    }
+    
+    /**
+     * The intention of this method is to accept a <code>URI</code> that 
+     * points to a directory.  This method will then walk the directory tree 
+     * returning a list of all files in the tree.  If the <code>URI</code> is 
+     * not supplied the file will return a list containing a single 
+     * <code>URI</code> object pointing to the file.
+     * 
+     * @param uri URI identifying a target directory. 
+     * @return List of URI objects pointing to files that fall below the 
+     * target directory.  
+     * @throws IOException Thrown in conjunction with any issues walking the 
+     * file tree.
+     */
+    public static List<URI> listFiles(URI uri) throws IOException {
+        Path path= Paths.get(uri);
+        final List<Path> files=new ArrayList<>();
+        try {
+             Files.walkFileTree(path, new SimpleFileVisitor<Path>(){
+             @Override
+             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                  if(!attrs.isDirectory()){
+                       files.add(file);
+                  }
+                  return FileVisitResult.CONTINUE;
+              }
+             });
+        } 
+        catch (IOException e) {
+             e.printStackTrace();
+        }
+              
+        return toURIList(files, uri);
+    }
 }

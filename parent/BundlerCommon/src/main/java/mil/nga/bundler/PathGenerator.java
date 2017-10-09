@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import mil.nga.PropertyLoader;
 import mil.nga.bundler.exceptions.PropertiesNotLoadedException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.ValidFile;
 
@@ -162,7 +162,7 @@ public class PathGenerator
      *  
      * @param archive A single Archive to be sent to the bundler process.
      */
-    public void setPaths(Archive archive) {
+    public void setPaths(ArchiveJob archive) {
         if ((archive.getFiles() != null) && 
                 (archive.getFiles().size() > 0)) {
             for (FileEntry entry : archive.getFiles()) {
@@ -249,10 +249,10 @@ public class PathGenerator
      *  
      * @param archives List of Archives to be sent to the bundler process.
      */
-    public void setPaths(List<Archive> archives) {
+    public void setPaths(List<ArchiveJob> archives) {
         String method = "setPaths() - ";
         if ((archives != null) && (archives.size() > 0)) {
-            for (Archive archive : archives) {
+            for (ArchiveJob archive : archives) {
                 if ((archive.getFiles() != null) && 
                         (archive.getFiles().size() > 0)) {
                     for (FileEntry entry : archive.getFiles()) {

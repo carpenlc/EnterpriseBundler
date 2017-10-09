@@ -347,9 +347,7 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
         		userName = DEFAULT_USERNAME;
         	}
         	if ((outputFilename == null) || (outputFilename.isEmpty())) {
-        		outputFilename = FileNameGenerator
-        		        .getInstance()
-        		        .getFilename();
+        		outputFilename = FileNameGenerator.getFileName();
         	}
         }
     }

@@ -2,7 +2,7 @@ package mil.nga.bundler.interfaces;
 
 import java.util.Collection;
 
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.types.JobStateType;
 
 /**
@@ -36,13 +36,13 @@ public interface JobTrackerI {
      * completed archive files.
      * @param bundle Metadata associated with a completed archive file.
      */
-    public void addArchive(Archive archive);
+    public void addArchive(ArchiveJob archive);
     
     /**
      * Accessor method for the list of archives that were created by this job.
      * @return The list of archives created.
      */
-    public Collection<Archive> getArchives();
+    public Collection<ArchiveJob> getArchives();
     
     /**
      * Setter method for the current state of the job.

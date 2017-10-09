@@ -3,8 +3,10 @@ package mil.nga.bundler;
 import mil.nga.bundler.messages.FileRequest;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.util.FileFinder;
+import mil.nga.util.URIUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +30,8 @@ import org.slf4j.LoggerFactory;
  * this class is to ensure that there are files to bundle, all of the 
  * requested files actually exist on the file system, and that the user did 
  * not request any duplicate files.
+ * 
+ * During file visitation, the archive path is also calculated.
  * 
  * @author L. Craig Carpenter
  */
@@ -125,12 +129,15 @@ public class FileValidator {
         if ((requestedFile != null) && 
                 (requestedFile.getFile() != null) && 
                 (!requestedFile.getFile().isEmpty())) {
-            Path file = Paths.get(requestedFile.getFile().trim());
+        	
+        	URI  uri  = URIUtils.getInstance().getURI(requestedFile.getFile());
+            Path file = Paths.get(uri);
+            
             if (Files.exists(file)) {
                 try {
                     long size = Files.size(file);
                     validated = new FileEntry(
-                            requestedFile.getFile(),
+                            uri.toString(),
                             requestedFile.getArchivePath(),
                             size);
                 }
@@ -241,15 +248,23 @@ public class FileValidator {
         if ((filesRequested != null) && (!filesRequested.isEmpty())) { 
             for (String file : filesRequested) {
                 if ((file != null) && (!file.isEmpty())) {
-                    Path p = Paths.get(file);
+                	
+                	URI  uri = URIUtils.getInstance().getURI(file);
+                    Path p   = Paths.get(uri);
+                    
                     if (Files.isDirectory(p)) {
                         try {
-                            List<String> files = FileFinder.find(
-                                    p.toAbsolutePath().toString());
+                            List<Path> files = FileFinder.find(
+                                    uri, "*");
                             if ((files != null) && (!files.isEmpty())) { 
-                                for (String name : files) {
-                                    expandedList.add(name);
+                                for (Path name : files) {
+                                    expandedList.add(
+                                    		URIUtils.getInstance().getURI(
+                                    				name.toString()).toString());
                                 }
+                            }
+                            else {
+                            	LOGGER.warn("Directory contains no files.");
                             }
                         }
                         catch (IOException ioe) {
@@ -289,29 +304,38 @@ public class FileValidator {
         List<FileRequest> expandedList = new ArrayList<FileRequest>();
         if ((filesRequested != null) && (!filesRequested.isEmpty())) { 
             for (FileRequest file : filesRequested) {
+               
                 if ((file != null) && 
                         (file.getFile() != null) && 
                         (!file.getFile().isEmpty())) {
-                    Path p = Paths.get(file.getFile());
+                	
+                	URI  uri = URIUtils.getInstance().getURI(file.getFile());
+                    Path p   = Paths.get(uri.toString());
+                    
                     if (Files.isDirectory(p)) {
                         String baseDir = p.toAbsolutePath().toString();
                         try {
-                            List<String> files = FileFinder.find(
-                                    p.toAbsolutePath().toString());
+                            List<Path> files = FileFinder.find(
+                                    uri, "*");
                             if ((files != null) && (!files.isEmpty())) { 
-                                for (String name : files) {
+                                for (Path name : files) {
                                     expandedList.add(
                                             new FileRequest.FileRequestBuilder()
-                                            .file(name)
+                                            .file(URIUtils
+                                            		.getInstance()
+                                            		.getURI(name.toString()).toString())
                                             .archivePath(
                                                     PathGenerator
                                                     .getInstance()
                                                     .getEntryPath(
                                                             baseDir, 
                                                             file.getArchivePath(), 
-                                                            name))
+                                                            name.toString()))
                                             .build());
                                 }
+                            }
+                            else {
+                            	LOGGER.warn("Directory contains no files.");
                             }
                         }
                         catch (IOException ioe) {
