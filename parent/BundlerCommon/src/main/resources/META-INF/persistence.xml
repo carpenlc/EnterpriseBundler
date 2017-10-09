@@ -6,7 +6,7 @@
     <persistence-unit name="BundlerJPA">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <jta-data-source>java:jboss/datasources/JobTracker</jta-data-source>
-        <class>mil.nga.bundler.model.Archive</class>
+        <class>mil.nga.bundler.model.ArchiveJob</class>
         <class>mil.nga.bundler.model.FileEntry</class>
         <class>mil.nga.bundler.model.Job</class>
         <class>mil.nga.bundler.model.BundlerMetrics</class>
