@@ -5,7 +5,7 @@ import java.io.Serializable;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.Job;
 
 import org.primefaces.model.DefaultTreeNode;
@@ -45,7 +45,7 @@ public class ViewJobTree extends BundlerEJBClient implements Serializable {
         
         if ((job.getArchives() != null) && (job.getArchives().size() > 0)) {
             TreeNode archives = new DefaultTreeNode("Archives", root);
-            for (Archive current : job.getArchives()) {
+            for (ArchiveJob current : job.getArchives()) {
                 TreeNode archive = new DefaultTreeNode("Archive ID : " + current.getArchiveID(), archives);
                 archive.getChildren().add(new DefaultTreeNode("URL : " + current.getArchiveURL()));
                 archive.getChildren().add(new DefaultTreeNode("Hash URL : " + current.getHashURL()));

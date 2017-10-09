@@ -11,7 +11,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
 import mil.nga.bundler.messages.ArchiveMessage;
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
@@ -97,7 +97,7 @@ public class JobTrackerMDB implements MessageListener {
         if (job != null) {
             if ((job.getArchives() != null) && 
                     (job.getArchives().size() > 0)) {
-                for (Archive archive : job.getArchives()) {
+                for (ArchiveJob archive : job.getArchives()) {
                     if (archive.getArchiveState() == JobStateType.COMPLETE) {
                         archivesComplete++;
                     }
@@ -179,7 +179,7 @@ public class JobTrackerMDB implements MessageListener {
      * 
      * @param archive The archive that has complete.  
      */
-    private void checkArchive(Archive archive) { 
+    private void checkArchive(ArchiveJob archive) { 
         if (archive.getArchiveState() != JobStateType.COMPLETE) {
             LOGGER.warn("Archive complete message received for Job ID [ "
                     + archive.getJobID()
@@ -200,7 +200,7 @@ public class JobTrackerMDB implements MessageListener {
      * @param job The Overall Job object.
      * @param archive The individual completed archive file.
      */
-    private void updateJobState(Job job, Archive archive) {
+    private void updateJobState(Job job, ArchiveJob archive) {
         
         long numFiles              = getFilesComplete(archive.getFiles());
         long totalNumFilesComplete = job.getNumFilesComplete() + numFiles;
@@ -286,7 +286,7 @@ public class JobTrackerMDB implements MessageListener {
                      Job job = getJobService().getJob(archiveMsg.getJobId());
                      
                      if (job != null) {
-                         Archive archive = job.getArchive(archiveMsg.getArchiveId());
+                         ArchiveJob archive = job.getArchive(archiveMsg.getArchiveId());
                          if (archive != null) {
                              checkArchive(archive);
                              updateJobState(job, archive);

@@ -14,7 +14,7 @@ import org.primefaces.event.SelectEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
 import mil.nga.util.FileUtils;
@@ -104,7 +104,7 @@ public class ViewJobList
             if (job.getState() == JobStateType.COMPLETE) {
                 if ((job.getArchives() != null) && 
                         (job.getArchives().size() > 0)) {
-                    for (Archive archive : job.getArchives()) {
+                    for (ArchiveJob archive : job.getArchives()) {
                         accumulator += archive.getSize();
                     }
                 }

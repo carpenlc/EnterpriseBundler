@@ -14,7 +14,7 @@ import javax.ejb.Stateless;
 import javax.sql.DataSource;
 
 import mil.nga.bundler.ejb.EJBClientUtilities;
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.types.ArchiveType;
 import mil.nga.bundler.types.JobStateType;
@@ -371,9 +371,9 @@ public class JDBCArchiveService {
      * @param jobID The job ID requested (must not be null, or empty String)
      * @return The requested list of archives.
      */
-    public List<Archive> getArchives(String jobID) {
+    public List<ArchiveJob> getArchives(String jobID) {
         
-        List<Archive>     archives = new ArrayList<Archive>();
+        List<ArchiveJob>     archives = new ArrayList<ArchiveJob>();
         Connection        conn     = null;
         PreparedStatement stmt     = null;
         ResultSet         rs       = null;
@@ -396,7 +396,7 @@ public class JDBCArchiveService {
                     
                     while (rs.next()) {
                         
-                        Archive archive = new Archive();
+                        ArchiveJob archive = new ArchiveJob();
                         archive.setID(rs.getLong("ID"));
                         archive.setArchive(rs.getString("ARCHIVE_FILE"));
                         archive.setArchiveID(rs.getLong("ARCHIVE_ID"));
@@ -468,9 +468,9 @@ public class JDBCArchiveService {
      * @param jobID
      * @return
      */
-    public Archive getMaterializedArchive(long archiveID, String jobID) {
+    public ArchiveJob getMaterializedArchive(long archiveID, String jobID) {
         
-        Archive           archive  = new Archive();
+        ArchiveJob           archive  = new ArchiveJob();
         Connection        conn     = null;
         PreparedStatement stmt     = null;
         ResultSet         rs       = null;
@@ -592,15 +592,15 @@ public class JDBCArchiveService {
      * @param jobID The job ID requested (must not be null, or empty String)
      * @return The requested list of archives (may be null).
      */
-    public List<Archive> getMaterializedArchives(String jobID) {
+    public List<ArchiveJob> getMaterializedArchives(String jobID) {
         
-        List<Archive> archives = null;
+        List<ArchiveJob> archives = null;
         
         if ((jobID != null) && (!jobID.isEmpty())) {
             archives = getArchives(jobID);
             if (getJDBCFileService() != null) {
                 if ((archives != null) && (archives.size() > 0)) { 
-                    for (Archive archive : archives) {
+                    for (ArchiveJob archive : archives) {
                         
                         List<FileEntry> files = 
                                 getJDBCFileService().getFiles(
@@ -693,7 +693,7 @@ public class JDBCArchiveService {
      * 
      * @param archive Data to insert into the <code>ARCHIVE_JOB</code> table.
      */
-    public void insertArchive(Archive archive) {
+    public void insertArchive(ArchiveJob archive) {
         
         Connection        conn   = null;
         PreparedStatement stmt   = null;
@@ -780,9 +780,9 @@ public class JDBCArchiveService {
      * @param archives List of objects to insert into the 
      * <code>ARCHIVE_JOB</code> table.
      */
-    public void insertArchives(List<Archive> archives) {
+    public void insertArchives(List<ArchiveJob> archives) {
         if ((archives != null) && (archives.size() > 0)) {
-            for (Archive archive : archives) {
+            for (ArchiveJob archive : archives) {
                 insertArchive(archive);
             }
         }
@@ -799,7 +799,7 @@ public class JDBCArchiveService {
      * @param archive Archive object to update in the 
      * <code>ARCHIVE_JOB</code> table.
      */
-    public void updateArchive(Archive archive) {
+    public void updateArchive(ArchiveJob archive) {
         Connection        conn   = null;
         PreparedStatement stmt   = null;
         long              start  = System.currentTimeMillis();
@@ -886,9 +886,9 @@ public class JDBCArchiveService {
      * @param archives List of objects to update in the 
      * <code>ARCHIVE_JOB</code> table.
      */
-    public void updateArchives(List<Archive> archives) {
+    public void updateArchives(List<ArchiveJob> archives) {
         if ((archives != null) && (archives.size() > 0)) {
-            for (Archive archive : archives) {
+            for (ArchiveJob archive : archives) {
                 updateArchive(archive);
             }
         }

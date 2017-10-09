@@ -20,7 +20,7 @@ import mil.nga.bundler.exceptions.UnknownArchiveTypeException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.interfaces.BundlerI;
 import mil.nga.bundler.messages.ArchiveMessage;
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
 import mil.nga.util.FileUtils;
@@ -141,7 +141,7 @@ public class ArchiverMDB
         
         try {
             
-            Archive archive = job.getArchive(archiveID);
+            ArchiveJob archive = job.getArchive(archiveID);
             
             if (archive != null) {
                 
@@ -218,7 +218,7 @@ public class ArchiverMDB
      * @param archive The JPA Archive containing information associated with
      * the output files created.
      */
-    private void notify(Archive archive) {
+    private void notify(ArchiveJob archive) {
         super.notify(TRACKER_DEST_Q,
                 new ArchiveMessage.ArchiveMessageBuilder()
                         .jobId(archive.getJobID())
@@ -253,7 +253,7 @@ public class ArchiverMDB
                 Job job = getJobService().getJob(archiveMsg.getJobId());
                 if (job != null) {
                     
-                    Archive archive = job.getArchive(archiveMsg.getArchiveId());
+                    ArchiveJob archive = job.getArchive(archiveMsg.getArchiveId());
                     if (archive != null) {
                         
                         // Update the archive to reflect that archive processing 

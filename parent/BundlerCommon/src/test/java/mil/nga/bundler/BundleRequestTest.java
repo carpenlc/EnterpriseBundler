@@ -47,7 +47,7 @@ public class BundleRequestTest {
                 .maxSize(2400)
                 .redirect(true)
                 .build();
-        assertEquals(request2.getMaxSize(), BundlerConstantsI.DEFAULT_MAX_ARCHIVE_SIZE);
+        assertEquals(request2.getMaxSize(), BundlerConstantsI.DEFAULT_ARCHIVE_SIZE);
         assertEquals(request2.getRedirect(), true);
         assertEquals(request2.getOutputFilename(), "nga_data_archive");
         assertEquals(request2.getUserName(), BundlerConstantsI.DEFAULT_USERNAME);

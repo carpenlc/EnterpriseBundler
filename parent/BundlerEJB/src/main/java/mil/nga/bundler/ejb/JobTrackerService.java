@@ -5,7 +5,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 import mil.nga.bundler.messages.JobTrackerMessage;
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
@@ -78,6 +78,7 @@ public class JobTrackerService {
         return elapsedTime;
     }
     
+    
     /**
      * Construct the JobTrackerMessage and populate it with the current
      * statistics associated with the input Job object.
@@ -104,7 +105,7 @@ public class JobTrackerService {
         message.setState(job.getState());
         
         if ((job.getArchives() != null) && (job.getArchives().size() > 0)) {
-            for (Archive archive : job.getArchives()) {
+            for (ArchiveJob archive : job.getArchives()) {
                 
                 if (archive.getArchiveState() == JobStateType.COMPLETE) {
                     numArchivesComplete++;
@@ -146,6 +147,12 @@ public class JobTrackerService {
         return message;    
     }
     
+    public JobTrackerMessage getInitialJobTracker(
+    		String jobID,
+    		String userName) {
+    		
+    		
+    }
     /**
      * Calculate the current statistics information associated with current 
      * in-progress job.

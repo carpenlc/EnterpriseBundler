@@ -11,7 +11,7 @@ import javax.ejb.Startup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
 import mil.nga.util.FileUtils;
@@ -144,7 +144,7 @@ public class RecoveryService {
                             long sizeComplete = 0L;
                             long filesComplete = 0L;
                             
-                            for (Archive archive : job.getArchives()) {
+                            for (ArchiveJob archive : job.getArchives()) {
                                 if (archive.getArchiveState() == JobStateType.COMPLETE) {
                                     archivesComplete++;
                                     sizeComplete += archive.getSize();
@@ -204,7 +204,7 @@ public class RecoveryService {
                         if ((job.getArchives() != null) && 
                                 (job.getArchives().size() > 0)) {
                             
-                            for (Archive archive : job.getArchives()) {
+                            for (ArchiveJob archive : job.getArchives()) {
                                 if ((archive.getServerName() != null) && 
                                         (!archive.getServerName().isEmpty())) {
                                     if ((archive.getServerName()
@@ -256,7 +256,7 @@ public class RecoveryService {
      * 
      * @param archive The archive that we need to re-run.
      */
-    private void cleanupPreviousAttempt(Archive archive) {
+    private void cleanupPreviousAttempt(ArchiveJob archive) {
         
         if (archive != null) {
             
@@ -340,7 +340,7 @@ public class RecoveryService {
      * 
      * @param archive Archive job to retry.
      */
-    private void retry(Archive archive) {
+    private void retry(ArchiveJob archive) {
         
         LOGGER.info("RETRY:  Retrying job ID [ "
                 + archive.getJobID() 

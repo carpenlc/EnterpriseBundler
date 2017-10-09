@@ -1,11 +1,18 @@
 package mil.nga.bundler.ejb;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
@@ -21,6 +28,7 @@ import mil.nga.bundler.exceptions.PropertiesNotLoadedException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.BundleRequestMessage;
 import mil.nga.bundler.messages.BundlerMessageSerializer;
+import mil.nga.util.URIUtils;
 
 /**
  * Session Bean implementation class RequestArchiveService
@@ -66,7 +74,7 @@ public class RequestArchiveService
     /**
      * Calculated path in which the request data will be stored.
      */
-    private String outputPath = null;
+    private URI outputPath = null;
     
     /**
      * Default constructor. 
@@ -74,7 +82,7 @@ public class RequestArchiveService
     public RequestArchiveService() { 
         super(BundlerConstantsI.PROPERTY_FILE_NAME);
         try {
-            setOutputPath(getProperty(STAGING_DIRECTORY_PROPERTY));
+            setOutputPath(getProperty(BUNDLE_REQUEST_DIRECTORY_PROP));
             checkOutputPath();
         }
         catch (PropertiesNotLoadedException pnle) {
@@ -116,7 +124,7 @@ public class RequestArchiveService
     private String generateBogusJobID() {
         
         StringBuilder sb = new StringBuilder();
-        DateFormat  df = new SimpleDateFormat(DATE_FORMAT);
+        DateFormat    df = new SimpleDateFormat(DATE_FORMAT);
         
         sb.append(DEFAULT_JOB_ID);
         sb.append("_");
@@ -131,18 +139,22 @@ public class RequestArchiveService
      * @param jobID The "main" part of the filename.
      * @return The full path to the target output file.
      */
-    private String getFilePath(String jobID) {
+    private URI getFilePath(String jobID) {
         
-        StringBuilder sb = new StringBuilder();
+    	StringBuilder sb = new StringBuilder();
         
-        sb.append(getOutputPath());
-        if (!sb.toString().endsWith(File.separator)) {
-            sb.append(File.separator);
+        if (getOutputPath() != null) {
+        	sb.append(getOutputPath().toString());
+            if (!sb.toString().endsWith(File.separator)) {
+                sb.append(File.separator);
+            }
+        }
+        else {
+        	LOGGER.warn("Output path is not defined!");
         }
         sb.append(jobID.trim());
         sb.append(EXTENSION);
-        
-        return sb.toString();
+        return URIUtils.getInstance().getURI(sb.toString());
     }
     
     /**
@@ -154,25 +166,19 @@ public class RequestArchiveService
      */
     private void saveToFile(String request, String jobID) {
         
-        FileWriter writer = null;
-        String fileName = getFilePath(jobID);
+        URI outputFile = getFilePath(jobID);
         
         if ((request != null) && (!request.isEmpty())) {
             
             LOGGER.info("Saving request information for job ID [ "
                         + jobID 
                         + " ] in file name [ "
-                        + fileName
+                        + outputFile.toString()
                         + " ].");
             
-            try {
-                
-                File file = new File(fileName);
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                
-                writer = new FileWriter(file);
+            Path p = Paths.get(outputFile);
+            try (BufferedWriter writer = 
+            		Files.newBufferedWriter(p, Charset.forName("UTF-8"))) {
                 writer.write(request);
                 writer.flush();
             }
@@ -182,15 +188,10 @@ public class RequestArchiveService
                         + "job ID [ "
                         + jobID 
                         + " ] in filename [ "
-                        + fileName
+                        + outputFile.toString()
                         + " ].  Error message [ "
                         + ioe.getMessage()
                         + " ].");
-            }
-            finally {
-                if (writer != null) {
-                    try { writer.close(); } catch (Exception e) { }
-                }
             }
         }
         else {
@@ -208,45 +209,52 @@ public class RequestArchiveService
      * @param request Incoming BundleRequest object.
      * @param jobID The job ID assigned to input BundleRequest object.
      */
+    @Asynchronous
     public void archiveRequest(BundleRequest request, String jobID) {
-        
-        if (request != null) {
-            if ((jobID == null) || (jobID.isEmpty())) {
-                jobID = generateBogusJobID();
-                LOGGER.warn("The input Job ID is null, or not populated.  "
-                        + "Using generated job ID [ "
-                        + jobID
-                        + " ].");
-            }
-            
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Archiving incoming request for job ID [ "
-                        + jobID
-                        + " ].");
-            }
-            
-            try { 
-                
-                ObjectMapper mapper = new ObjectMapper();
-                String requestString = 
-                        mapper.writerWithDefaultPrettyPrinter()
-                              .writeValueAsString(request);
-                saveToFile(requestString, jobID);
-                
-            }
-            catch (JsonProcessingException jpe) {
-                LOGGER.error("Unexpected JsonProcessingException encountered "
-                        + "while attempting to marshal the client supplied "
-                        + "BundleRequest object for job ID [ "
-                        + jobID
-                        + " ].  Error message [ "
-                        + jpe.getMessage()
-                        + " ].");
-            }
+        if (getOutputPath() != null) {
+	        if (request != null) {
+	            if ((jobID == null) || (jobID.isEmpty())) {
+	                jobID = generateBogusJobID();
+	                LOGGER.warn("The input Job ID is null, or not populated.  "
+	                        + "Using generated job ID [ "
+	                        + jobID
+	                        + " ].");
+	            }
+	            
+	            if (LOGGER.isDebugEnabled()) {
+	                LOGGER.debug("Archiving incoming request for job ID [ "
+	                        + jobID
+	                        + " ].");
+	            }
+	            
+	            try { 
+	                
+	                ObjectMapper mapper = new ObjectMapper();
+	                String requestString = 
+	                        mapper.writerWithDefaultPrettyPrinter()
+	                              .writeValueAsString(request);
+	                saveToFile(requestString, jobID);
+	                
+	            }
+	            catch (JsonProcessingException jpe) {
+	                LOGGER.error("Unexpected JsonProcessingException encountered "
+	                        + "while attempting to marshal the client supplied "
+	                        + "BundleRequest object for job ID [ "
+	                        + jobID
+	                        + " ].  Error message [ "
+	                        + jpe.getMessage()
+	                        + " ].");
+	            }
+	        }
+	        else {
+	            LOGGER.error("The input BundleRequest is null.  Unable to "
+	                    + "archive the incoming request information.");
+	        }
         }
         else {
-            LOGGER.error("The input BundleRequest is null.  Unable to "
-                    + "archive the incoming request information.");
+        	if (LOGGER.isDebugEnabled()) {
+        		LOGGER.debug("Request archive feature is disabled.");
+        	}
         }
     }
     
@@ -257,32 +265,39 @@ public class RequestArchiveService
      * @param request Incoming BundleRequestMessage object.
      * @param jobID The job ID assigned to input BundleRequestMessage object.
      */
+    @Asynchronous
     public void archiveRequest(BundleRequestMessage request, String jobID) {
-        
-        if (request != null) {
-            if ((jobID == null) || (jobID.isEmpty())) {
-                jobID = generateBogusJobID();
-                LOGGER.warn("The input Job ID is null, or not populated.  "
-                        + "Using generated job ID [ "
-                        + jobID
-                        + " ].");
-            }
-            
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Archiving incoming request for job ID [ "
-                        + jobID
-                        + " ].");
-            }
-
-            String json = BundlerMessageSerializer
-                    .getInstance()
-                    .serializePretty(request);
-            saveToFile(json, jobID);
-                
+        if (getOutputPath() != null) {
+	        if (request != null) {
+	            if ((jobID == null) || (jobID.isEmpty())) {
+	                jobID = generateBogusJobID();
+	                LOGGER.warn("The input Job ID is null, or not populated.  "
+	                        + "Using generated job ID [ "
+	                        + jobID
+	                        + " ].");
+	            }
+	            
+	            if (LOGGER.isDebugEnabled()) {
+	                LOGGER.debug("Archiving incoming request for job ID [ "
+	                        + jobID
+	                        + " ].");
+	            }
+	
+	            String json = BundlerMessageSerializer
+	                    .getInstance()
+	                    .serializePretty(request);
+	            saveToFile(json, jobID);
+	                
+	        }
+	        else {
+	            LOGGER.error("The input BundleRequestMessage is null.  Unable to "
+	                    + "archive the incoming request information.");
+	        }
         }
         else {
-            LOGGER.error("The input BundleRequestMessage is null.  Unable to "
-                    + "archive the incoming request information.");
+        	if (LOGGER.isDebugEnabled()) {
+        		LOGGER.debug("Request archive feature is disabled.");
+        	}
         }
     }
     
@@ -291,43 +306,30 @@ public class RequestArchiveService
      * 
      * @return The location to use for storing the incoming request.
      */
-    private String getOutputPath() {
-        if ((outputPath == null) || 
-                (outputPath.equalsIgnoreCase(""))) {
-            outputPath = System.getProperty("java.io.tmpdir");
-            if (!outputPath.endsWith(File.separator)) {
-                outputPath = outputPath + File.separator;
-            }
-            outputPath = outputPath + DEFAULT_SUB_DIRECTORY;
-        }
+    private URI getOutputPath() {
         return outputPath;
     }
     
     /**
-     * Setter method for the output path.  If the input directory is 
-     * not supplied, the location specified by the <code>java.io.tmpdir</code>
-     * is used.
+     * Setter method for the output path.  
      * 
      * @param dir Location for storing the output data.
      */
     private void setOutputPath(String dir) {
-        
-        if ((dir == null) || (dir.trim().equalsIgnoreCase(""))) {
-            outputPath = System.getProperty("java.io.tmpdir");    
-            LOGGER.warn("Application property [ " 
-                    + STAGING_DIRECTORY_PROPERTY
-                    + " ] is not defined.  Using system property.  Output "
-                    + "path is [ "
-                    + outputPath
-                    + " ].");
-        }
-        else {
-            outputPath = dir;
-        }
-        
-        if (!outputPath.endsWith(File.separator)) {
-            outputPath = outputPath + File.separator;
-        }
-        outputPath = outputPath + DEFAULT_SUB_DIRECTORY;
+    	if ((dir != null) && (dir.isEmpty())) { 
+    		outputPath = URIUtils.getInstance().getURI(dir);
+    		if (outputPath != null) {
+    			LOGGER.info("Incoming requests will be archived to [ "
+    					+ outputPath.toString());
+    		}
+    		else {
+    			LOGGER.error("System property [ "
+    					+ BUNDLE_REQUEST_DIRECTORY_PROP 
+    					+ " ] is set to [ "
+    					+ dir 
+    					+ " ] which cannot be converted to a URI.  "
+    					+ "Incoming requests will not be archived.");
+    		}	
+    	}
     }
 }

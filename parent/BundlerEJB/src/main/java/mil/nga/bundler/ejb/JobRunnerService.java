@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.ArchiveMessage;
-import mil.nga.bundler.model.Archive;
+import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
 
@@ -68,7 +68,7 @@ public class JobRunnerService
      * 
      * @param archive A single Archive to submit to the JMS queues.
      */
-    public void run(Archive archive) {
+    public void run(ArchiveJob archive) {
         
         if (archive != null) {
             
@@ -116,7 +116,7 @@ public class JobRunnerService
                 job = getJobService().update(job);
             }
             
-            for (Archive archive : job.getArchives()) {
+            for (ArchiveJob archive : job.getArchives()) {
                 
                 ArchiveMessage archiveMsg = new ArchiveMessage.ArchiveMessageBuilder()
                         .jobId(archive.getJobID())

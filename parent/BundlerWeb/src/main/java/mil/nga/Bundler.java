@@ -2,7 +2,6 @@ package mil.nga;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,21 +26,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mil.nga.bundler.BundleRequest;
-import mil.nga.bundler.JobFactory;
 import mil.nga.bundler.ejb.EJBClientUtilities;
 import mil.nga.bundler.ejb.JobFactoryService;
 import mil.nga.bundler.ejb.JobRunnerService;
 import mil.nga.bundler.ejb.JobTrackerService;
 import mil.nga.bundler.ejb.RequestArchiveService;
 import mil.nga.bundler.ejb.ValidationService;
-import mil.nga.bundler.exceptions.InvalidRequestException;
 import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.BundleRequestMessage;
 import mil.nga.bundler.messages.BundlerMessageSerializer;
 import mil.nga.bundler.messages.JobTrackerMessage;
-import mil.nga.bundler.model.Job;
-import mil.nga.bundler.model.ValidFile;
 import mil.nga.util.FileUtils;
 
 @Path("")
@@ -196,31 +191,6 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
         return this.jobFactoryService;
     }
     
-    /**
-     * Helper method used to look up the JobFactoryService EJB.      
-     * JBoss EAP 6.x does not support injection into the web tier.  This 
-     * method was written to ensure the necessary EJB references are 
-     * available.
-     * 
-     * @return The JobFactoryService EJB.
-     * @throws NamingException Thrown if there is an error accessing the 
-     * JNDI.
-     * @throws ServiceUnavailableException Thrown if the application was
-     * unable to look up the target service.
-     */
-    private JobRunnerService getJobRunnerService() 
-            throws NamingException, ServiceUnavailableException {
-        if (this.jobRunnerService == null) {
-            this.jobRunnerService = 
-                    EJBClientUtilities.getInstance().getJobRunnerService();
-            if (this.jobRunnerService == null) {
-                throw new ServiceUnavailableException("Unable to look up [ "
-                        + JobRunnerService.class.getCanonicalName()
-                        + " ].");
-            }
-        }
-        return this.jobRunnerService;
-    }
     
     /**
      * Helper method used to look up the JobFactoryService EJB.      
@@ -272,31 +242,6 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             }
         }
         return this.requestArchiveService;
-    }
-    
-    /**
-     * Helper method used to look up the ValidationService EJB.      
-     * JBoss EAP 6.x does not support injection into the web tier.  This 
-     * method was written to ensure the necessary EJB references are available.
-     * 
-     * @return The ValidationService EJB.
-     * @throws NamingException Thrown if there is an error accessing the 
-     * JNDI.
-     */
-    private ValidationService getValidationService() 
-            throws NamingException {
-        
-        String method = "getValidationService() - ";
-        
-        if (this.validationService == null) {
-            this.validationService = 
-                    EJBClientUtilities.getInstance().getValidationService();
-        }
-        else {
-            LOGGER.info(method 
-                    + "JobFactoryService populated.");
-        }
-        return this.validationService;
     }
     
     /**
@@ -406,35 +351,19 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
                 
                 try {
                     
-                    Job job = (new JobFactory()).createJob(request);
+                	String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
+                	
+                	// Changed to asynchronous EJB call.
+                	getJobFactoryService().createJob(jobID, request);
                         
                     getRequestArchiveService().archiveRequest(
                             request, 
-                            job.getJobID());
-                                
-                    
-                    getJobRunnerService().run(job);
+                            jobID);
     
-                    message = getJobTrackerService().getJobTracker(job.getJobID());
+                    message = new JobTrackerMessage();
+            		message.setJobID(jobID);
+            		message.setUserName(request.getUserName());
         
-                }
-                catch (InvalidRequestException ire) {
-                    LOGGER.error("Request validation failed with error code [ "
-                            + ire.getErrorCode()
-                            + " ], description [ "
-                            + ire.getMessageText()
-                            + "].");
-                    throw new WebArchiveException("Request validation failed with "
-                            + "error code [ "
-                            + ire.getErrorCode()
-                            + " ], description [ "
-                            + ire.getMessageText()
-                            + "].  Request validation failed with "
-                            + "error code [ "
-                            + ire.getErrorCode()
-                            + " ], description [ "
-                            + ire.getMessageText()
-                            + "].");
                 }
                 catch (ServiceUnavailableException sue) {
                     LOGGER.error("Unable to look up target service.  Error message [ "
@@ -507,31 +436,19 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             
             try {
                 
-                Job job = (new JobFactory()).createJob(request);
+            	String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
+            	
+            	// Changed to asynchronous EJB call.
+            	getJobFactoryService().createJob(jobID, request);
                     
                 getRequestArchiveService().archiveRequest(
                         request, 
-                        job.getJobID());
-                        	
-                
-                getJobRunnerService().run(job);
+                        jobID);
 
-                message = getJobTrackerService().getJobTracker(job.getJobID());
+                message = new JobTrackerMessage();
+        		message.setJobID(jobID);
+        		message.setUserName(request.getUserName());
     
-            }
-            catch (InvalidRequestException ire) {
-                LOGGER.error(method
-                        + "Request validation failed with error code [ "
-                        + ire.getErrorCode()
-                        + " ], description [ "
-                        + ire.getMessageText()
-                        + "].");
-                throw new WebArchiveException("Request validation failed with "
-                        + "error code [ "
-                        + ire.getErrorCode()
-                        + " ], description [ "
-                        + ire.getMessageText()
-                        + "].");
             }
             catch (ServiceUnavailableException sue) {
                 LOGGER.error(method 
@@ -582,7 +499,7 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             @Context HttpHeaders headers,
             BundleRequestMessage request) {
         
-        String              method      = "bundle() - ";
+        String            method      = "bundle() - ";
         JobTrackerMessage message     = null;
         
         // Make sure the input request was parsed.
@@ -603,35 +520,19 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             
             try {
                 
-                // Create a Job object from the input request.
-                Job job = (new JobFactory()).createJob(request);
-                
-                // If enabled, save a copy of the client-supplied bundle 
-                // request. 
+            	String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
+            	
+            	// Changed to asynchronous EJB call.
+            	getJobFactoryService().createJob(jobID, request);
+                    
                 getRequestArchiveService().archiveRequest(
                         request, 
-                        job.getJobID());
-                    
-                // Start the job
-                getJobRunnerService().run(job);
+                        jobID);
 
-                // Generate the return message
-                message = getJobTrackerService()
-                                .getJobTracker(job.getJobID());
+                message = new JobTrackerMessage();
+        		message.setJobID(jobID);
+        		message.setUserName(request.getUserName());
    
-            }
-            catch (InvalidRequestException ire) {
-                LOGGER.error("Request validation failed with error code [ "
-                        + ire.getErrorCode()
-                        + " ], description [ "
-                        + ire.getMessageText()
-                        + "].");
-                throw new WebArchiveException("Request validation failed with "
-                        + "error code [ "
-                        + ire.getErrorCode()
-                        + " ], description [ "
-                        + ire.getMessageText()
-                        + "].");
             }
             catch (ServiceUnavailableException sue) {
                 LOGGER.error("Unable to look up target service.  Error message [ "
@@ -710,25 +611,6 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
         }
         return status;
     }
-    
-    
-    
-    @POST
-    @HEAD
-    @Path("/validate")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public void validate(BundleRequest request) {
-        
-        if (request != null) {
-            List<String> candidates = request.getFiles();
-            if ((candidates != null) && (candidates.size() > 0)) {
-                
-            }
-        }
-        Response.serverError().build();
-    }
-    
     
 }
 
