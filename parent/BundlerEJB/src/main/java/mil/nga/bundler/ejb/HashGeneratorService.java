@@ -2,9 +2,12 @@ package mil.nga.bundler.ejb;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -54,38 +57,37 @@ public class HashGeneratorService {
      * @see <code>mil.nga.bundler.types.HashType</code>
      * @return The hash value as a hex string.
      */
-    public String getHash(String inputFile, HashType hashType) {
+    public String getHash(Path p, HashType hashType) {
         
         String hash = null;
 
-        if ((inputFile != null) && (!inputFile.isEmpty())) { 
-            File file = new File(inputFile);
-            if (file.exists()) {
+        if (p != null) { 
+            if (Files.exists(p)) {
                 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Generating [ "
                             + hashType.getText()
                             + " ] hash for file [ "
-                            + file.getAbsolutePath()
+                            + p.toString()
                             + " ].");
                 }
                 
                 long startTime = System.currentTimeMillis();
                 switch (hashType) {
                     case MD5 : 
-                        hash = getMD5Hash(file);
+                        hash = getMD5Hash(p);
                         break;
                     case SHA1:
-                        hash = getSHA1Hash(file);
+                        hash = getSHA1Hash(p);
                         break;
                     case SHA256:
-                        hash = getSHA256Hash(file);
+                        hash = getSHA256Hash(p);
                         break;
                     case SHA384:
-                        hash = getSHA384Hash(file);                        
+                        hash = getSHA384Hash(p);                        
                         break;
                     case SHA512:
-                        hash = getSHA512Hash(file);                        
+                        hash = getSHA512Hash(p);                        
                         break;
                 }
                 
@@ -95,7 +97,7 @@ public class HashGeneratorService {
                            "Hash type [ "
                             + hashType.getText()
                             + " ] for file [ "
-                            + file.getAbsolutePath()
+                            + p.toString()
                             + " ] created in [ "
                             + Long.toString(elapsedTime)
                             + " ] ms.");
@@ -104,12 +106,12 @@ public class HashGeneratorService {
             else {
                 LOGGER.error("Input file does not exists.  Input file "
                         + "specified [ "
-                        + inputFile
+                        + p.toString()
                         + " ].");
             }
         }
         else {
-            LOGGER.error("The require input file parameter is null or empty. "
+            LOGGER.error("The require input Path parameter is null or empty. "
                     + " The output hash file will not be generated.");
         }
         return hash;
@@ -124,7 +126,8 @@ public class HashGeneratorService {
      * Use <code>getHash(String, HashType)</code>
      */
     public String generate(String inputFile) {
-        return getHash(inputFile, HashType.SHA1);
+    	Path p = Paths.get(inputFile);
+        return getHash(p, HashType.SHA1);
     }
     
     /**
@@ -146,10 +149,11 @@ public class HashGeneratorService {
         
         if ((inputFile != null) && (!inputFile.isEmpty())) {
             if ((outputFile != null) && (!outputFile.isEmpty())) {
-                File file = new File(inputFile);
-                if (file.exists()) {
+                
+                Path p = Paths.get(inputFile);
+                if (Files.exists(p)) {
 
-                    String hash = getHash(file.getAbsolutePath(), HashType.SHA1);
+                    String hash = getHash(p, HashType.SHA1);
                     saveHash(hash, outputFile);
 
                 }
@@ -180,31 +184,29 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated MD5 hash.
      */
-    public String getMD5Hash(File file) {
+    public String getMD5Hash(Path file) {
 
-        FileInputStream is   = null;
         String          hash = null;
 
-        try {
-            is = new FileInputStream(file);
-            hash = org.apache.commons.codec.digest.DigestUtils.md5Hex(is);
+        if (file != null) {
+	        try (InputStream is = Files.newInputStream(file)) {
+	            hash = org.apache.commons.codec.digest.DigestUtils.md5Hex(is);
+	        }
+	        catch (IOException ioe) {
+	            LOGGER.error(
+	                 "Unexpected IOException encountered while generating "
+	                 + "the [ " 
+	                 + HashType.MD5.getText() 
+	                 + " ] hash for file [ "
+	                 + file.toString()
+	                 + " ].  Exception message [ "
+	                 + ioe.getMessage()
+	                 + " ].  Method will return a null hash.");
+	        }
         }
-        catch (IOException ioe) {
-            LOGGER.error(
-                 "Unexpected IOException encountered while generating "
-                 + "the [ " 
-                 + HashType.MD5.getText() 
-                 + " ] hash for file [ "
-                 + file.getAbsolutePath()
-                 + " ].  Exception message [ "
-                 + ioe.getMessage()
-                 + " ].  Method will return a null hash.");
-        }
-        finally {
-            if (is != null) {
-                    try { is.close(); } catch (Exception e) {}
-            }
-        }
+	    else {
+	    	LOGGER.error("Input file Path is null.  Hash will not be generated.");
+	    }
         return hash;
     }
     
@@ -216,31 +218,28 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA1 hash.
      */
-    public String getSHA1Hash(File file) {
+    public String getSHA1Hash(Path file) {
 
-        FileInputStream is   = null;
         String          hash = null;
-
-        try {
-            is = new FileInputStream(file);
-            hash = org.apache.commons.codec.digest.DigestUtils.sha1Hex(is);
+        if (file != null) {
+	        try (InputStream is = Files.newInputStream(file)) {
+	            hash = org.apache.commons.codec.digest.DigestUtils.sha1Hex(is);
+	        }
+	        catch (IOException ioe) {
+	             LOGGER.error(
+	                     "Unexpected IOException encountered while generating "
+	                     + "the [ " 
+	                     + HashType.SHA1.getText() 
+	                     + " ] hash for file [ "
+	                     + file.toString()
+	                     + " ].  Exception message [ "
+	                     + ioe.getMessage()
+	                     + " ].  Method will return a null hash.");
+	        }
         }
-        catch (IOException ioe) {
-             LOGGER.error(
-                     "Unexpected IOException encountered while generating "
-                     + "the [ " 
-                     + HashType.SHA1.getText() 
-                     + " ] hash for file [ "
-                     + file.getAbsolutePath()
-                     + " ].  Exception message [ "
-                     + ioe.getMessage()
-                     + " ].  Method will return a null hash.");
-        }
-        finally {
-            if (is != null) {
-                    try { is.close(); } catch (Exception e) {}
-            }
-        }
+	    else {
+	    	LOGGER.error("Input file Path is null.  Hash will not be generated.");
+	    }
         return hash;
     }
 
@@ -250,31 +249,29 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA256 hash.
      */
-    public String getSHA256Hash(File file) {
+    public String getSHA256Hash(Path file) {
 
-        FileInputStream is   = null;
         String          hash = null;
-
-        try {
-            is = new FileInputStream(file);
-            hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(is);
-        }
-        catch (IOException ioe) {
-            LOGGER.error(
-                "Unexpected IOException encountered while generating "
-                + "the [ " 
-                + HashType.SHA256.getText() 
-                + " ] hash for file [ "
-                + file.getAbsolutePath()
-                + " ].  Exception message [ "
-                + ioe.getMessage()
-                + " ].  Method will return a null hash.");
-        }
-        finally {
-            if (is != null) {
-                    try { is.close(); } catch (Exception e) {}
-            }
-        }
+        
+        if (file != null) {
+        	try (InputStream is = Files.newInputStream(file)) {
+	            hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(is);
+	        }
+	        catch (IOException ioe) {
+	            LOGGER.error(
+	                "Unexpected IOException encountered while generating "
+	                + "the [ " 
+	                + HashType.SHA256.getText() 
+	                + " ] hash for file [ "
+	                + file.toString()
+	                + " ].  Exception message [ "
+	                + ioe.getMessage()
+	                + " ].  Method will return a null hash.");
+	        }
+	    }
+	    else {
+	    	LOGGER.error("Input file Path is null.  Hash will not be generated.");
+	    }
         return hash;
     }
     
@@ -284,31 +281,30 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA384 hash.
      */
-    public String getSHA384Hash(File file) {
+    public String getSHA384Hash(Path file) {
 
-        FileInputStream is   = null;
         String          hash = null;
 
-        try {
-            is = new FileInputStream(file);
-            hash = org.apache.commons.codec.digest.DigestUtils.sha384Hex(is);
+        if (file != null) {
+	        try (InputStream is = Files.newInputStream(file)) {
+	            hash = org.apache.commons.codec.digest.DigestUtils.sha384Hex(is);
+	        }
+	        catch (IOException ioe) {
+	            LOGGER.error(
+	                "Unexpected IOException encountered while generating "
+	                + "the [ " 
+	                + HashType.SHA384.getText() 
+	                + " ] hash for file [ "
+	                + file.toString()
+	                + " ].  Exception message [ "
+	                + ioe.getMessage()
+	                + " ].  Method will return a null hash.");
+	        }
         }
-        catch (IOException ioe) {
-            LOGGER.error(
-                "Unexpected IOException encountered while generating "
-                + "the [ " 
-                + HashType.SHA384.getText() 
-                + " ] hash for file [ "
-                + file.getAbsolutePath()
-                + " ].  Exception message [ "
-                + ioe.getMessage()
-                + " ].  Method will return a null hash.");
+        else {
+        	LOGGER.error("Input file Path is null.  Hash will not be generated.");
         }
-        finally {
-            if (is != null) {
-                    try { is.close(); } catch (Exception e) {}
-            }
-        }
+        
         return hash;
     }
     
@@ -318,30 +314,28 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA512 hash.
      */
-    public String getSHA512Hash(File file) {
+    public String getSHA512Hash(Path file) {
 
-        FileInputStream is   = null;
         String          hash = null;
 
-        try {
-            is = new FileInputStream(file);
-            hash = org.apache.commons.codec.digest.DigestUtils.sha512Hex(is);
+        if (file != null) {
+	        try (InputStream is = Files.newInputStream(file)) {
+	            hash = org.apache.commons.codec.digest.DigestUtils.sha512Hex(is);
+	        }
+	        catch (IOException ioe) {
+	            LOGGER.error(
+	                "Unexpected IOException encountered while generating "
+	                + "the [ " 
+	                + HashType.SHA512.getText() 
+	                + " ] hash for file [ "
+	                + file.toString()
+	                + " ].  Exception message [ "
+	                + ioe.getMessage()
+	                + " ].  Method will return a null hash.");
+	        }
         }
-        catch (IOException ioe) {
-            LOGGER.error(
-                "Unexpected IOException encountered while generating "
-                + "the [ " 
-                + HashType.SHA512.getText() 
-                + " ] hash for file [ "
-                + file.getAbsolutePath()
-                + " ].  Exception message [ "
-                + ioe.getMessage()
-                + " ].  Method will return a null hash.");
-        }
-        finally {
-            if (is != null) {
-                    try { is.close(); } catch (Exception e) {}
-            }
+        else {
+        	LOGGER.error("Input file Path is null.  Hash will not be generated.");
         }
         return hash;
     }
