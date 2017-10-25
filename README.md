@@ -28,3 +28,14 @@ Repository containing the source code associated with an application designed to
 * The deployable EAR file will reside at the following location
 ```
 /var/local/src/EnterpriseBundler/parent/Bundler/target/bundler.ear
+```
+## Customizations
+The Hibernate/JPA persistence.xml should be modified to identify the container-managed datasource.  The persistence.xml can be found at the following location:
+```
+/var/local/src/EnterpriseBundler/parent/BundlerCommon/src/main/resources/META-INF/persistence.xml
+```
+This application properties file containing the filesystem and AWS-related settings can be found at:
+```
+/var/local/src/EnterpriseBundler/parent/Bundler/src/main/application/lib/config.jar/bundler.properties
+```
+
