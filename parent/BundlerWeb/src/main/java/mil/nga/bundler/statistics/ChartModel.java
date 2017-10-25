@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import mil.nga.bundler.ejb.EJBClientUtilities;
 import mil.nga.bundler.ejb.JobService;
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.model.Job;
 
@@ -96,7 +97,12 @@ public class ChartModel implements BundlerConstantsI {
                         + toDateString(endTime)
                         + " ].");
             }
-            jobs = getJobService().getJobsByDate(startTime, endTime);
+            try {
+            	jobs = getJobService().getJobsByDate(startTime, endTime);
+            }
+            catch (ServiceUnavailableException sue) {
+            	
+            }
         }
         else { 
             LOGGER.error("Unable to obtain a reference to the JobService "
@@ -134,7 +140,12 @@ public class ChartModel implements BundlerConstantsI {
                         + toDateString(endTime)
                         + " ].");
             }
-            jobs = getJobService().getJobsByDate(startTime, endTime);
+            try {
+            	jobs = getJobService().getJobsByDate(startTime, endTime);
+            }
+            catch (ServiceUnavailableException sue) {
+            	
+            }
         }
         else { 
             LOGGER.error("Unable to obtain a reference to the JobService "

@@ -4,11 +4,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import mil.nga.bundler.ArchiveElementFactory;
 import mil.nga.bundler.archive.ArchiveFactory;
 import mil.nga.bundler.types.ArchiveType;
 import mil.nga.bundler.interfaces.BundlerI;
+import mil.nga.bundler.model.ArchiveElement;
 import mil.nga.bundler.exceptions.ArchiveException;
 import mil.nga.bundler.exceptions.UnknownArchiveTypeException;
 
@@ -38,16 +43,23 @@ public class TarArchiverTest extends ArchiveTest {
 		sb.append(this._archiveFilename1);
 		this._archiveFilename1 = sb.toString();
 		
-		ArchiveFactory factory = ArchiveFactory.getFactory();
+		ArchiveFactory factory = ArchiveFactory.getInstance();
 		try {
 			
-			BundlerI bundler = factory.getInstance(ArchiveType.TAR);
-			bundler.bundle(ArchiveTest._dirToArchive, this._archiveFilename1);
-			File archive = new File(bundler.getArchiveName());
-			System.out.println(bundler.getArchiveName());
-			assertTrue(archive.exists());
-			double bytes = archive.length();
-			System.out.println(bytes);
+			ArchiveElementFactory archiveEF = new ArchiveElementFactory();
+			List<ArchiveElement> elems = archiveEF.getArchiveElements(ArchiveTest._dirToArchive, "/replace");
+			
+			BundlerI bundler = factory.getBundler(ArchiveType.TAR);
+			System.out.println(this._archiveFilename1);
+			Path p = Paths.get(this._archiveFilename1);
+			bundler.bundle(elems, p.toUri());
+		
+			System.out.println(p.toString());
+			String outputFile = p.toString() + "." + ArchiveType.TAR.getText();
+			Path p2 = Paths.get(outputFile);
+			assertTrue(Files.exists(p2));
+			double bytes = Files.size(p2);
+			System.out.println("File size [ " + bytes + " ].");
 			
 		}
 		catch (UnknownArchiveTypeException uae) {
@@ -77,16 +89,23 @@ public class TarArchiverTest extends ArchiveTest {
 		// Set up the file list
 		List<String> list = super.getFileList();
 		
-		ArchiveFactory factory = ArchiveFactory.getFactory();
+		ArchiveFactory factory = ArchiveFactory.getInstance();
 		try {
 			
-			BundlerI bundler = factory.getInstance(ArchiveType.TAR);
-			bundler.bundle(list, this._archiveFilename2, null);
-			File archive = new File(bundler.getArchiveName());
-			System.out.println(bundler.getArchiveName());
-			assertTrue(archive.exists());
-			double bytes = archive.length();
-			System.out.println(bytes);
+			ArchiveElementFactory archiveEF = new ArchiveElementFactory();
+			List<ArchiveElement> elems = archiveEF.getArchiveElements(list);
+			
+			BundlerI bundler = factory.getBundler(ArchiveType.TAR);
+			System.out.println(this._archiveFilename2);
+			Path p = Paths.get(this._archiveFilename2);
+			bundler.bundle(elems, p.toUri());
+		
+			System.out.println(p.toString());
+			String outputFile = p.toString() + "." + ArchiveType.TAR.getText();
+			Path p2 = Paths.get(outputFile);
+			assertTrue(Files.exists(p2));
+			double bytes = Files.size(p2);
+			System.out.println("File size [ " + bytes + " ].");
 			
 		}
 		catch (UnknownArchiveTypeException uae) {

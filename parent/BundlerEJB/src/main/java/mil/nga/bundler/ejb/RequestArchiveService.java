@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Enumeration;
+import java.util.Properties;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
@@ -44,6 +46,7 @@ import mil.nga.util.URIUtils;
 public class RequestArchiveService 
         extends PropertyLoader 
         implements BundlerConstantsI {
+	
     /**
      * Set up the LogBack system for use throughout the class
      */        
@@ -99,20 +102,28 @@ public class RequestArchiveService
      */
     private void checkOutputPath() {
 
-        File file = new File(getOutputPath());
-        
-        // Set file permissions on the hash file to wide open.
-        if (!file.exists()) {
-            LOGGER.warn(
-                    "Expected output directory does not exist.  Creating "
-                    + "directory [ "
-                    + getOutputPath()
-                    + " ].");
-            file.mkdir();
-            file.setExecutable(true, false);
-            file.setReadable(true, false);
-            file.setWritable(true, false);
-        }
+    	if (getOutputPath() != null) {
+    		Path p = Paths.get(getOutputPath());
+    		if (!Files.exists(p)) {
+    			try {
+    				Files.createDirectory(p);
+    			}
+    			catch (IOException ioe) {
+    				LOGGER.error("System property [ "
+    						+ BUNDLE_REQUEST_DIRECTORY_PROP
+    						+ " ] is set to directory [ "
+    						+ getOutputPath().toString()
+    						+ " ] but the directory does not exist and "
+    						+ "cannot be created.  Exception message => [ "
+    						+ ioe.getMessage()
+    						+ " ].");
+    				outputPath = null;
+    			}
+    		}
+    	}
+    	else {
+    		LOGGER.info("Request archive service is disabled.");
+    	}
     }
     
     /**
@@ -316,11 +327,12 @@ public class RequestArchiveService
      * @param dir Location for storing the output data.
      */
     private void setOutputPath(String dir) {
-    	if ((dir != null) && (dir.isEmpty())) { 
+    	if ((dir != null) && (!dir.isEmpty())) { 
     		outputPath = URIUtils.getInstance().getURI(dir);
     		if (outputPath != null) {
     			LOGGER.info("Incoming requests will be archived to [ "
-    					+ outputPath.toString());
+    					+ outputPath.toString()
+    					+ " ].");
     		}
     		else {
     			LOGGER.error("System property [ "
@@ -330,6 +342,12 @@ public class RequestArchiveService
     					+ " ] which cannot be converted to a URI.  "
     					+ "Incoming requests will not be archived.");
     		}	
+    	}
+    	else {
+    		LOGGER.warn("Output path specified by system property [ "
+    				+ BUNDLE_REQUEST_DIRECTORY_PROP
+    				+ " ] is null or empty.  Request archive service "
+    				+ "is disabled.");
     	}
     }
 }

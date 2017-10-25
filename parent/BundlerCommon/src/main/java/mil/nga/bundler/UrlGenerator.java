@@ -1,5 +1,10 @@
 package mil.nga.bundler;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +32,16 @@ public class UrlGenerator
      * The base URL of the archive.
      */
     private String baseUrl = null;
+    
+    /** 
+     * The URI scheme that will be utilized in the output URL.
+     */
+    private String scheme = null;
+    
+    /**
+     * The URI Authority that will be utilized in the output URL.
+     */
+    private String authority = null;
     
     /**
      * Default constructor
@@ -89,6 +104,20 @@ public class UrlGenerator
      */
     public void setBaseURL(String value) {
         baseUrl = value;
+        try {
+        	URL url = new URL(value);
+        	scheme = url.getProtocol();
+        	authority = url.getAuthority();
+        }
+        catch (MalformedURLException mue) {
+        	LOGGER.error("The input value for property [ "
+        			+ BASE_URL_PROPERTY
+        			+ " ] which is [ "
+        			+ value
+        			+ " ] is not a valid URL. Exception message => [ "
+        			+ mue.getMessage()
+        			+ " ].");
+        }
     }
     
     /**
@@ -99,10 +128,18 @@ public class UrlGenerator
      * @return The associated URL
      */
     public String toURL(String localFile) {
-        // For Windows modify the file separator
-        String target = FileUtils.getEntryPath(localFile, getBaseDir())
-                            .replace('\\', '/');
-        return getBaseURL() + target;
+    	StringBuilder sb = new StringBuilder();
+    	try {
+	    	sb.append(scheme);
+	    	sb.append("://");
+	    	sb.append(authority);
+	    	URI uri = new URI(localFile);
+	    	sb.append(uri.getPath().replace(getBaseDir(), "").replace('\\', '/'));
+    	}
+    	catch (URISyntaxException use) {
+    		
+    	}
+        return sb.toString();
     }
 
     /** 

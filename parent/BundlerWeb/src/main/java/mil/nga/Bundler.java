@@ -37,6 +37,7 @@ import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.BundleRequestMessage;
 import mil.nga.bundler.messages.BundlerMessageSerializer;
 import mil.nga.bundler.messages.JobTrackerMessage;
+import mil.nga.bundler.types.JobStateType;
 import mil.nga.util.FileUtils;
 
 @Path("")
@@ -360,9 +361,11 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
                             request, 
                             jobID);
     
-                    message = new JobTrackerMessage();
-            		message.setJobID(jobID);
-            		message.setUserName(request.getUserName());
+                    message = new JobTrackerMessage.JobTrackerMessageBuilder()
+                    		.jobID(jobID)
+                    		.userName(request.getUserName())
+                    		.state(JobStateType.NOT_STARTED)
+                    		.build();
         
                 }
                 catch (ServiceUnavailableException sue) {
@@ -415,7 +418,6 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             @Context HttpHeaders headers,
             BundleRequest request) {
         
-        String              method      = "bundle() - ";
         JobTrackerMessage   message     = null;
         
         // Make sure the input request was parsed.
@@ -429,10 +431,11 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
                 request.setUserName(getUser(headers));
             }
             
-            LOGGER.info(method 
-                    + "Incoming request parsed [ "
-                    + request.toString()
-                    + " ].");
+            if (LOGGER.isDebugEnabled()) {
+	            LOGGER.debug("Incoming request parsed [ "
+	                    + request.toString()
+	                    + " ].");
+            }
             
             try {
                 
@@ -445,30 +448,31 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
                         request, 
                         jobID);
 
-                message = new JobTrackerMessage();
-        		message.setJobID(jobID);
-        		message.setUserName(request.getUserName());
+                message = new JobTrackerMessage.JobTrackerMessageBuilder()
+                		.jobID(jobID)
+                		.userName(request.getUserName())
+                		.state(JobStateType.NOT_STARTED)
+                		.build();
     
             }
             catch (ServiceUnavailableException sue) {
-                LOGGER.error(method 
-                        + "Unable to look up target service.  Error message [ "
-                        + sue.getMessage()
-                        + " ].");
+            	LOGGER.error("Internal system failure.  Target EJB service "
+            			+ "is unavailable.  Exception message => [ "
+            			+ sue.getMessage()
+            			+ " ].");
                 return Response.serverError().build();
             }
             catch (NamingException ne) {
-                LOGGER.error(method 
-                        + "An unexpected JNDI NamingException encountered "
-                        + "while looking up EJBs.  Error message [ "
+                LOGGER.error("Internal system failure.  An unexpected JNDI "
+                		+ "NamingException encountered while looking up "
+                		+ "EJBs.  Error message [ "
                         + ne.getMessage()
                         + " ].");
                 return Response.serverError().build();
             }
         }
         else {
-            LOGGER.error(method 
-                    + "Invalid request received.  Input request object is "
+            LOGGER.error("Invalid request received.  Input request object is "
                     + "null.");
             return Response.serverError().build();
         }
@@ -529,9 +533,12 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
                         request, 
                         jobID);
 
-                message = new JobTrackerMessage();
-        		message.setJobID(jobID);
-        		message.setUserName(request.getUserName());
+                // Build the return message.
+                message = new JobTrackerMessage.JobTrackerMessageBuilder()
+                		.jobID(jobID)
+                		.userName(request.getUserName())
+                		.state(JobStateType.NOT_STARTED)
+                		.build();
    
             }
             catch (ServiceUnavailableException sue) {

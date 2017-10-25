@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
@@ -13,6 +15,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mil.nga.bundler.interfaces.FileCompletionListenerI;
 import mil.nga.bundler.model.ArchiveElement;
 import mil.nga.bundler.types.ArchiveType;
 
@@ -40,9 +43,40 @@ public abstract class Archiver {
     protected URI outputFile = null;
     
     /**
+     * List of listeners that have registered to be notified when individual files 
+     * have completed processing.
+     */
+    private List<FileCompletionListenerI> listeners;
+    
+    /**
+     * Used for thread-safety.
+     */
+    private Object MUTEX = new Object();
+    
+    /**
      * Default constructor.
      */
     public Archiver() { }
+    
+    /**
+     * Add a listener for file completion.  This listener is used for updating the 
+     * handling any status data associated with the completion of processing associated
+     * with a given file.
+     * 
+     * @param listener Listener to be notified when a file completes update processing.
+     */
+    public void addFileCompletionListener(FileCompletionListenerI listener) {
+    	if (listener != null) {
+    		if (listeners == null) {
+    			listeners = new ArrayList<FileCompletionListenerI>();
+    		}
+    		synchronized (MUTEX) {
+    			if (!listeners.contains(listener)) {
+    				listeners.add(listener);
+    			}
+    		}
+    	}
+    }
     
     /**
      * This method will copy the contents of the file identified by 
@@ -86,14 +120,24 @@ public abstract class Archiver {
      * be notified when processing associated with a given file are 
      * complete.
      * 
-     * TODO: Complete implementation.
-     * 
-     * @param value
+     * @param value The <code>ArchiveElement</code> object that has changed
+     * it's internal state.
      */
     public void notify(ArchiveElement value) {
-        LOGGER.info("Archive of file => [ "
-                + value.toString() 
-                + " ] complete.");
+    	if ((listeners != null) && (listeners.size() > 0)) {
+    		List<FileCompletionListenerI> localListeners = null;
+    		synchronized(MUTEX) {
+    			localListeners = new ArrayList<FileCompletionListenerI>(listeners);
+    		}
+    		for (FileCompletionListenerI listener : localListeners) {
+    			listener.notify(value);
+    		}
+     	}
+    	else {
+    		LOGGER.info("Archive of file => [ "
+    				+ value.toString() 
+    				+ " ] complete.");
+    	}
     }
     
     /**

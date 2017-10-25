@@ -178,6 +178,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
                     .getEstimatedCompressedSizeForFileEntry(
                     		fileList, getArchiveType());
     		
+            
             if ((decorated != null) && (decorated.size() > 0)) {
             	
             	int counter = 0;
@@ -188,6 +189,10 @@ public class ArchiveJobFactory implements BundlerConstantsI {
 	            	// Will the file fit in the current archive?
 	                if ((builder.getSize() + element.getEstimatedCompressedSize()) <
 	                		getTargetArchiveSize()) {
+	                	
+	                	
+	                	// TODO: Remove the following
+	                	LOGGER.info("Adding => " + element.getArchiveElement().toString());
 	                	
 	                    builder.element(
 	                            element.getArchiveElement(), 
@@ -200,6 +205,10 @@ public class ArchiveJobFactory implements BundlerConstantsI {
 	                    builder.outputFileName(
 	                    		getFileNameGenerator().getOutputFile(counter));
 	                    archives.add(builder.build());
+	                    
+	                    // TODO: Remove the following
+	                    LOGGER.info("Generating new archive.");
+	                    
 	                    builder = new Archive.ArchiveBuilder();
 	                    builder.element(
 	                            element.getArchiveElement(), 
@@ -207,6 +216,13 @@ public class ArchiveJobFactory implements BundlerConstantsI {
 	                    counter++;
 	                }
 	            }
+                // TODO: Remove the following
+                LOGGER.info("Flushing files to archive [ " + counter + " ].");
+                builder.type(getArchiveType());
+                builder.id(counter);
+                builder.outputFileName(
+                		getFileNameGenerator().getOutputFile(counter));
+                archives.add(builder.build());
             }
             else {
             	LOGGER.error("Unable to estimate the size of the target "
@@ -219,9 +235,11 @@ public class ArchiveJobFactory implements BundlerConstantsI {
                     + "empty.  The output list will be empty.");
         }
     	
-        LOGGER.info("Archive job creation completed in [ "
+        LOGGER.info("Archive job creation resulted in [ "
+        		+ archives.size()
+        		+ " ] archive jobs and completed in [ "
                 + (System.currentTimeMillis() - startTime)
-                + " ].");
+                + " ] ms.");
     	
     	return archives;
     }

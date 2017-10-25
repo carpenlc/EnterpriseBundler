@@ -1,6 +1,7 @@
 package mil.nga.bundler.archive.listeners;
 
 import mil.nga.bundler.interfaces.FileCompletionListenerI;
+import mil.nga.bundler.model.ArchiveElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,9 @@ public class SimpleLogFileListener implements FileCompletionListenerI {
      * on a given file.
      * @param file The name of the file that completed archive processing.
      */
-    public void notify(String file) {
-        LOGGER.info("Archive processing has completed for file [ "
-                + file
+    public void notify(ArchiveElement file) {
+        LOGGER.info("Archive processing has completed for [ "
+                + file.toString()
                 + " ].");
     }
 }

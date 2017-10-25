@@ -168,6 +168,138 @@ public class EJBClientUtilities {
     }    
     
     /**
+     * Utility method used to look up the ArchiveJobService interface.  
+     * This method is only called by the web tier.
+     * 
+     * @return The ArchiveJobService interface, or null if we couldn't 
+     * look it up.
+     */
+    public ArchiveJobService getArchiveJobService() {
+        
+    	ArchiveJobService service = null;
+        Object           ejb     = getEJB(ArchiveJobService.class);
+        
+        if (ejb != null) {
+            if (ejb instanceof mil.nga.bundler.ejb.ArchiveJobService) {
+                service = (ArchiveJobService)ejb;
+            }
+            else {
+                LOGGER.error("Unable to look up EJB [ "
+                        + getJNDIName(ArchiveJobService.class)
+                        + " ] returned reference was the wrong type.  "
+                        + "Type returned [ "
+                        + ejb.getClass().getCanonicalName()
+                        + " ].");
+            }
+        }
+        else {
+            LOGGER.error("Unable to look up EJB [ "
+                    + getJNDIName(ArchiveJobService.class)
+                    + " ] returned reference was null.");
+        }
+        return service;
+    }
+    
+    /**
+     * Utility method used to look up the ArchiveJobService interface.  
+     * This method is only called by the web tier.
+     * 
+     * @return The ArchiveJobService interface, or null if we couldn't 
+     * look it up.
+     */
+    public BundlerService getBundlerService() {
+        
+    	BundlerService service = null;
+        Object         ejb     = getEJB(BundlerService.class);
+        
+        if (ejb != null) {
+            if (ejb instanceof mil.nga.bundler.ejb.BundlerService) {
+                service = (BundlerService)ejb;
+            }
+            else {
+                LOGGER.error("Unable to look up EJB [ "
+                        + getJNDIName(BundlerService.class)
+                        + " ] returned reference was the wrong type.  "
+                        + "Type returned [ "
+                        + ejb.getClass().getCanonicalName()
+                        + " ].");
+            }
+        }
+        else {
+            LOGGER.error("Unable to look up EJB [ "
+                    + getJNDIName(BundlerService.class)
+                    + " ] returned reference was null.");
+        }
+        return service;
+    }
+    
+    /**
+     * Utility method used to look up the FileCompletionListener interface.  
+     * This method is only called by the web tier.
+     * 
+     * @return The FileCompletionListener interface, or null if we couldn't 
+     * look it up.
+     */
+    public FileCompletionListener getFileCompletionListener() {
+        
+    	FileCompletionListener service = null;
+        Object               ejb     = getEJB(FileCompletionListener.class);
+        
+        if (ejb != null) {
+            if (ejb instanceof mil.nga.bundler.ejb.FileCompletionListener) {
+                service = (FileCompletionListener)ejb;
+            }
+            else {
+                LOGGER.error("Unable to look up EJB [ "
+                        + getJNDIName(FileCompletionListener.class)
+                        + " ] returned reference was the wrong type.  "
+                        + "Type returned [ "
+                        + ejb.getClass().getCanonicalName()
+                        + " ].");
+            }
+        }
+        else {
+            LOGGER.error("Unable to look up EJB [ "
+                    + getJNDIName(FileCompletionListener.class)
+                    + " ] returned reference was null.");
+        }
+        return service;
+    }
+    
+    /**
+     * Utility method used to look up the FileEntryService interface.  
+     * This method is only called by the web tier.
+     * 
+     * @return The FileEntryService interface, or null if we couldn't 
+     * look it up.
+     */
+    public FileEntryService getFileEntryService() {
+        
+    	FileEntryService service = null;
+        Object           ejb     = getEJB(FileEntryService.class);
+        
+        if (ejb != null) {
+            if (ejb instanceof mil.nga.bundler.ejb.FileEntryService) {
+                service = (FileEntryService)ejb;
+            }
+            else {
+                LOGGER.error("Unable to look up EJB [ "
+                        + getJNDIName(FileEntryService.class)
+                        + " ] returned reference was the wrong type.  "
+                        + "Type returned [ "
+                        + ejb.getClass().getCanonicalName()
+                        + " ].");
+            }
+        }
+        else {
+            LOGGER.error("Unable to look up EJB [ "
+                    + getJNDIName(FileEntryService.class)
+                    + " ] returned reference was null.");
+        }
+        return service;
+    }
+    
+    /**
      * Utility method used to look up the HashGeneratorService interface.  
      * This method is only called by the web tier.
      * 

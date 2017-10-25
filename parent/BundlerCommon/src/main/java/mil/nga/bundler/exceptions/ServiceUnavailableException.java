@@ -1,16 +1,13 @@
 package mil.nga.bundler.exceptions;
 
+import java.io.Serializable;
+
 /**
  * Exception thrown if the application is unable to look up a target EJB.
  * 
  * @author L. Craig Carpenter
  */
-public class ServiceUnavailableException extends Exception {
-
-    /**
-     * Eclipse-generated serialVersionUID
-     */
-    private static final long serialVersionUID = 7864162168405064085L;
+public class ServiceUnavailableException extends Exception implements Serializable {
 
     /** 
      * Default constructor requiring a message String.

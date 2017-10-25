@@ -41,14 +41,14 @@ public class ArchiveJob implements BundlerConstantsI, Serializable {
      */
     @Column(name="ARCHIVE_ID")
     @JsonIgnore
-    private long archiveID     = 0;
+    private long archiveID = 0;
     
     /**
      * The size of the output archive file
      */
     @Column(name="ARCHIVE_SIZE")
     @JsonIgnore
-    private long size          = 0;
+    private long size = 0;
     
     /**
      * The list of Files to be included in the Archive.

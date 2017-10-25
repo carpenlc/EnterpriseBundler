@@ -3,8 +3,11 @@ package mil.nga.bundler.ejb;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.persistence.NoResultException;
 
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.messages.JobTrackerMessage;
+import mil.nga.bundler.messages.JobTrackerMessage.JobTrackerMessageBuilder;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.Job;
@@ -14,13 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Session Bean implementation class JobTrackerService
- * 
  * This bean is responsible for creating the data required to provide state 
  * information associated with a given bundle job.  The state data is returned
- * via the web tier through the getState() call.  This method differs from 
- * previous versions of the bundler because it calculates the state from the 
- * Job object rather than reading information from a separate table.
+ * to callers via the web tier through the getState() call.  This differs 
+ * from previous versions of the bundler because it calculates the state from 
+ * the Job object rather than reading information from a separate table.
  */
 @Stateless
 @LocalBean
@@ -48,7 +49,7 @@ public class JobTrackerService {
      * 
      * @return Reference to the JobService EJB.
      */
-    private JobService getJobService() {
+    private JobService getJobService() throws ServiceUnavailableException {
         if (jobService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to JobService.  Attempting to "
@@ -56,6 +57,12 @@ public class JobTrackerService {
             jobService = EJBClientUtilities
                     .getInstance()
                     .getJobService();
+            if (jobService == null) {
+            	throw new ServiceUnavailableException("Unable to look up "
+                        + "target EJB [ "
+            			+ JobService.class.getCanonicalName()
+                        + " ].");
+            }
         }
         return jobService;
     }
@@ -77,82 +84,78 @@ public class JobTrackerService {
         }
         return elapsedTime;
     }
-    
-    
+
     /**
-     * Construct the JobTrackerMessage and populate it with the current
-     * statistics associated with the input Job object.
+     * Generate the current  statistics associated with the input Job object.
      * 
-     * @param job The Job object.
-     * @return Current state information associated with the job.
+     * @param job Target Job requested.
+     * @param builder The JobTrackerMessageBuilder Object used to create the 
+     * JobTrackerMessage object.
      */
-    private JobTrackerMessage createJobTracker(Job job) {
-        
-        int  numArchivesComplete = 0;
+    private void getJobTrackerMessage(Job job, JobTrackerMessageBuilder builder) {
+    	
+    	int  numArchivesComplete = 0;
         long numFilesComplete    = 0L;
         long totalSizeComplete   = 0L;
-        long elapsedTime         = getElapsedTime(
-                                    job.getStartTime(), 
-                                    job.getEndTime());
         
-        JobTrackerMessage message = new JobTrackerMessage(
-                job.getJobID(),
-                job.getUserName(),
-                job.getNumFiles(),
-                job.getTotalSize(),
-                job.getNumArchives());
-        
-        message.setState(job.getState());
-        
-        if ((job.getArchives() != null) && (job.getArchives().size() > 0)) {
-            for (ArchiveJob archive : job.getArchives()) {
-                
-                if (archive.getArchiveState() == JobStateType.COMPLETE) {
-                    numArchivesComplete++;
-                    message.addArchive(archive);
-                }
-                if ((archive.getFiles() != null) && 
-                        (archive.getFiles().size() > 0)) {
-                    for (FileEntry file : archive.getFiles()) {
-                        if (file.getFileState() == JobStateType.COMPLETE) {
-                            numFilesComplete++;
-                            totalSizeComplete += file.getSize();
+    	if (job != null) {
+    		
+    		// Copy data from the Job object into the JobTrackerMessageBuilder
+    		builder.jobID(job.getJobID());
+            builder.userName(job.getUserName());
+            builder.numFiles(job.getNumFiles());
+            builder.totalSize(job.getTotalSize());
+            builder.numArchives(job.getNumArchives());
+            builder.state(job.getState());
+            builder.elapsedTime(getElapsedTime(job.getStartTime(), job.getEndTime()));
+          
+            // Calculate the remaining fields
+            if ((job.getArchives() != null) && (job.getArchives().size() > 0)) {
+            	
+            	for (ArchiveJob archive : job.getArchives()) {
+            		if (archive.getArchiveState() == JobStateType.COMPLETE) {
+                        numArchivesComplete++;
+                        builder.archive(archive);
+                    }
+                    if ((archive.getFiles() != null) && 
+                            (archive.getFiles().size() > 0)) {
+                        for (FileEntry file : archive.getFiles()) {
+                            if (file.getFileState() == JobStateType.COMPLETE) {
+                                numFilesComplete++;
+                                totalSizeComplete += file.getSize();
+                            }
                         }
                     }
-                }
-                else {
-                    LOGGER.warn("Job ID [ "
-                            + job.getJobID() 
-                            + " ], archive ID [ "
-                            + archive.getArchiveID()
-                            + " ] does not contain a list of files to "
-                            + "archive.");
-                }
+                    else {
+                        LOGGER.warn("Job ID [ "
+                                + job.getJobID() 
+                                + " ], archive ID [ "
+                                + archive.getArchiveID()
+                                + " ] does not contain a list of files to "
+                                + "archive.");
+                    }
+            	}
+            	builder.numArchivesComplete(numArchivesComplete);
+                // The number of hashes complete is maintained for backwards 
+                // compatibility.  It will always be the same as the number of 
+                // archives complete
+                builder.numHashesComplete(numArchivesComplete);
+                builder.numFilesComplete(numFilesComplete);
+                builder.sizeComplete(totalSizeComplete);
             }
-        }
-        else {
-            LOGGER.warn("Job ID [ "
-                    + job.getJobID() 
-                    + " ] does not contain any archives to process.");
-        }
-        message.setElapsedTime(elapsedTime);
-        message.setNumArchivesComplete(numArchivesComplete);
-        
-        // The number of hashes complete is maintained for backwards 
-        // compatibility.  It will always be the same as the number of 
-        // archives complete
-        message.setNumHashesComplete(numArchivesComplete);
-        message.setNumFilesComplete(numFilesComplete);
-        message.setSizeComplete(totalSizeComplete);
-        return message;    
+            else {
+            	LOGGER.error("The job ID requested [ "
+            			+ job.getJobID()
+            			+ " ] does not contain any individual archive jobs.  "
+            			+ "This is invalid.");
+            }
+    	}
+    	else {
+    		LOGGER.warn("Input Job object is null but the database tier did "
+    				+ "not raise a NoResultException.");
+    	}
     }
     
-    public JobTrackerMessage getInitialJobTracker(
-    		String jobID,
-    		String userName) {
-    		
-    		
-    }
     /**
      * Calculate the current statistics information associated with current 
      * in-progress job.
@@ -163,34 +166,34 @@ public class JobTrackerService {
      */
     public JobTrackerMessage getJobTracker(String jobID) {
         
-        JobTrackerMessage message = null;
-        Job               job     = null;
+    	JobTrackerMessageBuilder builder = 
+    			new JobTrackerMessage.JobTrackerMessageBuilder();
         
         if ((jobID != null) && (!jobID.isEmpty())) {
-            if (getJobService() != null) {
-                job = getJobService().getJob(jobID);
-                if (job != null) {
-                    message = createJobTracker(job);
-                }
-                else {
-                    LOGGER.error("Unable to retrieve job ID [ "
-                            + jobID 
-                            + " ] from the data store.  Method will return "
-                            + "null.");
-                }
+        	builder.jobID(jobID);
+            try {
+            	getJobTrackerMessage(getJobService().getJob(jobID), builder); 
             }
-            else {
-                LOGGER.error("Unable to obtain a reference to the JobService "
-                        + "EJB.  Unable to determine state of job ID [ "
-                        + jobID
-                        + " ].");
+            catch (NoResultException nre) {
+            	LOGGER.warn("The database tier raised a NoResultsException "
+            			+ "while looking up job ID [ "
+            			+ jobID
+            			+ " ].  Exception message => [ "
+            			+ nre.getMessage()
+            			+ " ].");
+            }
+            catch (ServiceUnavailableException sue) {
+            	LOGGER.error("Internal system failure.  Target EJB service "
+            			+ "is unavailable.  Exception message => [ "
+            			+ sue.getMessage()
+            			+ " ].");
             }
         }
         else {
-            LOGGER.error("The input job ID is null, or not populated.  Unable "
-                    + "to determine state.");
+            LOGGER.error("The input job ID is null or not populated.  Unable "
+                    + "to determine job state.");
         }
-        return message;
+        return builder.build();
     }
 
 }

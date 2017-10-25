@@ -48,13 +48,13 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
     private static final long serialVersionUID = 5588539869510887583L;
 
     // Internal members
-    private final boolean     redirect;
+    private final boolean    redirect;
     private final int         maxSize;
     private final String      outputFilename;
     private final ArchiveType type;
     
     /**
-     * Username is not set as final because it is usually set outside of 
+     * Username is not set as final because it is set outside of 
      * construction.
      */
     private String            userName;
@@ -243,7 +243,7 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
     
     	// Private internal members
     	private int               maxSize        = -1;
-        private boolean           redirect       = false;
+        private boolean          redirect       = false;
     	private String            outputFilename = null;
     	private String            userName       = null;
         private ArchiveType       type           = ArchiveType.ZIP;
@@ -251,8 +251,9 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
         
         /**
          * Method used to construct an object of type BundleRequestMessage.
-         * @return
-         * @throws IllegalStateException
+         * 
+         * @return Instantiated BundleRequestMessage object.
+         * @throws IllegalStateException If any individual fields are invalid.
          */
         public BundleRequestMessage build() throws IllegalStateException {
         	validateBundleRequestMessageObject();

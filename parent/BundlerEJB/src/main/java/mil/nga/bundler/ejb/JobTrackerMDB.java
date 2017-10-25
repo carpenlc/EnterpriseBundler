@@ -10,6 +10,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.messages.ArchiveMessage;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
                         // not deploy.
                         @ActivationConfigProperty(
                                         propertyName = "destination",
-                                        propertyValue = "queue/TrackerMessageQ"),
+                                        propertyValue = "queue/TrackerMessageQ_TEST"),
                         @ActivationConfigProperty(
                                         propertyName = "acknowledgeMode",
                                         propertyValue = "Auto-acknowledge")
@@ -321,5 +322,11 @@ public class JobTrackerMDB implements MessageListener {
                  + je.getMessage()
                  + " ].");
          }
+		 catch (ServiceUnavailableException sue) {
+        	LOGGER.error("Internal system failure.  Target EJB service "
+        			+ "is unavailable.  Exception message => [ "
+        			+ sue.getMessage()
+        			+ " ].");
+		 }
     }
 }

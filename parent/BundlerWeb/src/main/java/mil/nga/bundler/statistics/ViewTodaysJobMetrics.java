@@ -1,6 +1,7 @@
 package mil.nga.bundler.statistics;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -11,7 +12,7 @@ import javax.faces.bean.ViewScoped;
 import mil.nga.bundler.MetricsCalculator;
 import mil.nga.bundler.ejb.EJBClientUtilities;
 import mil.nga.bundler.ejb.JobService;
-import mil.nga.bundler.ejb.MetricsTimerBean;
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.model.BundlerMetrics;
 import mil.nga.bundler.model.Job;
 
@@ -38,7 +39,7 @@ public class ViewTodaysJobMetrics
     /**
      * Set up the Log4j system for use throughout the class
      */        
-    Logger LOGGER = LoggerFactory.getLogger(MetricsTimerBean.class);
+    Logger LOGGER = LoggerFactory.getLogger(ViewTodaysJobMetrics.class);
     
     /**
      * Container-injected reference to the JobService EJB.
@@ -61,7 +62,7 @@ public class ViewTodaysJobMetrics
      * Private method used to obtain a reference to the target EJB.  
      * @return Reference to the JobService EJB.
      */
-    private JobService getJobService() {
+    private JobService getJobService() throws ServiceUnavailableException {
         if (jobService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to JobService.  Attempting to "
@@ -69,6 +70,12 @@ public class ViewTodaysJobMetrics
             jobService = EJBClientUtilities
                     .getInstance()
                     .getJobService();
+            if (jobService == null) {
+                throw new ServiceUnavailableException("Unable to obtain a "
+                		+ "reference to [ "
+                        + JobService.class.getCanonicalName()
+                        + " ].");
+            }
         }
         return jobService;
     }
@@ -86,17 +93,25 @@ public class ViewTodaysJobMetrics
         List<Job> jobList = null;
         DayModel today = new DayModel();
         
-        if (getJobService() != null) {
+        try {
+        
             jobList = getJobService().getJobsByDate(
                     today.getStartTime(), 
                     today.getEndTime());
+            
         }
-        else {
-            LOGGER.error("Unable to obtain a reference to the "
-                    + "JobService EJB.");
+        catch (ServiceUnavailableException sue) {
+        	
+        	LOGGER.error("Internal system failure.  Target EJB service "
+        			+ "is unavailable.  Exception message => [ "
+        			+ sue.getMessage()
+        			+ " ].");
+        	jobList = new ArrayList<Job>();
+        	
         }
         return jobList;
     }
+    
     /**
      * The initialize method is called immediately after the Bean is 
      * instantiated.  It's responsibility is to retrieve the metrics data that

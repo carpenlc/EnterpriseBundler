@@ -6,7 +6,6 @@ import java.util.List;
 
 import mil.nga.bundler.exceptions.ArchiveException;
 import mil.nga.bundler.model.ArchiveElement;
-import mil.nga.bundler.types.ArchiveType;
 
 /**
  * Interface implemented by all of the archive/compressor classes.
@@ -15,6 +14,16 @@ import mil.nga.bundler.types.ArchiveType;
  */
 public interface BundlerI {
     
+    /**
+     * Add a listener for file completion.  This listener is used for 
+     * handling the notifications when the bundler completes processing 
+     * associated with a given file.
+     * 
+     * @param listener Listener to be notified when a file completes update 
+     * processing.
+     */
+    public void addFileCompletionListener(FileCompletionListenerI listener);
+	
 	 /**
      * Bundle each file in the input list.  Each entry in the list will contain
      * the URI of the target file to bundle and the path within the archive in 
@@ -29,6 +38,5 @@ public interface BundlerI {
      */
     public void bundle(List<ArchiveElement> files, URI outputFile) 
             throws ArchiveException, IOException;
-    
     
 }

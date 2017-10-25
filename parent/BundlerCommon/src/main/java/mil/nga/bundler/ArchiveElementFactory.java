@@ -14,6 +14,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mil.nga.bundler.messages.FileRequest;
 import mil.nga.bundler.model.ArchiveElement;
 import mil.nga.util.FileFinder;
 import mil.nga.util.URIUtils;
@@ -52,11 +53,13 @@ public class ArchiveElementFactory {
      * @throws FileSystemNotFoundException Thrown if the input URI resides on 
      * a file system that is not available.
      */
-    protected URI getURI(String filePath) 
+    public URI getURI(String filePath) 
             throws FileNotFoundException, FileSystemNotFoundException {
         URI uri = null;
         if ((filePath != null) && (!filePath.isEmpty())) {
             uri = URIUtils.getInstance().getURI(filePath);
+            LOGGER.info("String: " + filePath);
+            LOGGER.info("URI: " + uri.toString());
             if (!Files.exists(Paths.get(uri))) {
                 throw new FileNotFoundException("Target file does not exist [ "
                         + uri.toString()
@@ -539,6 +542,52 @@ public class ArchiveElementFactory {
         return files;
     }
     
+    public List<ArchiveElement> getArchiveElements(FileRequest request) {
+    	List<ArchiveElement> elements = new ArrayList<ArchiveElement>();
+    	if (request != null) {
+	        if ((request.getFile() != null) && (!request.getFile().isEmpty())) { 
+	            try {
+	                URI uri = getURI(request.getFile());
+	                Path p = Paths.get(uri);
+	                if (Files.isDirectory(p)) {
+	                    elements.addAll(
+	                            getURIArchiveElements(
+	                                    getFileList(uri),
+	                                    p.toString(),
+	                                    request.getArchivePath()));
+	                }
+	                else {
+	                    if (request.getArchivePath() != null) {
+	                        elements.add(getArchiveElement(request.getFile(), request.getArchivePath()));
+	                    }
+	                    else {
+	                        elements.add(getArchiveElement(request.getFile()));
+	                    }
+	                }
+	            }
+	            catch (FileNotFoundException fnfe) {
+	                LOGGER.warn("Target directory [ "
+	                        + request.getFile()
+	                        + " ] does not exist on the file system.  Exception "
+	                        + "message => [ "
+	                        + fnfe.getMessage()
+	                        + " ].");
+	            }
+	            catch (IOException ioe) {
+	                LOGGER.error("Unexpected IOException raised while attempting "
+	                        + "to walk the file tree for directory [ "
+	                        + request.getFile()
+	                        + " ].  Exception message => [ "
+	                        + ioe.getMessage());
+	            }
+	        }
+    	}
+    	else {
+    		
+    	}
+        return elements;   
+    	
+    }
     /**
      * This method signature accepts a single <code>String</code> filename 
      * that represents a directory.  The code then expands the contents of that
@@ -647,6 +696,15 @@ public class ArchiveElementFactory {
         for (ArchiveElement element : singleFileNoPathReplacement2) {
             System.out.println(element.toString());
         }
+        
+        try {
+        	URI uri = (new ArchiveElementFactory()).getURI("/tmp/test");
+        	System.out.println("URI : " + uri.toString());
+        }
+        catch (Exception e) {
+        	e.printStackTrace();
+        }
+        
     }
     
 }

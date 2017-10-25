@@ -1,5 +1,7 @@
 package mil.nga.bundler.interfaces;
 
+import mil.nga.bundler.model.ArchiveElement;
+
 /**
  * This interface is utilized by the various classes in the 
  * <code>mil.nga.bundler.archive</code> package.  It is a listener
@@ -14,8 +16,9 @@ public interface FileCompletionListenerI {
 
     /**
      * Single method requiring the name of the file that was processed.
-     * @param filename The processed file.
+     * 
+     * @param filename Object identifying the file that was updated.
      */
-    public void notify(String filename);
+    public void notify(ArchiveElement element);
     
 }

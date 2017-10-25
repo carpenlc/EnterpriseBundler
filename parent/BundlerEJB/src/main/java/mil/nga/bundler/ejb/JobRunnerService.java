@@ -7,6 +7,7 @@ import javax.ejb.Stateless;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.ArchiveMessage;
 import mil.nga.bundler.model.ArchiveJob;
@@ -14,8 +15,6 @@ import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
 
 /**
- * Session Bean implementation class JobRunnerService
- * 
  * This class was designed to implement a parallel processing architecture, 
  * taking advantage of all cluster nodes for creating output Archives.  It 
  * will accept an input Job, or individual Archive and submit it to the target 
@@ -47,6 +46,7 @@ public class JobRunnerService
 
     /**
      * Private method used to obtain a reference to the target EJB.  
+     * 
      * @return Reference to the JobService EJB.
      */
     private JobService getJobService() {
@@ -111,26 +111,31 @@ public class JobRunnerService
             // Update the job status
             job.setState(JobStateType.IN_PROGRESS);
             job.setStartTime(System.currentTimeMillis());
-            
-            if (getJobService() != null) {
-                job = getJobService().update(job);
-            }
-            
-            for (ArchiveJob archive : job.getArchives()) {
-                
-                ArchiveMessage archiveMsg = new ArchiveMessage.ArchiveMessageBuilder()
-                        .jobId(archive.getJobID())
-                        .archiveId(archive.getArchiveID())
-                        .build();
-                
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.info("Placing the following message on "
-                            + "the JMS queue [ "
-                            + archiveMsg.toString()
-                            + " ].");
-                }
-                super.notify(ARCHIVER_DEST_Q, archiveMsg); 
-            }
+            try {
+	            if (getJobService() != null) {
+	                job = getJobService().update(job);
+	            }
+	            
+	            for (ArchiveJob archive : job.getArchives()) {
+	                
+	                ArchiveMessage archiveMsg = new 
+	                		ArchiveMessage.ArchiveMessageBuilder()
+	                        	.jobId(archive.getJobID())
+	                        	.archiveId(archive.getArchiveID())
+	                        	.build();
+	                
+	                if (LOGGER.isDebugEnabled()) {
+	                    LOGGER.info("Placing the following message on "
+	                            + "the JMS queue [ "
+	                            + archiveMsg.toString()
+	                            + " ].");
+	                }
+	                super.notify(ARCHIVER_DEST_Q, archiveMsg); 
+	            }
+	        }
+	        catch (ServiceUnavailableException sue) {
+	        	LOGGER.error("Unable to start the JPA subsystem.");
+	        }
         }
     }
 }

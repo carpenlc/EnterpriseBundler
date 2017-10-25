@@ -18,8 +18,8 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import mil.nga.bundler.BundleRequest;
 
 /**
- * This class was created for testing purposes.  It will "marshall"
- * an input Object into it's String-based JSON equivalent.
+ * This class was created for testing purposes.  It will serialize/deserialize
+ * message objects to/from it's String-based JSON equivalent.
  * 
  * @author L. Craig Carpenter
  */
@@ -83,24 +83,24 @@ public class BundlerMessageSerializer {
         catch (JsonMappingException jme) {
             LOGGER.error("Unexpected JsonMappingException encountered "
                     + "while attempting to deserialize the input "
-                    + "JSON to an object of type FileRequest.  Exception "
-                    + "message [ "
+                    + "JSON to an object of type BundleRequest.  "
+                    + "Exception message => [ "
                     + jme.getMessage()
                     + " ].");
         }
         catch (JsonParseException jpe) {
             LOGGER.error("Unexpected JsonParseException encountered "
                     + "while attempting to deserialize the input "
-                    + "JSON to an object of type FileRequest.  Exception "
-                    + "message [ "
+                    + "JSON to an object of type BundleRequest.  "
+                    + "Exception message => [ "
                     + jpe.getMessage()
                     + " ].");
         }
         catch (IOException ioe) {
             LOGGER.error("Unexpected IOException encountered "
                     + "while attempting to deserialize the input "
-                    + "JSON to an object of type FileRequest.  Exception "
-                    + "message [ "
+                    + "JSON to an object of type BundleRequest.  "
+                    + "Exception message => [ "
                     + ioe.getMessage()
                     + " ].");
         }
@@ -133,24 +133,74 @@ public class BundlerMessageSerializer {
         catch (JsonMappingException jme) {
             LOGGER.error("Unexpected JsonMappingException encountered "
                     + "while attempting to deserialize the input "
-                    + "JSON to an object of type FileRequest.  Exception "
-                    + "message [ "
+                    + "JSON to an object of type BundleRequestMessage.  "
+                    + "Exception message => [ "
                     + jme.getMessage()
                     + " ].");
         }
         catch (JsonParseException jpe) {
             LOGGER.error("Unexpected JsonParseException encountered "
                     + "while attempting to deserialize the input "
-                    + "JSON to an object of type FileRequest.  Exception "
-                    + "message [ "
+                    + "JSON to an object of type BundleRequestMessage.  "
+                    + "Exception message => [ "
                     + jpe.getMessage()
                     + " ].");
         }
         catch (IOException ioe) {
             LOGGER.error("Unexpected IOException encountered "
                     + "while attempting to deserialize the input "
-                    + "JSON to an object of type FileRequest.  Exception "
-                    + "message [ "
+                    + "JSON to an object of type BundleRequestMessage.  "
+                    + "Exception message => [ "
+                    + ioe.getMessage()
+                    + " ].");
+        }
+        return deserialized;
+    }
+    
+    /**
+     * Method used to deserialize a JSON String into an object of type 
+     * <code>mil.nga.bundler.message.JobTrackerMessage</code>
+     * 
+     * @param json The String in JSON format.
+     * @return A <code>mil.nga.bundler.message.JobTrackerMessage</code> object. 
+     * Null if any exceptions were encountered while deserializing the String.
+     */
+    public JobTrackerMessage deserializeToJobTrackerMessage(String json) {
+        
+    	JobTrackerMessage deserialized = null;
+        
+        try {
+            if (json != null) {
+                
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.setDateFormat(dateFormatter);
+                deserialized = mapper.readValue(
+                        json, 
+                        JobTrackerMessage.class);
+                
+            }
+        }
+        catch (JsonMappingException jme) {
+            LOGGER.error("Unexpected JsonMappingException encountered "
+                    + "while attempting to deserialize the input "
+                    + "JSON to an object of type JobTrackerMessage.  "
+                    + "Exception message => [ "
+                    + jme.getMessage()
+                    + " ].");
+        }
+        catch (JsonParseException jpe) {
+            LOGGER.error("Unexpected JsonParseException encountered "
+                    + "while attempting to deserialize the input "
+                    + "JSON to an object of type JobTrackerMessage.  "
+                    + "Exception message => [ "
+                    + jpe.getMessage()
+                    + " ].");
+        }
+        catch (IOException ioe) {
+            LOGGER.error("Unexpected IOException encountered "
+                    + "while attempting to deserialize the input "
+                    + "JSON to an object of type JobTrackerMessage.  "
+                    + "Exception message [ "
                     + ioe.getMessage()
                     + " ].");
         }

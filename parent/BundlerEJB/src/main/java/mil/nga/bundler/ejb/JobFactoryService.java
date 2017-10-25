@@ -1,7 +1,15 @@
 package mil.nga.bundler.ejb;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -13,6 +21,8 @@ import mil.nga.bundler.BundleRequest;
 import mil.nga.bundler.FileValidator;
 import mil.nga.bundler.UrlGenerator;
 import mil.nga.bundler.exceptions.InvalidRequestException;
+import mil.nga.bundler.exceptions.PropertiesNotLoadedException;
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.BundleRequestMessage;
 import mil.nga.bundler.model.Archive;
@@ -23,6 +33,7 @@ import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.ArchiveType;
 import mil.nga.bundler.types.JobStateType;
 import mil.nga.util.FileUtils;
+import mil.nga.util.URIUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +69,34 @@ public class JobFactoryService
     JobRunnerService jobRunner;
     
     /**
+     * The staging area that will be used for output archives.
+     */
+    private URI stagingArea;
+    
+    /**
      * Default constructor.
      */
     public JobFactoryService() { 
         super(PROPERTY_FILE_NAME);
+    }
+    
+    /**
+     * Initialization method to be executed after construction.
+     */
+    @PostConstruct
+    private void init() {
+    	String stagingArea = null;
+        try {
+        	stagingArea = super.getProperty(STAGING_DIRECTORY_PROPERTY);
+        }
+        catch (PropertiesNotLoadedException pnle) {
+            LOGGER.error("An unexpected PropertiesNotLoadedException " 
+                    + "was encountered.  Please ensure the application "
+                    + "is properly configured.  Exception message => [ "
+                    + pnle.getMessage()
+                    + " ].");
+        }
+        setStagingArea(stagingArea);
     }
     
     /**
@@ -114,6 +149,29 @@ public class JobFactoryService
     	return temp;
     }
     
+    /**
+     * TODO: Fix this method
+     * @param jobID
+     */
+    private void createOutputDirectory(String jobID) {
+    	String fullURI = stagingArea.toString();
+    	if (!fullURI.endsWith(File.separator)) {
+    		fullURI = fullURI + File.separator;
+    	}
+    	fullURI = fullURI + jobID;
+    	
+    	try {
+    		URI newURI = new URI(fullURI);
+        	Path p = Paths.get(newURI);
+			Files.createDirectory(p);
+    	}
+    	catch (URISyntaxException use) {
+    		use.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     /**
      * Simple method to calculate the target output archive size in
      * bytes.
@@ -238,7 +296,7 @@ public class JobFactoryService
     		String        jobID, 
     		String        userName, 
     		ArchiveType   type,
-    		long          archiveSize,
+    		long         archiveSize,
     		List<Archive> archives) {
     	
     	int  numFiles    = 0;
@@ -281,7 +339,7 @@ public class JobFactoryService
     }
 
     @Asynchronous
-    public void createJob(String jobID, BundleRequestMessage request) {
+    public void createJob(String jobID, BundleRequestMessage request) throws ServiceUnavailableException {
     	
     	long startTime = System.currentTimeMillis();
     	Job  job       = null;
@@ -292,8 +350,14 @@ public class JobFactoryService
 	        List<FileEntry> files = FileValidator
 	                .getInstance()
 	                .validate(request.getFiles());
-	    	
+	    
 	        if ((files != null) && (!files.isEmpty())) {
+	        	
+	        	if (LOGGER.isDebugEnabled()) {
+		        	LOGGER.debug("Input request resulted in [ "
+		        			+ files.size()
+		        			+ " ] validated files to bundle.");
+		        }
 	        	
 		        ArchiveJobFactory factory = new ArchiveJobFactory(
 		        		request.getType(),
@@ -367,10 +431,10 @@ public class JobFactoryService
     }
     
     @Asynchronous
-    public void createJob(String jobID, BundleRequest request) {
+    public void createJob(String jobID, BundleRequest request) throws ServiceUnavailableException {
     	
     	long startTime = System.currentTimeMillis();
-    	Job  job       = null;
+    	Job  job        = null;
     	
     	try {
     		
@@ -381,6 +445,12 @@ public class JobFactoryService
 	        
 	        if ((files != null) && (!files.isEmpty())) {
 	        
+	        	if (LOGGER.isDebugEnabled()) {
+		        	LOGGER.debug("Input request resulted in [ "
+		        			+ files.size()
+		        			+ " ] validated files to bundle.");
+		        }
+	        	
 		        ArchiveJobFactory factory = new ArchiveJobFactory(
 		        		request.getType(),
 		        		request.getMaxSize(),
@@ -459,9 +529,10 @@ public class JobFactoryService
     public void runJob(Job job) {
     	if (job != null) {
     		if (job.getState() == JobStateType.NOT_STARTED) {
+    			createOutputDirectory(job.getJobID());
 	    		if (getJobRunnerService() != null) {
 	    			LOGGER.info("Starting job ID [ "
-	    					+ job.getArchiveSize()
+	    					+ job.getJobID()
 	    					+ " ].");
 	    			getJobRunnerService().run(job);
 	    		}
@@ -475,5 +546,16 @@ public class JobFactoryService
     	else {
     		LOGGER.warn("Input job is null.  Nothing to do.");
     	}
+    }
+    
+    /**
+     * Setter method for the output staging area.
+     * @param value
+     */
+    private void setStagingArea(String value) {
+    	if ((value == null) || (value.isEmpty())) {
+    		value = System.getProperty("java.io.tmpdir");
+    	}
+    	stagingArea = URIUtils.getInstance().getURI(value);
     }
 }

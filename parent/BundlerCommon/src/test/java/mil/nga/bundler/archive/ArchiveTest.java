@@ -109,25 +109,6 @@ public class ArchiveTest {
 	}
 	
 	/**
-	 * Test the Archive.getEntryPath method.
-	 */
-	@Test 
-	public void testRelativePaths() {
-		// Windows version of test
-		//String path1     = "C:\\a\\b\\c\\d\\e\\f\\g\\h\\i\\file1.txt";
-		//String path2     = "C:\\j\\k\\l\\m\\n\\o\\file2.txt";
-		//String base      = "C:\\a\\b";
-		// Linux version of test
-	    String path1     = "/mnt/dir1/dir2/dir3/dir4/file1.txt";
-	    String path2     = "/mnt/dir2/dir3/dir4/file2.txt";
-	    String base      = "/mnt/dir1/dir2";
-		String relative1 = Archiver.getEntryPath(path1, base);
-		String relative2 = Archiver.getEntryPath(path2, base);
-		assertEquals("dir3/dir4/file1.txt", relative1);
-		assertEquals("dir2/dir3/dir4/file2.txt", relative2);
-	}
-	
-	/**
 	 * Construct a list of files based on those file created above.
 	 * @return Populated List
 	 */

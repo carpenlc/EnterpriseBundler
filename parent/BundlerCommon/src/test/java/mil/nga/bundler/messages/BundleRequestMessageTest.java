@@ -23,7 +23,8 @@ public class BundleRequestMessageTest {
 	@Test
 	public void testCreation() {
 		
-		System.out.println("[TEST] Testing building objects of type class mil.nga.bundler.message.BundleRequestMessage...");
+		System.out.println("[TEST] Testing building objects of type class "
+				+ "mil.nga.bundler.message.BundleRequestMessage...");
 		BundleRequestMessage request = new BundleRequestMessage.BundleRequestMessageBuilder()
 									.maxSize(123)
 									.type(ArchiveType.TAR)
@@ -57,7 +58,7 @@ public class BundleRequestMessageTest {
 				.maxSize(2400)
 				.redirect(true)
 				.build();
-		assertEquals(request2.getMaxSize(), BundlerConstantsI.DEFAULT_MAX_ARCHIVE_SIZE);
+		assertEquals(request2.getMaxSize(), BundlerConstantsI.DEFAULT_ARCHIVE_SIZE);
 		assertEquals(request2.getRedirect(), true);
 		assertEquals(request2.getOutputFilename(), "nga_data_archive");
 		assertEquals(request2.getUserName(), BundlerConstantsI.DEFAULT_USERNAME);

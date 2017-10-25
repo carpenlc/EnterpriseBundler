@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,6 +15,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 import mil.nga.bundler.types.HashType;
+import mil.nga.util.URIUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,22 +143,23 @@ public class HashGeneratorService {
     public void generate(String inputFile, String outputFile) {
         
         String method = "generate() - ";
-        
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Creating hash for file [ "
-                    + inputFile 
-                    + " ].");
-        }
-        
+
         if ((inputFile != null) && (!inputFile.isEmpty())) {
             if ((outputFile != null) && (!outputFile.isEmpty())) {
                 
-                Path p = Paths.get(inputFile);
+            	URI input  = URIUtils.getInstance().getURI(inputFile);
+                URI output = URIUtils.getInstance().getURI(outputFile);
+                
+            	if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Creating hash for file [ "
+                            + input.toString() 
+                            + " ].");
+                }
+            	
+                Path p = Paths.get(input);
                 if (Files.exists(p)) {
-
                     String hash = getHash(p, HashType.SHA1);
-                    saveHash(hash, outputFile);
-
+                    saveHash(hash, Paths.get(output));
                 }
                 else {
                     LOGGER.error(method
@@ -348,43 +352,25 @@ public class HashGeneratorService {
      */
     public void saveHash(
                     String hash,
-                    String filename) {
+                    Path   output) {
 
-        String         method = "saveHash() - ";
-        BufferedWriter writer = null;
-
-        try {
-            
-            writer = new BufferedWriter(new FileWriter(filename));
-            writer.write(hash);
-            writer.flush();
-
-            // Set file permissions on the hash file to wide open.
-            File file = new File(filename);
-            if (file.exists()) {
-                    file.setExecutable(true, false);
-                    file.setReadable(true, false);
-                    file.setWritable(true, false);
-            }
-            else {
-                LOGGER.warn(method
-                        + "Expected hash file does not exist.  Filename [ "
-                        + filename
-                        + " ].");
-            }
+        if (output != null) {
+	        try (BufferedWriter writer = 
+	        		Files.newBufferedWriter(output, Charset.forName("UTF-8"))) {
+	            writer.write(hash);
+	            writer.flush();
+	        }
+	        catch (IOException ioe) {
+	        	LOGGER.error("Unexpected IOException exception "
+	                    + "encountered while attempting to save the hash "
+	                    + "String to an output file.  Exception message => [  "
+	                    + ioe.getMessage()
+	                    + " ].");
+	        }
         }
-        catch (IOException ioe) {
-            String msg = "Unexpected IOException exception "
-                    + "encountered while attempting to save the hash string "
-                    + "to an output file.  Exception message [  "
-                    + ioe.getMessage()
-                    + " ].";
-            LOGGER.error(method + msg, ioe);
-        }
-        finally {
-            if (writer != null) {
-                    try { writer.close(); } catch (Exception e) { }
-            }
+        else {
+        	LOGGER.error("Path to the output hash file is null.  Generated "
+        			+ "cannot be saved to an on-disk file.");
         }
     }
 

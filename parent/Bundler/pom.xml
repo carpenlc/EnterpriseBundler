@@ -146,22 +146,22 @@
                             <groupId>com.fasterxml.jackson.core</groupId>
                             <artifactId>jackson-databind</artifactId>
                         </jarModule>
-        <jarModule>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-        </jarModule>
-        <jarModule>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </jarModule>
-        <jarModule>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </jarModule>
-        <jarModule>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-        </jarModule>
+                        <jarModule>
+                            <groupId>org.apache.httpcomponents</groupId>
+                            <artifactId>httpcore</artifactId>
+                        </jarModule>
+                        <jarModule>
+                            <groupId>org.apache.httpcomponents</groupId>
+                            <artifactId>httpclient</artifactId>
+                        </jarModule>
+                        <jarModule>
+                            <groupId>com.google.guava</groupId>
+                            <artifactId>guava</artifactId>
+                        </jarModule>
+                        <jarModule>
+                            <groupId>org.apache.tika</groupId>
+                            <artifactId>tika-core</artifactId>
+                        </jarModule>
                         <jarModule>
                             <groupId>commons-codec</groupId>
                             <artifactId>commons-codec</artifactId>

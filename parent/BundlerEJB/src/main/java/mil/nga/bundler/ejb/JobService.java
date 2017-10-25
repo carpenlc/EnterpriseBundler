@@ -1,11 +1,14 @@
 package mil.nga.bundler.ejb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
+import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -17,26 +20,27 @@ import javax.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.model.Job;
 import mil.nga.bundler.types.JobStateType;
 
 /**
  * Session Bean implementation class JobService
+ * 
  */
 @Stateless
 @LocalBean
-public class JobService 
-        implements BundlerConstantsI {
+public class JobService implements BundlerConstantsI {
 
     /**
      * Set up the Log4j system for use throughout the class
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
             JobService.class);
-
+    
     /**
-     * Container-injected persistence context.
+     * JPA persistence entity manager.
      */
     @PersistenceContext(unitName=APPLICATION_PERSISTENCE_CONTEXT)
     private EntityManager em;
@@ -45,52 +49,65 @@ public class JobService
      * Default Eclipse-generated constructor. 
      */
     public JobService() { }
-    
+
     /**
-     * Alternate constructor allowing the EntityManager to be injected.
-     * @param em Object implementing the EntityManager interface.
+     * Accessor method for the EntityManager object that will be used to 
+     * interact with the backing data store.
+     * 
+     * @return A constructed EntityManager object.
      */
-    public JobService(EntityManager em) {
-        this.em = em;
+    private EntityManager getEntityManager() 
+    		throws ServiceUnavailableException {
+    	if (em == null) {
+    		if (LOGGER.isDebugEnabled()) {
+    			LOGGER.debug("Container-injected EntityManager is null.  "
+    					+ "Creating un-managed EntityManager.");
+    		}
+    		EntityManagerFactory emFactory = 
+    				Persistence.createEntityManagerFactory(
+    						APPLICATION_PERSISTENCE_CONTEXT);
+    		if (emFactory != null) {
+    			em = emFactory.createEntityManager();
+    		}
+    		else {
+    			LOGGER.warn("Unable to create un-managed EntityManager object.");
+    		}
+    		if (em == null) {
+    			throw new ServiceUnavailableException(
+        				"Unable to start the JPA subsystem.  The injected "
+        				+ "EntityManager object is null.");
+    		}
+    	}
+    	return em;
     }
-
-
+    
     /**
      * Get a list of Jobs that have not yet completed.
      * 
      * @return A list of jobs in a state other than "COMPLETE".
      */
-    public List<Job> getIncompleteJobs() {
-        List<Job> jobs = null;
+    public List<Job> getIncompleteJobs() throws ServiceUnavailableException {
+        
+    	List<Job> jobs = null;
         
         try {
-            
-            if (this.em != null) {
-
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<Job> cq =
-                                cb.createQuery(Job.class);
-                Root<Job> rootEntry = cq.from(Job.class);
-                CriteriaQuery<Job> all = cq.select(rootEntry);
-                cq.where(cb.notEqual(rootEntry.get("state"), JobStateType.COMPLETE));
-                cq.orderBy(cb.desc(rootEntry.get("startTime")));
-                TypedQuery<Job> allQuery = em.createQuery(all);
-                jobs = allQuery.getResultList();
-
-            }
-            else {
-                LOGGER.warn("EntityManager object not populated by the "
-                        + "container.  A null object will be returned to the "
-                        + "caller.");
-            }
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+            CriteriaQuery<Job> cq =
+                            cb.createQuery(Job.class);
+            Root<Job> rootEntry = cq.from(Job.class);
+            CriteriaQuery<Job> all = cq.select(rootEntry);
+            cq.where(cb.notEqual(rootEntry.get("state"), JobStateType.COMPLETE));
+            cq.orderBy(cb.desc(rootEntry.get("startTime")));
+            TypedQuery<Job> allQuery = getEntityManager().createQuery(all);
+            jobs = allQuery.getResultList();
         }
         catch (NoResultException nre) {
-                LOGGER.info("javax.persistence.NoResultException "
-                        + "encountered.  Error message [ "
-                        + nre.getMessage()
-                        + " ].  Returned List<Job> object will be null.");
+            LOGGER.info("javax.persistence.NoResultException "
+                    + "encountered.  Error message [ "
+                    + nre.getMessage()
+                    + " ].  Returned List<Job> object will be null.");
+            jobs = new ArrayList<Job>();
         }
-        
         return jobs;
     }
     
@@ -100,40 +117,44 @@ public class JobService
      * @param jobID The job ID (primary key) of the job to retrieve.
      * @return The target Job object.  Null if the Job could not be found.
      */
-    public Job getJob(String jobID) {
+    public Job getJob(String jobID) throws ServiceUnavailableException {
         
         Job job = null;
         
-        if (this.em != null) {
-            if ((jobID != null) && (!jobID.isEmpty())) {
+        if ((jobID != null) && (!jobID.isEmpty())) {
+            try {
                 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+            	CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<Job> cq = cb.createQuery(Job.class);
                 Root<Job> root = cq.from(Job.class);
+                
                 // Add the "where" clause
                 cq.where(
                         cb.equal(
                                 root.get("jobID"), 
                                 cb.parameter(String.class, "jobID")));
+                
                 // Create the query
-                Query query = em.createQuery(cq);
+                Query query = getEntityManager().createQuery(cq);
+                
                 // Set the value for the where clause
                 query.setParameter("jobID", jobID);
+                
                 // Retrieve the data
                 job = (Job)query.getSingleResult();
                 
             }
-            else {
-                LOGGER.warn("The input job ID is null or empty.  Unable to "
-                        + "retrieve an associated job.");
+            catch (NoResultException nre) {
+            	LOGGER.warn("Unable to find Job associated with job ID [ "
+            			+ jobID
+            			+ " ].  Returned Job will be null.");
             }
         }
         else {
-            LOGGER.error("The container failed to inject the target Entity "
-                    + "Manager.  Unable to retrieve job with job ID [ "
-                    + jobID
-                    + " ].");
+            LOGGER.warn("The input job ID is null or empty.  Unable to "
+                    + "retrieve an associated job.");
         }
+
         return job;
     }
     
@@ -143,25 +164,23 @@ public class JobService
      * @return A list of jobIDs
      */
     @SuppressWarnings("unchecked")
-    public List<String> getJobIDs() {
+    public List<String> getJobIDs() throws ServiceUnavailableException {
         
         List<String> jobIDs = null;
-
-        if (this.em != null) {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<Job> cq =
-                                cb.createQuery(Job.class);
-
-                Root<Job> e = cq.from(Job.class);
-                cq.multiselect(e.get("jobID"));
-                Query query = em.createQuery(cq);
-                jobIDs = query.getResultList();
-
-        }
-        else {
-            LOGGER.error("The container failed to inject the target Entity "
-                    + "Manager.  Unable to retrieve the list of jobs.");
-        }
+        try {
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+            CriteriaQuery<Job> cq =
+                            cb.createQuery(Job.class);
+            Root<Job> e = cq.from(Job.class);
+            cq.multiselect(e.get("jobID"));
+            Query query = getEntityManager().createQuery(cq);
+            jobIDs = query.getResultList();
+	    }
+	    catch (NoResultException nre) {
+	    	LOGGER.warn("Unable to find any job IDs in the data store.  "
+	    			+ "Returned list will be empty.");
+	    	jobIDs = new ArrayList<String>();
+	    }
         return jobIDs;
     }
     
@@ -169,31 +188,32 @@ public class JobService
      * Return a list of all Job objects in the target data store.
      * @return All existing Job objects.
      */
-    public List<Job> getJobs() {
+    public List<Job> getJobs() throws ServiceUnavailableException {
         
         List<Job> jobs = null;
         
-        if (this.em != null) {
-                
-            CriteriaBuilder cb = em.getCriteriaBuilder();
+        try {
+        	
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
             CriteriaQuery<Job> cq = cb.createQuery(Job.class);
             Root<Job> root = cq.from(Job.class);
-            // CriteriaQuery<Job> all = cq.select(root);
             
             // Add the "order by" clause sorting by time
             cq.orderBy(cb.desc(root.get("startTime"))); 
             
             // Create the query
-            TypedQuery<Job> query = em.createQuery(cq);
+            TypedQuery<Job> query = getEntityManager().createQuery(cq);
             
             // Retrieve the data
             jobs = query.getResultList();
-                
         }
-        else {
-            LOGGER.error("The container failed to inject the target Entity "
-                    + "Manager.  Unable to retrieve the list of jobs.");
-        }
+	    catch (NoResultException nre) {
+	         LOGGER.warn("javax.persistence.NoResultException "
+	                 + "encountered.  Error message [ "
+	                 + nre.getMessage()
+	                 + " ].");  
+	         jobs = new ArrayList<Job>();
+	    }
         return jobs;
     }
     
@@ -210,7 +230,7 @@ public class JobService
      * input dates.
      */
 
-    public List<Job> getJobsByDate(long startTime, long endTime) {
+    public List<Job> getJobsByDate(long startTime, long endTime) throws ServiceUnavailableException {
         
         List<Job> jobs = null;
         
@@ -231,24 +251,18 @@ public class JobService
         }
         
         try {
-            if (this.em != null) {
-                 CriteriaBuilder cb = em.getCriteriaBuilder();
-                 CriteriaQuery<Job> cq =
-                                 cb.createQuery(Job.class);
-                 Root<Job> rootEntry = cq.from(Job.class);
-                 CriteriaQuery<Job> all = cq.select(rootEntry);
-    
-                 Path<Long> pathToStartTime = rootEntry.get("startTime");
-                 cq.where(cb.between(pathToStartTime, startTime, endTime));
-    
-                 cq.orderBy(cb.desc(pathToStartTime));
-                 TypedQuery<Job> allQuery = em.createQuery(all);
-                 jobs = allQuery.getResultList();            
-            }
-            else {
-                LOGGER.error("The EntityManager is null.  Unable to select a " 
-                        + "list of Jobs by date.");
-            }
+             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+             CriteriaQuery<Job> cq =
+                             cb.createQuery(Job.class);
+             Root<Job> rootEntry = cq.from(Job.class);
+             CriteriaQuery<Job> all = cq.select(rootEntry);
+
+             Path<Long> pathToStartTime = rootEntry.get("startTime");
+             cq.where(cb.between(pathToStartTime, startTime, endTime));
+
+             cq.orderBy(cb.desc(pathToStartTime));
+             TypedQuery<Job> allQuery = getEntityManager().createQuery(all);
+             jobs = allQuery.getResultList();            
         }
         catch (NoResultException nre) {
              LOGGER.warn("javax.persistence.NoResultException "
@@ -266,24 +280,20 @@ public class JobService
      * @param job The Job object to update.
      * @return The container managed Job object.
      */
-    public Job update(Job job) {
+    public Job update(Job job) throws ServiceUnavailableException {
+    	
         Job managedJob = null;
-        if (em != null) {
-            if (job != null) {
-                //em.getTransaction().begin();
-                managedJob = em.merge(job);
-                //em.getTransaction().commit();
-                em.flush();
-            }
-            else {
-                LOGGER.warn("Called with a null or empty Job object.  "
-                        + "Object will not be persisted.");
-            }
+        if (job != null) {
+        	// getEntityManager().getTransaction().begin();
+            managedJob = getEntityManager().merge(job);
+            getEntityManager().flush();
+            // getEntityManager().getTransaction().commit();
         }
         else {
-            LOGGER.error("The EntityManager is null.  Unable to persist the "
-                    + "input Job object.");
+            LOGGER.warn("Called with a null or empty Job object.  "
+                    + "Object will not be persisted.");
         }
+
         return managedJob;
     }
 
@@ -292,22 +302,16 @@ public class JobService
      * 
      * @param job The Job object to persist.
      */
-    public void persist(Job job) {
-        if (em != null) {
-            if (job != null) {
-                //em.getTransaction().begin();
-                em.persist(job);
-                //em.getTransaction().commit();
-                em.flush();
-            }
-            else {
-                LOGGER.warn("Called with a null or empty Job object.  "
-                        + "Object will not be persisted.");
-            }
+    public void persist(Job job) throws ServiceUnavailableException {
+        if (job != null) {
+        	// getEntityManager().getTransaction().begin();
+        	getEntityManager().persist(job);
+        	getEntityManager().flush();
+            // getEntityManager().getTransaction().commit();
         }
         else {
-            LOGGER.error("The EntityManager is null.  Unable to persist the "
-                    + "input object.");
+            LOGGER.warn("Called with a null or empty Job object.  "
+                    + "Object will not be persisted.");
         }
     }
 }

@@ -9,6 +9,7 @@ import mil.nga.bundler.exceptions.UnknownJobStateTypeException;
  */
 public enum JobStateType {
     NOT_STARTED("not_started"),
+    NOT_AVAILABLE("not_available"),
     IN_PROGRESS("in_progress"),
     INVALID_REQUEST("invalid_request"),
     COMPRESSING("compressing"),

@@ -14,6 +14,7 @@ import javax.faces.bean.ViewScoped;
 import mil.nga.bundler.MetricsCalculator;
 import mil.nga.bundler.ejb.EJBClientUtilities;
 import mil.nga.bundler.ejb.JobService;
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.model.BundlerMetrics;
 import mil.nga.bundler.model.Job;
 
@@ -113,12 +114,17 @@ public class ViewLast30DaysJobMetrics
                     + " ].");
         }
         
+        try {
         if (getJobService() != null) {
             jobList = getJobService().getJobsByDate(startTime, endTime);
         }
         else {
             LOGGER.error("Unable to obtain a reference to the "
                     + "JobService EJB.");
+        }
+        }
+        catch (ServiceUnavailableException sue) {
+        	
         }
         return jobList;
     }

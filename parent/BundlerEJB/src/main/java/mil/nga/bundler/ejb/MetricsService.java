@@ -3,13 +3,16 @@ package mil.nga.bundler.ejb;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
+import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.model.BundlerMetrics;
 
@@ -28,9 +31,9 @@ public class MetricsService implements BundlerConstantsI {
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
             MetricsService.class);
-
+    
     /**
-     * Container-injected persistence context.
+     * JPA persistence entity manager.
      */
     @PersistenceContext(unitName=APPLICATION_PERSISTENCE_CONTEXT)
     private EntityManager em;
@@ -39,36 +42,52 @@ public class MetricsService implements BundlerConstantsI {
      * Default Eclipse-generated constructor. 
      */
     public MetricsService() { }
-    
+
     /**
-     * Alternate constructor allowing the EntityManager to be injected.
-     * @param em Object implementing the EntityManager interface.
+     * Accessor method for the EntityManager object that will be used to 
+     * interact with the backing data store.
+     * 
+     * @return A constructed EntityManager object.
      */
-    public MetricsService(EntityManager em) {
-        this.em = em;
+    private EntityManager getEntityManager() 
+    		throws ServiceUnavailableException {
+    	if (em == null) {
+    		if (LOGGER.isDebugEnabled()) {
+    			LOGGER.debug("Container-injected EntityManager is null.  "
+    					+ "Creating un-managed EntityManager.");
+    		}
+    		EntityManagerFactory emFactory = 
+    				Persistence.createEntityManagerFactory(
+    						APPLICATION_PERSISTENCE_CONTEXT);
+    		if (emFactory != null) {
+    			em = emFactory.createEntityManager();
+    		}
+    		else {
+    			LOGGER.warn("Unable to create un-managed EntityManager object.");
+    		}
+    		if (em == null) {
+    			throw new ServiceUnavailableException(
+        				"Unable to start the JPA subsystem.  The injected "
+        				+ "EntityManager object is null.");
+    		}
+    	}
+    	return em;
     }
+    
 
-
-    public BundlerMetrics getMetrics() {
+    public BundlerMetrics getMetrics() throws ServiceUnavailableException {
         
         BundlerMetrics metrics = null;
         
         try {
-            if (this.em != null) {
                     
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<BundlerMetrics> cq = cb.createQuery(BundlerMetrics.class);
-                Root<BundlerMetrics> root = cq.from(BundlerMetrics.class);
-                cq.select(root);
-                Query query = em.createQuery(cq);
-                metrics = (BundlerMetrics)query.getSingleResult();
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+            CriteriaQuery<BundlerMetrics> cq = cb.createQuery(BundlerMetrics.class);
+            Root<BundlerMetrics> root = cq.from(BundlerMetrics.class);
+            cq.select(root);
+            Query query = getEntityManager().createQuery(cq);
+            metrics = (BundlerMetrics)query.getSingleResult();
                 
-            }
-            else {
-                LOGGER.error("The container injected EntityManager object is "
-                        + "null.  Unable to retrieve the BundlerMetrics "
-                        + "object from the data store.");
-            }
         }
         catch (NoResultException nre) {
                 LOGGER.warn("Unable to retrieve BundlerMetrics object from target "
@@ -77,7 +96,6 @@ public class MetricsService implements BundlerConstantsI {
                      + nre.getMessage()
                      + " ].");    
         }
-        
         return metrics;
         
     }

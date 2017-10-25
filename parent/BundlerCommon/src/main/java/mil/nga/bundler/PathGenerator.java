@@ -1,5 +1,7 @@
 package mil.nga.bundler;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -141,7 +143,24 @@ public class PathGenerator
      * @param entry FileEntry object associated with one file to be archived.
      */
     public void setOneEntry(FileEntry entry) {
-        String path   = entry.getFilePath();
+    	
+    	String path;
+    	
+    	// Use the URI class to strip off the scheme/authority sections.
+    	try {
+    		URI uri = new URI(entry.getFilePath());
+    		path = uri.getPath();
+    	}
+    	catch (URISyntaxException use) {
+    		LOGGER.warn("Unable to convert the absolute file path [ " 
+    				+ entry.getFilePath() 
+    				+ " ] to a URI.  Using the absolute file path as-is.  "
+    				+ "Exception message => [ "
+    				+ use.getMessage()
+    				+ " ].");
+    		path   = entry.getFilePath();
+    	}
+        
         if ((entry.getEntryPath() == null) || (entry.getEntryPath().isEmpty())) {
             // If the entry path wasn't supplied, calculate it.
             entry.setEntryPath(getEntryPath(path.trim()));
@@ -193,10 +212,33 @@ public class PathGenerator
             String archivePath, 
             String absolutePath) {
         
-        String entryPath = absolutePath;
+    	// Use the URI class to strip off the scheme/authority sections.
+    	try {
+    		URI uri = new URI(absolutePath);
+    		absolutePath = uri.getPath();
+    	}
+    	catch (URISyntaxException use) {
+    		LOGGER.warn("Unable to convert the absolute file path [ " 
+    				+ absolutePath 
+    				+ " ] to a URI.  Using the absolute file path as-is.  "
+    				+ "Exception message => [ "
+    				+ use.getMessage()
+    				+ " ].");
+    	}
+
+    	String entryPath = absolutePath;
         
+    	// TODO: Test code.  Remove.
+    	LOGGER.info("getEntryPath() called with baseDir => [ "
+    			+ baseDir
+    			+ " ], archivePath => [ "
+    			+ archivePath
+    			+ " ], and absolutePath => [ "
+    			+ absolutePath 
+    			+ " ].");
+    	
         // if the archivePath isn't supplied, do nothing.
-     // If the archive path is supplied, append it to whatever is left over.
+        // If the archive path is supplied, append it to whatever is left over.
         if ((archivePath != null) && (!archivePath.isEmpty())) {
             
             // treat the baseDir as an exclusion from the absolute path.
@@ -218,9 +260,19 @@ public class PathGenerator
             if (entryPath.startsWith("/")) {
                 entryPath = entryPath.substring(1);
             }
+            
             entryPath = archivePath+"/"+entryPath;
         
         }
+        else {
+        	entryPath = getEntryPath(absolutePath);
+        }
+        
+        // TODO: Test code. Remove.
+        LOGGER.info("getEntryPath() returning [ "
+        		+ entryPath
+        		+ " ].");
+        
         return entryPath;
     }
     
@@ -323,6 +375,8 @@ public class PathGenerator
         test = PathGenerator.getInstance().getEntryPath("/1/2/3/4", "", "/1/2/3/4/5/6/file.txt");
         System.out.println(test);
         test = PathGenerator.getInstance().getEntryPath("/1/2/3/4", "/7/8/4", "/1/2/3/4/5/6/file.txt");
+        System.out.println(test);
+        test = PathGenerator.getInstance().getEntryPath("/1/2/3/4", null, "/mnt/raster/1/2/3/4/5/6/file.txt");
         System.out.println(test);
     }
 }

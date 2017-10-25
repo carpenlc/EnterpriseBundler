@@ -47,12 +47,12 @@ public class URIUtils implements Serializable {
         URI newURI = null;
         if (uri != null) {
             try {
-                newURI = new URI(
-                		"file", 
-                        uri.getAuthority(),  
-                        uri.getPath(), 
-                        uri.getQuery(), 
-                        uri.getFragment());
+            	newURI = new URI(
+            			"file",
+            			uri.getAuthority(),
+            			uri.getPath(),
+            			uri.getFragment(),
+            			uri.getQuery());
             }
             // We're making a URI out of a URI here so this exception can 
             // never be thrown here so just eat it.
@@ -69,6 +69,10 @@ public class URIUtils implements Serializable {
      */
     public URI getURI(String filePath) throws FileSystemNotFoundException {
     	URI uri = null;
+    	
+    	// TODO : Remove
+    	LOGGER.info("Converting [ " + filePath + " ] to URI.");
+    	
         if ((filePath != null) && (!filePath.isEmpty())) {
         	// Create the URI from the input file path. 
             uri = URI.create(filePath);
