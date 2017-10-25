@@ -1,7 +1,6 @@
 package mil.nga.bundler.ejb;
 
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
@@ -12,19 +11,10 @@ import javax.jms.ObjectMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mil.nga.bundler.model.FileEntry;
-import mil.nga.bundler.archive.ArchiveFactory;
-import mil.nga.bundler.exceptions.ArchiveException;
 import mil.nga.bundler.exceptions.ServiceUnavailableException;
-import mil.nga.bundler.exceptions.UnknownArchiveTypeException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
-import mil.nga.bundler.interfaces.BundlerI;
 import mil.nga.bundler.messages.ArchiveMessage;
-import mil.nga.bundler.model.ArchiveElement;
-import mil.nga.bundler.model.ArchiveJob;
-import mil.nga.bundler.types.JobStateType;
-import mil.nga.util.FileUtils;
-import mil.nga.util.URIUtils;
+
 
 /**
  * Message-Driven Bean implementation class for: ArchiverMDB
@@ -129,8 +119,6 @@ public class ArchiverMDB implements MessageListener, BundlerConstantsI {
      */
     @Override
     public void onMessage(Message message) {
-        
-    	long startTime = System.currentTimeMillis();
     	
         try {
             
@@ -138,17 +126,10 @@ public class ArchiverMDB implements MessageListener, BundlerConstantsI {
             ArchiveMessage archiveMsg = (ArchiveMessage)objMessage.getObject();
             
             if (archiveMsg != null) {
-	            
             	LOGGER.info("ArchiverMDB received notification to process [ " 
 	                    + archiveMsg.toString()
 	                    + " ].");
-	            
 	            getBundlerService().handleMessage(archiveMsg);
-	            
-	            // TODO: test code.  remove.
-	            LOGGER.info("Asynchronous call completed in [ "
-	            		+ (System.currentTimeMillis() - startTime) 
-	            		+ " ] ms.");
             }
             else {
             	LOGGER.error("Internal system failure.  Unable to unpack the "

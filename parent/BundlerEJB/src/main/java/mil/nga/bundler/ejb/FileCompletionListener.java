@@ -9,7 +9,6 @@ import javax.ejb.Stateful;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mil.nga.bundler.exceptions.EntityManagerUnavailableException;
 import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.FileCompletionListenerI;
 import mil.nga.bundler.model.ArchiveElement;
