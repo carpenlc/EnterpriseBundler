@@ -44,7 +44,7 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
     
     // Internal members.
     private final List<ArchiveJob> archives;
-    private final long            elapsedTime;
+    private final long             elapsedTime;
     private final String           jobID;
     private final int              numArchives;
     private final int              numArchivesComplete;
@@ -54,7 +54,7 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
     private final JobStateType     state;
     private final long             totalSize;
     private final long             totalSizeComplete;
-    private final String            userName;
+    private final String           userName;
     
     /**
      * Private constructor forcing the builder design pattern.  
@@ -267,10 +267,10 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
         private long            numFilesComplete    = 0;
         private long            totalSize           = 0L;
         private long            totalSizeComplete   = 0L;
-        private List<ArchiveJob> archives            = new ArrayList<ArchiveJob>();
-        private String           jobID               = null;
-        private JobStateType     state               = JobStateType.NOT_AVAILABLE;
-        private String           userName            = null;
+        private List<ArchiveJob> archives           = new ArrayList<ArchiveJob>();
+        private String           jobID              = null;
+        private JobStateType     state              = JobStateType.NOT_AVAILABLE;
+        private String           userName           = DEFAULT_USERNAME;
         
         /**
          * Method called as archive jobs complete.  This saves a list of 
