@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,16 @@ public class FileSystemFactory
     private String iamRole;
     
     /**
+     * The access key that will be used to for authentication to AWS.
+     */
+    private String accessKey;
+    
+    /**
+     * The secret key that will be used to for authentication to AWS.
+     */
+    private String secretKey;
+    
+    /**
      * This is the default host name for the s3 end-point.  
      */
     private String s3EndPoint;
@@ -61,12 +72,16 @@ public class FileSystemFactory
     private FileSystemFactory() { 
         super(PROPERTY_FILE_NAME);
         
+        String accessKey  = null;
         String iamRole    = null;
         String s3EndPoint = null;
+        String secretKey  = null;
         
         try {
         	iamRole    = getProperty(IAM_ROLE_PROPERTY);
         	s3EndPoint = getProperty(S3_END_POINT_PROPERTY);
+        	accessKey  = getProperty(ACCESS_KEY_PROPERTY);
+        	secretKey  = getProperty(SECRET_KEY_PROPERTY);
         }
         catch (PropertiesNotLoadedException pnle) {
             LOGGER.warn("An unexpected PropertiesNotLoadedException " 
@@ -76,6 +91,8 @@ public class FileSystemFactory
                     + " ].");
         }
         setIAMRole(iamRole);
+        setAccessKey(accessKey);
+        setSecretKey(secretKey);
         setS3EndPoint(s3EndPoint);
     } 
     
@@ -92,31 +109,70 @@ public class FileSystemFactory
     }
     
     /**
-     * Ensure that the S3 FileSystem provider is loaded and available.
+     * Ensure that the S3 FileSystem provider is loaded and available.  Either 
+     * the IAM Role must be defined OR BOTH the access key and secret key must
+     * be defined.  
      */
-    public void loadS3Filesystem() {
+    public void loadS3Filesystem() throws IllegalStateException {
         
-    	String uriString = "s3://" + getS3EndPoint() + "/";
+    	String         uriString = "s3://" + getS3EndPoint() + "/";
+    	Map<String, ?> env       = null;
     	
         // Ensure the s3 filesystem is not already loaded.
         if (!s3FileSystemLoaded) {
+        	
+        	LOGGER.info("Initializing the NIO2 S3 file system provider");
+        	
             if ((getIAMRole() != null) && 
                     (!getIAMRole().isEmpty())) {
                 
-                Map<String, ?> env = ImmutableMap.<String, Object> builder()
+                env = ImmutableMap.<String, Object> builder()
                         .put(com.upplication.s3fs.AmazonS3Factory.IAM_ROLE, 
                             getIAMRole())
                         .build();
         
+            }
+            else if ((getAccessKey() != null) && 
+            			(!getAccessKey().isEmpty()) && (getSecretKey() != null) && 
+            			(!getSecretKey().isEmpty())) {
+            	
+                env = ImmutableMap.<String, Object> builder()
+                        .put(com.upplication.s3fs.AmazonS3Factory.ACCESS_KEY, 
+                            getAccessKey())
+                        .put(com.upplication.s3fs.AmazonS3Factory.SECRET_KEY, 
+                            getSecretKey())
+                        .build();
+                
+            } 
+            else {
+            	throw new IllegalStateException("AWS authentication "
+            			+ "properties not defined.  Either [ "
+            			+ IAM_ROLE_PROPERTY
+            			+ " ] or BOTH [ "
+            			+ ACCESS_KEY_PROPERTY 
+            			+ " ] and [ "
+            			+ SECRET_KEY_PROPERTY
+            			+ " ] must be defined.");
+            	
+            }
+            
+            if (env != null) {
+            	
                 try {
-                    
                 	if (LOGGER.isDebugEnabled()) {
-                		LOGGER.debug("Initializing S3 filesystem with IAM "
-                				+ "role [ "
-                				+ getIAMRole()
-                				+ " ] and URI [ "
-                				+ uriString
-                				+ " ].");
+                		
+                		StringBuilder sb   = new StringBuilder();
+                		Set<String>   keys = env.keySet();
+                		
+                		for (String key : keys) {
+                			sb.append(" Key => [ ");
+                			sb.append(key);
+                			sb.append(" ], Value => [ ");
+                			sb.append((String)env.get(key));
+                			sb.append(" ] ");
+                		}
+                		LOGGER.debug("Initializing S3 filesystem with => "
+                				+ sb.toString());
                 	}
                 	
                     // Add the s3 file system provider
@@ -129,7 +185,7 @@ public class FileSystemFactory
                     // successfully.
                     s3FileSystemLoaded = true;
                     
-                    LOGGER.info("NIO 2 s3 FileSystem initialized successfully.");
+                    LOGGER.info("NIO2 s3 File System provider initialized successfully.");
                     
                 } 
                 catch (IOException ioe) {
@@ -144,9 +200,9 @@ public class FileSystemFactory
                 catch (URISyntaxException use) { }
             }
             else {
-                LOGGER.warn("The IAM role defined by property [ "
-                        + IAM_ROLE_PROPERTY
-                        + " ] is not available.");
+            	LOGGER.error("Unexpected situation encountered in which the "
+            			+ "Map object used to authenticate to AWS is "
+            			+ "null.  Unable to load the S3 file system.");
             }
         }
         else {
@@ -156,6 +212,15 @@ public class FileSystemFactory
         }
     }
     
+	/**
+	 * Getter method for the access key that will be used for authentication to
+	 * AWS.
+	 * @return The access key.
+	 */
+	public String getAccessKey() {
+	    return accessKey;
+	}
+
     /**
      * Getter method for the IAM Role that will be used for authentication to
      * AWS.
@@ -173,12 +238,30 @@ public class FileSystemFactory
     	return s3EndPoint;
     }
     
+	/**
+	 * Getter method for the secret key that will be used for authentication to
+	 * AWS.
+	 * @return The secret key.
+	 */
+	public String getSecretKey() {
+	    return secretKey;
+	}
+	
     /**
      * Getter method for the singleton instance of the FileSystemFactory.
      * @return Handle to the singleton instance of the FileSystemFactory.
      */
     public static FileSystemFactory getInstance() {
         return FileSystemFactoryHolder.getFactorySingleton();
+    }
+    
+    /**
+     * Setter method for the access key that will be used for authentication to
+     * AWS.
+     * @param value The access key to provide for authentication.
+     */
+    public void setAccessKey(String value) {
+        accessKey = value;
     }
     
     /**
@@ -202,6 +285,15 @@ public class FileSystemFactory
     	else {
     		s3EndPoint = value.trim();
     	}
+    }
+    
+    /**
+     * Setter method for the secret key that will be used for authentication to
+     * AWS.
+     * @param value The secret key to provide for authentication.
+     */
+    public void setSecretKey(String value) {
+        secretKey = value;
     }
     
     /** 

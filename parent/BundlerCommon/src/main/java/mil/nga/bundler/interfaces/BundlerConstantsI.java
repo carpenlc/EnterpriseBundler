@@ -42,7 +42,19 @@ public interface BundlerConstantsI {
      * Property identifying the IAM role to use for accessing the S3 
      * file system.
      */
+    public static final String ACCESS_KEY_PROPERTY = "aws.acess_key";
+
+    /**
+     * Property identifying the IAM role to use for accessing the S3 
+     * file system.
+     */
     public static final String IAM_ROLE_PROPERTY = "aws.iam_role";
+    
+    /**
+     * Property identifying the IAM role to use for accessing the S3 
+     * file system.
+     */
+    public static final String SECRET_KEY_PROPERTY = "aws.secret_key";
     
     /**
      * Property identifying the AWS s3 end-point.
