@@ -124,6 +124,14 @@ public interface BundlerConstantsI {
             "bundler.request_output_location";
     
     /**
+     * The default setting is to archive all incoming requests.  If the 
+     * property below is set to any String the archiving of incoming requests
+     * will be disabled.
+     */
+    public static final String ARCHIVE_BUNDLE_REQUEST_PROP = 
+    		"bundler.disable_request_archiving";
+    
+    /**
      * System property identifying the target staging directory.  
      */
     public static final String STAGING_DIRECTORY_PROPERTY = 

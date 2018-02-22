@@ -80,11 +80,17 @@ public class RequestArchiveService
     private URI outputPath = null;
     
     /**
+     * Flag determining whether or not we should enable the functionality.
+     */
+    private boolean enabled = true;
+    
+    /**
      * Default constructor. 
      */
     public RequestArchiveService() { 
         super(BundlerConstantsI.PROPERTY_FILE_NAME);
         try {
+        	setEnabled(getProperty(ARCHIVE_BUNDLE_REQUEST_PROP));
             setOutputPath(getProperty(BUNDLE_REQUEST_DIRECTORY_PROP));
             checkOutputPath();
         }
@@ -214,6 +220,16 @@ public class RequestArchiveService
     }
     
     /**
+     * Method used to determine whether or not the request archive 
+     * functionality is enabled. 
+     * 
+     * @return True if we should save incoming requests, false otherwise.
+     */
+    public boolean isEnabled() {
+    	return enabled;
+    }
+    
+    /**
      * External interface used to marshal a BundleRequest into a JSON-based
      * String and then store the results in an on-disk file.
      * 
@@ -278,7 +294,7 @@ public class RequestArchiveService
      */
     @Asynchronous
     public void archiveRequest(BundleRequestMessage request, String jobID) {
-        if (getOutputPath() != null) {
+        if ((getOutputPath() != null) && (isEnabled())) {
 	        if (request != null) {
 	            if ((jobID == null) || (jobID.isEmpty())) {
 	                jobID = generateBogusJobID();
@@ -319,6 +335,26 @@ public class RequestArchiveService
      */
     private URI getOutputPath() {
         return outputPath;
+    }
+    
+    /**
+     * Setter method for the enabled flag.
+     * @param value The value of the <code>ARCHIVE_BUNDLE_REQUEST_PROP</code>
+     * property.
+     */
+    private void setEnabled(String value) {
+    	if ((value != null) && (!value.isEmpty())) {
+        	if (LOGGER.isDebugEnabled()) {
+        		LOGGER.debug("Request archive feature is disabled by value "
+        				+ "of property [ "
+        				+ ARCHIVE_BUNDLE_REQUEST_PROP
+        				+ " ].");
+        	}
+    		enabled = false;
+    	}
+    	else {
+    		enabled = true;
+    	}
     }
     
     /**
