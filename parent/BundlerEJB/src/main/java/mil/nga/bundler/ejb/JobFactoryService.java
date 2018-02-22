@@ -150,28 +150,59 @@ public class JobFactoryService
     }
     
     /**
-     * TODO: Fix this method
-     * @param jobID
+     * Create the output directory associated with the current job ID.
+     * @param jobID The current job ID.
      */
     private void createOutputDirectory(String jobID) {
-    	String fullURI = stagingArea.toString();
-    	if (!fullURI.endsWith(File.separator)) {
-    		fullURI = fullURI + File.separator;
-    	}
-    	fullURI = fullURI + jobID;
-    	
-    	try {
-    		URI newURI = new URI(fullURI);
-        	Path p = Paths.get(newURI);
-			Files.createDirectory(p);
-    	}
-    	catch (URISyntaxException use) {
-    		use.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+        String fullURI = stagingArea.toString();
+
+        try {
+            if (!fullURI.endsWith(File.separator)) {
+                fullURI = fullURI + File.separator;
+            }
+            fullURI = fullURI + jobID;
+            LOGGER.debug("Creating output directory [ "
+                + fullURI
+                + " ].");
+            URI newURI = new URI(fullURI);
+            Path p = Paths.get(newURI);
+            if (!Files.exists(p)) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Creating job output directory [ "
+                        + newURI.toString()
+                        + " ].");
+                }
+                Files.createDirectory(p);
+            }
+            else {
+                LOGGER.warn("Output directory [ "
+                    + newURI.toString() 
+                    + " ] already exists.");
+        }
+        catch (URISyntaxException use) {
+            // We are creating a URI from another URI, so we should never see
+            // this exception.
+            LOGGER.warn("Unexpected URISyntaxException raised while "
+                    + "generating the URI associated with the output "
+                    + "staging directory for job ID [ "
+                    + jobID
+                    + " ].  Exception message => [ "
+                    + use.getMessage()
+                    + " ].");
+        }
+        catch (IOException ioe) {
+            LOGGER.warn("Unexpected IOException raised while "
+                    + "creating the output directory for job ID [ "
+                    + jobID
+                    + " ].  Target output directory => [ "
+                    + fullURI
+                    + " ].  Exception message => [ "
+                    + ioe.getMessage()
+                    + " ]."); 
+        }
     }
+
     /**
      * Simple method to calculate the target output archive size in
      * bytes.
@@ -527,6 +558,7 @@ public class JobFactoryService
      * @param job The job to execute.
      */
     public void runJob(Job job) {
+        LOGGER.debug("runJob() method called.");
     	if (job != null) {
     		if (job.getState() == JobStateType.NOT_STARTED) {
     			createOutputDirectory(job.getJobID());
@@ -536,6 +568,11 @@ public class JobFactoryService
 	    					+ " ].");
 	    			getJobRunnerService().run(job);
 	    		}
+                        else {
+                            LOGGER.error("Unable to obtain a reference to the"
+                                    + " JobRunnerService.  Job ID [ "
+                                    + job.getJobID()
+                                    + " will not start.");
     		}
     		else {
     			LOGGER.warn("Attempted to start a job with a state of [ "
@@ -557,5 +594,9 @@ public class JobFactoryService
     		value = System.getProperty("java.io.tmpdir");
     	}
     	stagingArea = URIUtils.getInstance().getURI(value);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Output staging area set to [ "
+                + stagingArea
+                + " ].");
     }
 }

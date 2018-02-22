@@ -12,7 +12,6 @@ import mil.nga.bundler.exceptions.PropertiesNotLoadedException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
-import mil.nga.bundler.model.ValidFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -275,24 +274,6 @@ public class PathGenerator
         
         return entryPath;
     }
-    
-    /**
-     * Set any Entry paths that are not already defined.
-     * @param files The list of validated files 
-     */
-    public void setEntryPaths(List<ValidFile> files) {
-        if ((files != null) && (files.size() > 0)) {
-            for (ValidFile file : files) {
-                if ((file.getEntryPath() == null) || 
-                        (file.getEntryPath().isEmpty())) {
-                    file.setEntryPath(getEntryPath(file.getPath().trim()));
-                }
-            }
-        }
-        else {
-            LOGGER.warn("No valid files supplied.");
-        }
-     }
     
     /**
      * Public entry point.  The client supplies a List of Archives that will 
