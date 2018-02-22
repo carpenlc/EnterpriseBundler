@@ -88,9 +88,11 @@ public class JobService implements BundlerConstantsI {
      */
     public List<Job> getIncompleteJobs() throws ServiceUnavailableException {
         
-    	List<Job> jobs = null;
+    	long      start = System.currentTimeMillis();
+    	List<Job> jobs  = null;
         
         try {
+        	
             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
             CriteriaQuery<Job> cq =
                             cb.createQuery(Job.class);
@@ -100,6 +102,7 @@ public class JobService implements BundlerConstantsI {
             cq.orderBy(cb.desc(rootEntry.get("startTime")));
             TypedQuery<Job> allQuery = getEntityManager().createQuery(all);
             jobs = allQuery.getResultList();
+            
         }
         catch (NoResultException nre) {
             LOGGER.info("javax.persistence.NoResultException "
@@ -108,6 +111,13 @@ public class JobService implements BundlerConstantsI {
                     + " ].  Returned List<Job> object will be null.");
             jobs = new ArrayList<Job>();
         }
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Incomplete job list retrieved in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
+        }
+        
         return jobs;
     }
     
@@ -118,8 +128,9 @@ public class JobService implements BundlerConstantsI {
      * @return The target Job object.  Null if the Job could not be found.
      */
     public Job getJob(String jobID) throws ServiceUnavailableException {
-        
-        Job job = null;
+    	
+    	long start = System.currentTimeMillis();
+        Job  job   = null;
         
         if ((jobID != null) && (!jobID.isEmpty())) {
             try {
@@ -155,6 +166,14 @@ public class JobService implements BundlerConstantsI {
                     + "retrieve an associated job.");
         }
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job [ "
+            		+ jobID
+            		+ " ] retrieved in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
+        }
+        
         return job;
     }
     
@@ -165,8 +184,10 @@ public class JobService implements BundlerConstantsI {
      */
     @SuppressWarnings("unchecked")
     public List<String> getJobIDs() throws ServiceUnavailableException {
-        
+    	
+    	long         start  = System.currentTimeMillis();
         List<String> jobIDs = null;
+        
         try {
             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
             CriteriaQuery<Job> cq =
@@ -181,6 +202,12 @@ public class JobService implements BundlerConstantsI {
 	    			+ "Returned list will be empty.");
 	    	jobIDs = new ArrayList<String>();
 	    }
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job IDs retrieved in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
+        }
         return jobIDs;
     }
     
@@ -190,7 +217,8 @@ public class JobService implements BundlerConstantsI {
      */
     public List<Job> getJobs() throws ServiceUnavailableException {
         
-        List<Job> jobs = null;
+    	long      start = System.currentTimeMillis();
+        List<Job> jobs  = null;
         
         try {
         	
@@ -206,6 +234,7 @@ public class JobService implements BundlerConstantsI {
             
             // Retrieve the data
             jobs = query.getResultList();
+            
         }
 	    catch (NoResultException nre) {
 	         LOGGER.warn("javax.persistence.NoResultException "
@@ -214,6 +243,13 @@ public class JobService implements BundlerConstantsI {
 	                 + " ].");  
 	         jobs = new ArrayList<Job>();
 	    }
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job list retrieved in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
+        }
+        
         return jobs;
     }
     
@@ -230,9 +266,12 @@ public class JobService implements BundlerConstantsI {
      * input dates.
      */
 
-    public List<Job> getJobsByDate(long startTime, long endTime) throws ServiceUnavailableException {
-        
-        List<Job> jobs = null;
+    public List<Job> getJobsByDate(
+    		long startTime, 
+    		long endTime) throws ServiceUnavailableException {
+    	
+    	long      start = System.currentTimeMillis();
+        List<Job> jobs  = null;
         
         // Ensure the startTime is earlier than the endTime before submitting
         // the query to the database.
@@ -251,6 +290,7 @@ public class JobService implements BundlerConstantsI {
         }
         
         try {
+        	
              CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
              CriteriaQuery<Job> cq =
                              cb.createQuery(Job.class);
@@ -262,13 +302,20 @@ public class JobService implements BundlerConstantsI {
 
              cq.orderBy(cb.desc(pathToStartTime));
              TypedQuery<Job> allQuery = getEntityManager().createQuery(all);
-             jobs = allQuery.getResultList();            
+             jobs = allQuery.getResultList();     
+             
         }
         catch (NoResultException nre) {
              LOGGER.warn("javax.persistence.NoResultException "
                      + "encountered.  Error message [ "
                      + nre.getMessage()
                      + " ].");    
+        }
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job list retrieved in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
         }
         return jobs;
     }
@@ -282,7 +329,9 @@ public class JobService implements BundlerConstantsI {
      */
     public Job update(Job job) throws ServiceUnavailableException {
     	
-        Job managedJob = null;
+    	long start      = System.currentTimeMillis();
+        Job  managedJob = null;
+        
         if (job != null) {
         	// getEntityManager().getTransaction().begin();
             managedJob = getEntityManager().merge(job);
@@ -293,7 +342,11 @@ public class JobService implements BundlerConstantsI {
             LOGGER.warn("Called with a null or empty Job object.  "
                     + "Object will not be persisted.");
         }
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job updated in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
+        }
         return managedJob;
     }
 
@@ -303,7 +356,10 @@ public class JobService implements BundlerConstantsI {
      * @param job The Job object to persist.
      */
     public void persist(Job job) throws ServiceUnavailableException {
-        if (job != null) {
+    	
+    	long start = System.currentTimeMillis();
+        
+    	if (job != null) {
         	// getEntityManager().getTransaction().begin();
         	getEntityManager().persist(job);
         	getEntityManager().flush();
@@ -312,6 +368,12 @@ public class JobService implements BundlerConstantsI {
         else {
             LOGGER.warn("Called with a null or empty Job object.  "
                     + "Object will not be persisted.");
+        }
+    	
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job persisted in [ "
+                    + (System.currentTimeMillis() - start) 
+                    + " ] ms.");
         }
     }
 }

@@ -179,6 +179,7 @@ public class JobFactoryService
                 LOGGER.warn("Output directory [ "
                     + newURI.toString() 
                     + " ] already exists.");
+            }
         }
         catch (URISyntaxException use) {
             // We are creating a URI from another URI, so we should never see
@@ -568,11 +569,12 @@ public class JobFactoryService
 	    					+ " ].");
 	    			getJobRunnerService().run(job);
 	    		}
-                        else {
-                            LOGGER.error("Unable to obtain a reference to the"
-                                    + " JobRunnerService.  Job ID [ "
-                                    + job.getJobID()
-                                    + " will not start.");
+                else {
+                    LOGGER.error("Unable to obtain a reference to the"
+                            + " JobRunnerService.  Job ID [ "
+                            + job.getJobID()
+                            + " ] will not start.");
+                }
     		}
     		else {
     			LOGGER.warn("Attempted to start a job with a state of [ "
@@ -598,5 +600,6 @@ public class JobFactoryService
             LOGGER.debug("Output staging area set to [ "
                 + stagingArea
                 + " ].");
+        }
     }
 }
