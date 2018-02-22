@@ -6,7 +6,7 @@
              
     <persistence-unit name="BundlerJPA" transaction-type="JTA">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <jta-data-source>java:jboss/datasources/JobTracker</jta-data-source>
+        <jta-data-source>java:jboss/datasources/jobtracker-postgres</jta-data-source>
 
         <class>mil.nga.bundler.model.ArchiveJob</class>
         <class>mil.nga.bundler.model.FileEntry</class>
@@ -15,7 +15,8 @@
         <properties>
             
             <!-- Hibernate Properties -->
-            <property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+            <property name="hibernate.default_schema" value="public" />
             <property name="hibernate.hbm2ddl.auto" value="update" />
             <property name="hibernate.show_sql" value="false" />
 

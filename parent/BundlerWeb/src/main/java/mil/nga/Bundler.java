@@ -31,7 +31,6 @@ import mil.nga.bundler.ejb.JobFactoryService;
 import mil.nga.bundler.ejb.JobRunnerService;
 import mil.nga.bundler.ejb.JobTrackerService;
 import mil.nga.bundler.ejb.RequestArchiveService;
-import mil.nga.bundler.ejb.ValidationService;
 import mil.nga.bundler.exceptions.ServiceUnavailableException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.messages.BundleRequestMessage;
@@ -112,16 +111,6 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
      */
     @EJB
     private RequestArchiveService requestArchiveService;
-    
-    /**
-     * Inject the EJB used to validate the incoming BundleRequest object.
-     * 
-     * Note:  JBoss EAP 6.x does not support injection into the application
-     * web tier.  When deployed to JBoss EAP 6.x this internal member 
-     * variable will always be null.
-     */
-    @EJB
-    private ValidationService validationService;
     
     /**
      * Default constructor initializes the System configuration

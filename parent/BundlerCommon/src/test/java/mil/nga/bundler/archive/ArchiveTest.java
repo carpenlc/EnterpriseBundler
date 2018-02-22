@@ -33,6 +33,10 @@ public class ArchiveTest {
 		
 		ArchiveTest._tempDir = System.getProperty("java.io.tmpdir");
 		
+                System.out.println("Temp directory to use [ "
+                        + ArchiveTest._tempDir
+                        + " ].");
+
 		// Create the directory to compress
 		StringBuilder sb = new StringBuilder();
 		sb.append(ArchiveTest._tempDir);

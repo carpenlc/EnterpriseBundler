@@ -622,44 +622,11 @@ public class EJBClientUtilities {
         }
         else {
             LOGGER.error("Unable to look up EJB [ "
-                    + getJNDIName(ValidationService.class)
+                    + getJNDIName(RequestArchiveService.class)
                     + " ] returned reference was null.");
         }
         return service;
     }
-    
-    /**
-     * Utility method used to look up the ValidationService interface.  This 
-     * method is only called by the web tier.
-     * 
-     * @return The ValidationService interface, or null if we couldn't look it
-     * up.
-     */
-    public ValidationService getValidationService() {
-        
-        ValidationService service = null;
-        Object            ejb     = getEJB(ValidationService.class);
-        if (ejb != null) {
-            if (ejb instanceof mil.nga.bundler.ejb.ValidationService) {
-                service = (ValidationService)ejb;
-            }
-            else {
-                LOGGER.error("Unable to look up EJB [ "
-                        + getJNDIName(ValidationService.class)
-                        + " ] returned reference was the wrong type.  "
-                        + "Type returned [ "
-                        + ejb.getClass().getCanonicalName()
-                        + " ].");
-            }
-        }
-        else {
-            LOGGER.error("Unable to look up EJB [ "
-                    + getJNDIName(ValidationService.class)
-                    + " ] returned reference was null.");
-        }
-        return service;
-    }
-
     
     /**
      * Method using the JMX MBean interface to retrieve the name of the current
