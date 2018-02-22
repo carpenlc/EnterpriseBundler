@@ -6,10 +6,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Properties;
 
 import mil.nga.bundler.ArchiveElementFactory;
 import mil.nga.bundler.archive.ArchiveFactory;
 import mil.nga.bundler.types.ArchiveType;
+import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.interfaces.BundlerI;
 import mil.nga.bundler.model.ArchiveElement;
 import mil.nga.bundler.exceptions.UnknownArchiveTypeException;
@@ -33,7 +35,7 @@ public class ZipArchiverTest extends ArchiveTest {
 
 	public String _archiveFilename1 = "test_archive_1";
 	public String _archiveFilename2 = "test_archive_2";
-
+	
 	/**
 	 * This method tests that the ZIP archiver can archive a directory 
 	 * and all files contained within, maintaining directory integrity.
@@ -54,7 +56,7 @@ public class ZipArchiverTest extends ArchiveTest {
 		ArchiveFactory factory = ArchiveFactory.getInstance();
 		try {
 			
-			ArchiveElementFactory archiveEF = new ArchiveElementFactory();
+			ArchiveElementFactory archiveEF = new ArchiveElementFactory(awsProps);
 			List<ArchiveElement> elems = archiveEF.getArchiveElements(ArchiveTest._dirToArchive, "/replace");
 			
 			BundlerI bundler = factory.getBundler(ArchiveType.ZIP);
@@ -99,7 +101,7 @@ public class ZipArchiverTest extends ArchiveTest {
 		ArchiveFactory factory = ArchiveFactory.getInstance();
 		try {
 			
-			ArchiveElementFactory archiveEF = new ArchiveElementFactory();
+			ArchiveElementFactory archiveEF = new ArchiveElementFactory(awsProps);
 			List<ArchiveElement> elems = archiveEF.getArchiveElements(list);
 			
 			BundlerI bundler = factory.getBundler(ArchiveType.ZIP);

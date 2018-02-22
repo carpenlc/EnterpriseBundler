@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -96,6 +97,22 @@ public class FileSystemFactory
         setS3EndPoint(s3EndPoint);
     } 
     
+    /**
+     * Alternate constructor added to support jUnit testing.
+     * @param props Populated properties file.
+     */
+    private FileSystemFactory(Properties props) {
+    	if (props != null) {
+    		setIAMRole(props.getProperty(IAM_ROLE_PROPERTY));
+    		setS3EndPoint(props.getProperty(S3_END_POINT_PROPERTY));
+    		setAccessKey(props.getProperty(ACCESS_KEY_PROPERTY));
+    		setSecretKey(props.getProperty(SECRET_KEY_PROPERTY));
+    	}
+    	else {
+    		LOGGER.error("Input properties file is null.  S3 filesystem will "
+    				+ "not be available.");
+    	}
+    }
     
     /**
      * Method to list the available <code>FileSystemProvider</code> objects.
@@ -256,6 +273,14 @@ public class FileSystemFactory
     }
     
     /**
+     * Getter method for the singleton instance of the FileSystemFactory.
+     * @return Handle to the singleton instance of the FileSystemFactory.
+     */
+    public static FileSystemFactory getInstance(Properties props) {
+        return FileSystemFactoryHolder.getFactorySingleton(props);
+    }
+    
+    /**
      * Setter method for the access key that will be used for authentication to
      * AWS.
      * @param value The access key to provide for authentication.
@@ -309,15 +334,30 @@ public class FileSystemFactory
         /**
          * Reference to the Singleton instance of the factory
          */
-        private static FileSystemFactory factory = new FileSystemFactory();
+        private static FileSystemFactory factory = null;
         
         /**
          * Accessor method for the singleton instance of the factory object.
          * @return The singleton instance of the factory.
          */
         public static FileSystemFactory getFactorySingleton() {
+        	if (factory == null) {
+        		factory = new FileSystemFactory();
+        	}
             return factory;
         }
+        
+        /**
+         * Accessor method for the singleton instance of the factory object.
+         * @return The singleton instance of the factory.
+         */
+        public static FileSystemFactory getFactorySingleton(Properties props) {
+        	if (factory == null) {
+        		factory = new FileSystemFactory(props);
+        	}
+            return factory;
+        }
+        
     }
     
     public static void main(String[] args) {

@@ -46,7 +46,7 @@ public class TarArchiverTest extends ArchiveTest {
 		ArchiveFactory factory = ArchiveFactory.getInstance();
 		try {
 			
-			ArchiveElementFactory archiveEF = new ArchiveElementFactory();
+			ArchiveElementFactory archiveEF = new ArchiveElementFactory(awsProps);
 			List<ArchiveElement> elems = archiveEF.getArchiveElements(ArchiveTest._dirToArchive, "/replace");
 			
 			BundlerI bundler = factory.getBundler(ArchiveType.TAR);
@@ -92,7 +92,7 @@ public class TarArchiverTest extends ArchiveTest {
 		ArchiveFactory factory = ArchiveFactory.getInstance();
 		try {
 			
-			ArchiveElementFactory archiveEF = new ArchiveElementFactory();
+			ArchiveElementFactory archiveEF = new ArchiveElementFactory(awsProps);
 			List<ArchiveElement> elems = archiveEF.getArchiveElements(list);
 			
 			BundlerI bundler = factory.getBundler(ArchiveType.TAR);

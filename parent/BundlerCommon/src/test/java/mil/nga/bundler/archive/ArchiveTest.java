@@ -5,14 +5,16 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import mil.nga.bundler.archive.Archiver;
+import mil.nga.bundler.interfaces.BundlerConstantsI;
 
 import org.junit.Test;
 import org.junit.BeforeClass;
 import static org.junit.Assert.assertEquals;
 
-public class ArchiveTest {
+public class ArchiveTest implements BundlerConstantsI {
 	
 	public static final String DIR_TO_ARCHIVE       = "dir_to_archive";
 	public static final String CHILD_DIR_TO_ARCHIVE = "child_dir_to_archive";
@@ -23,7 +25,9 @@ public class ArchiveTest {
 	public static String _childDir       = null;
 	
 	public static final long TEMP_FILE_SIZE = 1024L;
-	
+    public static Properties awsProps = new Properties();
+    
+
 	/**
 	 * The initialization method will set up some on-disk files to be 
 	 * compressed by the different archiver/compressor plugins.
@@ -31,6 +35,7 @@ public class ArchiveTest {
 	@BeforeClass
 	public static void init() throws IOException {
 		
+		awsProps.setProperty(IAM_ROLE_PROPERTY, "BogusRole");
 		ArchiveTest._tempDir = System.getProperty("java.io.tmpdir");
 		
                 System.out.println("Temp directory to use [ "

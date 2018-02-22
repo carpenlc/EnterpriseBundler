@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,16 @@ public class ArchiveElementFactory {
     public ArchiveElementFactory() {
         FileSystemFactory.getInstance().loadS3Filesystem();
         FileSystemFactory.getInstance().listFileSystemsAvailable();
+    }
+    
+    /**
+     * Alternate constructor added to support jUnit tests.
+     * @param props The input Properties object should contain the
+     * AWS configuration data.
+     */
+    public ArchiveElementFactory(Properties props) {
+        FileSystemFactory.getInstance(props).loadS3Filesystem();
+        FileSystemFactory.getInstance(props).listFileSystemsAvailable();
     }
     
     /**
