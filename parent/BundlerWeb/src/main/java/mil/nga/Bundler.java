@@ -47,6 +47,7 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
             Bundler.class);
+
     /**
      * Common header names in which the client CN is inserted
      */
@@ -54,7 +55,9 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
         "X-SSL-Client-CN",
         "SSL_CLIENT_S_DN_CN",
         "SM_USER",
-        "SM_USER_CN"
+        "SM_USER_CN",
+        "USER_CN",
+        "USERCN"
     };
     
     /**
