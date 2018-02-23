@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 
 /** 
  * Class responsible for validating the input list of files that were POSTed
- * to the bundler application in the BundlerRequestMessage.  The function of 
- * this class is to ensure that there are files to bundle, all of the 
- * requested files actually exist on the file system, and that the user did 
- * not request any duplicate files.
+ * to the bundler application in the <code>BundlerRequestMessage</code>.  The 
+ * function of this class is to ensure that there are files to bundle, all of 
+ * the requested files actually exist on the file system, and that the user 
+ * did not request any duplicate files.
  * 
  * During file visitation, the archive path is also calculated.
  * 
@@ -171,7 +171,8 @@ public class FileValidator {
         FileEntry validated = null;
         if ((requestedFile != null) && 
                 (!requestedFile.isEmpty())) {
-            Path file = Paths.get(requestedFile.trim());
+            URI uri = URIUtils.getInstance().getURI(requestedFile);
+        	Path file = Paths.get(uri);
             if ((Files.exists(file)) && (!Files.isDirectory(file))) {
                 try {
                     long size = Files.size(file);
