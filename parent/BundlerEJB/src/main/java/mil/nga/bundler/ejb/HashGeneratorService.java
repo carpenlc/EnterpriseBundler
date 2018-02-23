@@ -60,37 +60,37 @@ public class HashGeneratorService {
      * @see <code>mil.nga.bundler.types.HashType</code>
      * @return The hash value as a hex string.
      */
-    public String getHash(Path p, HashType hashType) {
+    public String getHash(URI uri, HashType hashType) {
         
         String hash = null;
 
-        if (p != null) { 
-            if (Files.exists(p)) {
+        if (uri != null) { 
+            if (Files.exists(Paths.get(uri))) {
                 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Generating [ "
                             + hashType.getText()
                             + " ] hash for file [ "
-                            + p.toString()
+                            + uri.toString()
                             + " ].");
                 }
                 
                 long startTime = System.currentTimeMillis();
                 switch (hashType) {
                     case MD5 : 
-                        hash = getMD5Hash(p);
+                        hash = getMD5Hash(uri);
                         break;
                     case SHA1:
-                        hash = getSHA1Hash(p);
+                        hash = getSHA1Hash(uri);
                         break;
                     case SHA256:
-                        hash = getSHA256Hash(p);
+                        hash = getSHA256Hash(uri);
                         break;
                     case SHA384:
-                        hash = getSHA384Hash(p);                        
+                        hash = getSHA384Hash(uri);                        
                         break;
                     case SHA512:
-                        hash = getSHA512Hash(p);                        
+                        hash = getSHA512Hash(uri);                        
                         break;
                 }
                 
@@ -100,7 +100,7 @@ public class HashGeneratorService {
                            "Hash type [ "
                             + hashType.getText()
                             + " ] for file [ "
-                            + p.toString()
+                            + uri.toString()
                             + " ] created in [ "
                             + Long.toString(elapsedTime)
                             + " ] ms.");
@@ -109,7 +109,7 @@ public class HashGeneratorService {
             else {
                 LOGGER.error("Input file does not exists.  Input file "
                         + "specified [ "
-                        + p.toString()
+                        + uri.toString()
                         + " ].");
             }
         }
@@ -129,8 +129,8 @@ public class HashGeneratorService {
      * Use <code>getHash(String, HashType)</code>
      */
     public String generate(String inputFile) {
-    	Path p = Paths.get(inputFile);
-        return getHash(p, HashType.SHA1);
+    	URI uri = URIUtils.getInstance().getURI(inputFile);
+        return getHash(uri, HashType.SHA1);
     }
     
     /**
@@ -156,9 +156,8 @@ public class HashGeneratorService {
                             + " ].");
                 }
             	
-                Path p = Paths.get(input);
-                if (Files.exists(p)) {
-                    String hash = getHash(p, HashType.SHA1);
+                if (Files.exists(Paths.get(input))) {
+                    String hash = getHash(input, HashType.SHA1);
                     saveHash(hash, Paths.get(output));
                 }
                 else {
@@ -188,12 +187,12 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated MD5 hash.
      */
-    public String getMD5Hash(Path file) {
+    public String getMD5Hash(URI file) {
 
-        String          hash = null;
+        String hash = null;
 
         if (file != null) {
-	        try (InputStream is = Files.newInputStream(file)) {
+	        try (InputStream is = Files.newInputStream(Paths.get(file))) {
 	            hash = org.apache.commons.codec.digest.DigestUtils.md5Hex(is);
 	        }
 	        catch (IOException ioe) {
@@ -222,11 +221,11 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA1 hash.
      */
-    public String getSHA1Hash(Path file) {
+    public String getSHA1Hash(URI file) {
 
         String          hash = null;
         if (file != null) {
-	        try (InputStream is = Files.newInputStream(file)) {
+	        try (InputStream is = Files.newInputStream(Paths.get(file))) {
 	            hash = org.apache.commons.codec.digest.DigestUtils.sha1Hex(is);
 	        }
 	        catch (IOException ioe) {
@@ -253,12 +252,12 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA256 hash.
      */
-    public String getSHA256Hash(Path file) {
+    public String getSHA256Hash(URI file) {
 
-        String          hash = null;
+        String hash = null;
         
         if (file != null) {
-        	try (InputStream is = Files.newInputStream(file)) {
+        	try (InputStream is = Files.newInputStream(Paths.get(file))) {
 	            hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(is);
 	        }
 	        catch (IOException ioe) {
@@ -285,12 +284,12 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA384 hash.
      */
-    public String getSHA384Hash(Path file) {
+    public String getSHA384Hash(URI file) {
 
-        String          hash = null;
+        String hash = null;
 
         if (file != null) {
-	        try (InputStream is = Files.newInputStream(file)) {
+	        try (InputStream is = Files.newInputStream(Paths.get(file))) {
 	            hash = org.apache.commons.codec.digest.DigestUtils.sha384Hex(is);
 	        }
 	        catch (IOException ioe) {
@@ -318,12 +317,12 @@ public class HashGeneratorService {
      * @param file The file we need the hash for.
      * @return The calculated SHA512 hash.
      */
-    public String getSHA512Hash(Path file) {
+    public String getSHA512Hash(URI file) {
 
-        String          hash = null;
+        String hash = null;
 
         if (file != null) {
-	        try (InputStream is = Files.newInputStream(file)) {
+	        try (InputStream is = Files.newInputStream(Paths.get(file))) {
 	            hash = org.apache.commons.codec.digest.DigestUtils.sha512Hex(is);
 	        }
 	        catch (IOException ioe) {
