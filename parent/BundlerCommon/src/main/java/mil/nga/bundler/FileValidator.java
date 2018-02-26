@@ -313,36 +313,27 @@ public class FileValidator {
                 	URI  uri = URIUtils.getInstance().getURI(file.getFile());
                     Path p   = Paths.get(uri);
                     
-                    LOGGER.info("Validating [ "
-                    		+ p.toString()
-                    		+ " ].");
+                    if (LOGGER.isDebugEnabled()) {
+	                    LOGGER.debug("Validating [ "
+	                    		+ uri.toString()
+	                    		+ " ].");
+                    }
                     
                     if (Files.isDirectory(p)) {
                     	
-                    	// TODO: Remove
-                    	LOGGER.info("File [ "
-                    			+ uri.toString()
-                    			+ " ] is a directory.");
+                    	if (LOGGER.isDebugEnabled()) {
+	                    	LOGGER.debug("File [ "
+	                    			+ uri.toString()
+	                    			+ " ] is a directory.");
+                    	}
                         
                     	String baseDir = p.toAbsolutePath().toString();
                         try {
                         	
                             List<URI> files = FileFinder.listFiles(uri);
                             
-                            // TODO: remove 
-                            LOGGER.info("Directory [ "
-                            		+ uri.toString()
-                            		+ " ] contains [ "
-                            		+ files.size() 
-                            		+ " ] files.");
-                            
                             if ((files != null) && (!files.isEmpty())) { 
                                 for (URI name : files) {
-                                	
-                                	// TODO: remove.
-                                	LOGGER.info("Adding => [ "
-                                			+ name.toString()
-                                			+ " ].");
                                 	
                                     expandedList.add(
                                             new FileRequest.FileRequestBuilder()
