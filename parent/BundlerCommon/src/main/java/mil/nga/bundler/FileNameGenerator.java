@@ -2,7 +2,6 @@ package mil.nga.bundler;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.FileSystemNotFoundException;
 
 import org.slf4j.Logger;

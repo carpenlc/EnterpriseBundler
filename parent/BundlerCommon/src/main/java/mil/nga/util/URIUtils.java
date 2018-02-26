@@ -55,7 +55,7 @@ public class URIUtils implements Serializable {
             			uri.getQuery());
             }
             // We're making a URI out of a URI here so this exception can 
-            // never be thrown here so just eat it.
+            // never be thrown here - just eat it.
             catch (URISyntaxException use) { }
         }
         return newURI;
@@ -70,8 +70,9 @@ public class URIUtils implements Serializable {
     public URI getURI(String filePath) throws FileSystemNotFoundException {
     	URI uri = null;
     	
-    	// TODO : Remove
-    	LOGGER.info("Converting [ " + filePath + " ] to URI.");
+    	if (LOGGER.isDebugEnabled()) {
+    		LOGGER.debug("Converting [ " + filePath + " ] to URI.");
+    	}
     	
         if ((filePath != null) && (!filePath.isEmpty())) {
         	// Create the URI from the input file path. 
