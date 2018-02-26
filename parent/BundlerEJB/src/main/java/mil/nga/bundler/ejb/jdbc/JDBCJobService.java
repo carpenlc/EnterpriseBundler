@@ -42,7 +42,7 @@ public class JDBCJobService {
     /**
      * Container-injected datasource object.
      */
-    @Resource(mappedName="java:jboss/datasources/jobtracker-postgres")
+    @Resource(mappedName="java:jboss/datasources/JobTracker")
     DataSource datasource;
     
     /**

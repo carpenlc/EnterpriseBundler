@@ -333,6 +333,11 @@ public class JobService implements BundlerConstantsI {
         Job  managedJob = null;
         
         if (job != null) {
+    		if (LOGGER.isDebugEnabled()) {
+    			LOGGER.debug("...beginning update of job [ "
+    					+ job.getJobID()
+    					+ " ]...");
+    		}
         	// getEntityManager().getTransaction().begin();
             managedJob = getEntityManager().merge(job);
             getEntityManager().flush();
@@ -360,6 +365,11 @@ public class JobService implements BundlerConstantsI {
     	long start = System.currentTimeMillis();
         
     	if (job != null) {
+    		if (LOGGER.isDebugEnabled()) {
+    			LOGGER.debug("...beginning persistence of job [ "
+    					+ job.getJobID()
+    					+ " ]...");
+    		}
         	// getEntityManager().getTransaction().begin();
         	getEntityManager().persist(job);
         	getEntityManager().flush();

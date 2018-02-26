@@ -87,7 +87,13 @@ public class FileCompletionListener
     }
     
     /**
+     * Method satisfying the <code>FileCompletionListenerI</code> interface.  
+     * It accepts and object of type <code>ArchiveElement</code> and updates 
+     * the state of that file in the backing data store.  This method is 
+     * called after the compression of the file has completed so the state is 
+     * always set to <code>COMPLETE</code>.
      * 
+     * @param element The file data to update.
      */
     @Override
     public void notify(ArchiveElement element) {

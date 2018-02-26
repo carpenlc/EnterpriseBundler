@@ -104,7 +104,7 @@ public class JobFactoryService
      * 
      * @return Reference to the JobService EJB.
      */
-    private JobRunnerService getJobRunnerService() {
+    private JobRunnerService getJobRunnerService() throws ServiceUnavailableException {
         if (jobRunner == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to JobRunnerService.  Attempting to "
@@ -112,6 +112,12 @@ public class JobFactoryService
             jobRunner = EJBClientUtilities
                     .getInstance()
                     .getJobRunnerService();
+            if (jobRunner == null) {
+            	throw new ServiceUnavailableException("Unable to look up "
+                        + "target EJB [ "
+            			+ JobRunnerService.class.getCanonicalName()
+                        + " ].");
+            }
         }
         return jobRunner;
     }
@@ -121,7 +127,7 @@ public class JobFactoryService
      * 
      * @return Reference to the JobService EJB.
      */
-    private JobService getJobService() {
+    private JobService getJobService() throws ServiceUnavailableException {
         if (jobService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to JobService.  Attempting to "
@@ -129,6 +135,12 @@ public class JobFactoryService
             jobService = EJBClientUtilities
                     .getInstance()
                     .getJobService();
+            if (jobService == null) {
+            	throw new ServiceUnavailableException("Unable to look up "
+                        + "target EJB [ "
+            			+ JobService.class.getCanonicalName()
+                        + " ].");
+            }
         }
         return jobService;
     }
@@ -371,7 +383,9 @@ public class JobFactoryService
     }
 
     @Asynchronous
-    public void createJob(String jobID, BundleRequestMessage request) throws ServiceUnavailableException {
+    public void createJob(
+    		String jobID, 
+    		BundleRequestMessage request) throws ServiceUnavailableException {
     	
     	long startTime = System.currentTimeMillis();
     	Job  job       = null;
@@ -463,10 +477,12 @@ public class JobFactoryService
     }
     
     @Asynchronous
-    public void createJob(String jobID, BundleRequest request) throws ServiceUnavailableException {
+    public void createJob(
+    		String jobID, 
+    		BundleRequest request) throws ServiceUnavailableException {
     	
     	long startTime = System.currentTimeMillis();
-    	Job  job        = null;
+    	Job  job       = null;
     	
     	try {
     		
@@ -558,7 +574,7 @@ public class JobFactoryService
      * 
      * @param job The job to execute.
      */
-    public void runJob(Job job) {
+    public void runJob(Job job) throws ServiceUnavailableException {
         LOGGER.debug("runJob() method called.");
     	if (job != null) {
     		if (job.getState() == JobStateType.NOT_STARTED) {

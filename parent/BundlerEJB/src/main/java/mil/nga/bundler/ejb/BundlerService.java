@@ -35,7 +35,8 @@ import mil.nga.util.URIUtils;
  */
 @Stateless
 @LocalBean
-public class BundlerService extends NotificationService implements BundlerConstantsI {
+public class BundlerService 
+		extends NotificationService implements BundlerConstantsI {
 
     /**
      * Set up the Log4j system for use throughout the class
@@ -343,28 +344,43 @@ public class BundlerService extends NotificationService implements BundlerConsta
                 archiveJob = getArchiveJobService().getArchiveJob(
                 		message.getJobId(), 
                 		message.getArchiveId());
-                archiveJob.setArchiveState(endState);
                 
-                // Update the end time.
-                archiveJob.setEndTime(System.currentTimeMillis());
-                
-                // Go get the final size of the output archive.
-                archiveJob.setSize(getArchiveFileSize(
-                                		archiveJob.getArchive()));
-                        
-                // Ensure the ArchiveJob is updated in the backing data store.
-                getArchiveJobService().update(archiveJob);
-                        
+                if (archiveJob != null) {
+	                archiveJob.setArchiveState(endState);
+	                
+	                // Update the end time.
+	                archiveJob.setEndTime(System.currentTimeMillis());
+	                
+	                // Go get the final size of the output archive.
+	                archiveJob.setSize(getArchiveFileSize(
+	                                		archiveJob.getArchive()));
+	                        
+	                // Ensure the ArchiveJob is updated in the backing data store.
+	                getArchiveJobService().update(archiveJob);
+            
+                }
+                else {
+                	LOGGER.error("Unable to retrieve the ArchiveJob object "
+                			+ "for job ID [ "
+                			+ message.getJobId()
+                			+ " ] and archive ID [ "
+                			+ message.getArchiveId()
+                			+ " ] from the data store.  Archive job status will "
+                			+ "not be updated here.  Will attempt to update "
+                			+ "the status on notification.");
+                }
+            
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Archive complete.  Sending " 
                             + "notification message file for "
                             + "archive with job ID [ "
-                            + archiveJob.getJobID()
+                            + message.getJobId()
                             + " ] and archive ID [ "
-                            + archiveJob.getArchiveID()
+                            + message.getArchiveId()
                             + " ].");
                 }
-                notify(archiveJob.getJobID(), archiveJob.getArchiveID());
+                
+                notify(message.getJobId(), message.getArchiveId());
             }
             else {
                 LOGGER.error("Unable to find an ARCHIVE_JOB matching "

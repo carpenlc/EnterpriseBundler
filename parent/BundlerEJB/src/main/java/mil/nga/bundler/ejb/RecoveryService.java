@@ -188,7 +188,10 @@ public class RecoveryService {
 	        }
     	}
         catch (ServiceUnavailableException sue) {
-        	
+        	LOGGER.error("Unable to obtain a reference to the required EJB.  "
+        			+ "Error message => [ "
+        			+ sue.getMessage()
+        			+ " ].");
         }
     }
     
