@@ -71,6 +71,22 @@ public class EntryPathFactory
     }
     
     /**
+     * Alternate private constructor added to support jUnit testing.  This 
+     * constructor allows clients to supply a Properties object as opposed 
+     * to loading an external properties file.
+     * 
+     * @param props Populated properties file.
+     */
+    private EntryPathFactory(Properties props) {
+    	if (props != null) {
+    		loadPrefixMap(props);
+    	}
+    	else {
+    		LOGGER.warn("Input Properties object is null.");
+    	}
+    }
+    
+    /**
      * Method used to load the List of path prefixes that are to be excluded
      * from the entry path that will exist in the output archive file.
      * 
@@ -397,11 +413,28 @@ public class EntryPathFactory
     }
     
     /**
+     * Getter method for the prefix exclusions that were read from the input
+     * Properties object.
+     * @return A list of Strings to exclude from the calculated entry paths.
+     */
+    public List<String> getPrefixExclusions() {
+    	return prefixExclusions;
+    }
+    
+    /**
      * Getter method for the singleton instance of the EntryPathFactory.
      * @return Handle to the singleton instance of the EntryPathFactory.
      */
     public static EntryPathFactory getInstance() {
         return EntryPathFactoryHolder.getFactorySingleton();
+    }
+    
+    /**
+     * Getter method for the singleton instance of the EntryPathFactory.
+     * @return Handle to the singleton instance of the EntryPathFactory.
+     */
+    public static EntryPathFactory getInstance(Properties props) {
+        return EntryPathFactoryHolder.getFactorySingleton(props);
     }
     
     /** 
@@ -417,37 +450,29 @@ public class EntryPathFactory
         /**
          * Reference to the Singleton instance of the factory
          */
-        private static EntryPathFactory factory = new EntryPathFactory();
+        private static EntryPathFactory factory = null;
         
         /**
          * Accessor method for the singleton instance of the factory object.
          * @return The singleton instance of the factory.
          */
         public static EntryPathFactory getFactorySingleton() {
+        	if (factory == null) {
+        		factory = new EntryPathFactory();
+        	}
             return factory;
         }
-    }
-    
-    
-    public static void main(String[] args) {
         
-        System.out.println("Extension of blah.tar.gz => " + 
-                EntryPathFactory.getInstance().getExtension("blah.tar.gz"));
-        System.out.println("Extension of file_with_no_extension => " +
-                EntryPathFactory.getInstance().getExtension("file_with_no_extension"));
-        System.out.println("Extension of /tmp/dir1/dir2/blah.txt => " + 
-                EntryPathFactory.getInstance().getExtension("/tmp/dir1/dir2/blah.txt"));
-        
-        String test = "0123456789012345678901234567890123456789" 
-                + "0123456789012345678901234567890123456789"
-                + "01234567890123456789ABCDEFGHIJK.txt";
-        System.out.println("Truncated file => " + 
-                EntryPathFactory.getInstance().truncateFilename(test));
-        String test2 = "/abcd/efgh/ijkl/"
-                + "0123456789012345678901234567890123456789" 
-                + "0123456789012345678901234567890123456789"
-                + "0123456789.txt";
-        System.out.println("Truncated file => " + 
-                EntryPathFactory.getInstance().enforceLengthLimit(test2));
+        /**
+         * Accessor method for the singleton instance of the factory object.
+         * @param props Properties object.
+         * @return The singleton instance of the factory.
+         */
+        public static EntryPathFactory getFactorySingleton(Properties props) {
+        	if (factory == null) {
+        		factory = new EntryPathFactory(props);
+        	}
+            return factory;
+        }
     }
 }
