@@ -61,8 +61,8 @@ public class GZipArchiver extends Compressor implements BundlerI {
             throws IOException {
         
         try (
-        	// s3fs file system provider does not currently support OpenOptions.
-        	// work around by not supplying them.
+            // s3fs file system provider does not currently support OpenOptions.
+            // work around by not supplying them.
             //BufferedInputStream bIn = new BufferedInputStream(
             //        Files.newInputStream(
             //                Paths.get(inputFile),

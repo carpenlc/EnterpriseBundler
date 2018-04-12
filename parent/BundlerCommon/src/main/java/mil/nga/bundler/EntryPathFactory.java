@@ -78,12 +78,12 @@ public class EntryPathFactory
      * @param props Populated properties file.
      */
     private EntryPathFactory(Properties props) {
-    	if (props != null) {
-    		loadPrefixMap(props);
-    	}
-    	else {
-    		LOGGER.warn("Input Properties object is null.");
-    	}
+        if (props != null) {
+            loadPrefixMap(props);
+        }
+        else {
+            LOGGER.warn("Input Properties object is null.");
+        }
     }
     
     /**
@@ -94,12 +94,16 @@ public class EntryPathFactory
      */
     private void loadPrefixMap(Properties props) {
         if (props != null) {
-            if (prefixExclusions == null) {
+            
+        	if (prefixExclusions == null) {
                 prefixExclusions = new ArrayList<String>();
             }
+
             for (int i=0; i<MAX_NUM_EXCLUSIONS; i++) {
+            
                 String exclusion = props.getProperty(
                         PARTIAL_PROP_NAME + Integer.toString(i).trim());
+
                 if ((exclusion != null) && (!exclusion.isEmpty())) {
                     prefixExclusions.add(exclusion);
                     if (LOGGER.isDebugEnabled()) {
@@ -418,7 +422,7 @@ public class EntryPathFactory
      * @return A list of Strings to exclude from the calculated entry paths.
      */
     public List<String> getPrefixExclusions() {
-    	return prefixExclusions;
+        return prefixExclusions;
     }
     
     /**
@@ -434,7 +438,7 @@ public class EntryPathFactory
      * @return Handle to the singleton instance of the EntryPathFactory.
      */
     public static EntryPathFactory getInstance(Properties props) {
-        return EntryPathFactoryHolder.getFactorySingleton(props);
+        return new EntryPathFactory(props);
     }
     
     /** 
@@ -457,9 +461,9 @@ public class EntryPathFactory
          * @return The singleton instance of the factory.
          */
         public static EntryPathFactory getFactorySingleton() {
-        	if (factory == null) {
-        		factory = new EntryPathFactory();
-        	}
+            if (factory == null) {
+                factory = new EntryPathFactory();
+            }
             return factory;
         }
         
@@ -469,9 +473,9 @@ public class EntryPathFactory
          * @return The singleton instance of the factory.
          */
         public static EntryPathFactory getFactorySingleton(Properties props) {
-        	if (factory == null) {
-        		factory = new EntryPathFactory(props);
-        	}
+            if (factory == null) {
+                factory = new EntryPathFactory(props);
+            }
             return factory;
         }
     }

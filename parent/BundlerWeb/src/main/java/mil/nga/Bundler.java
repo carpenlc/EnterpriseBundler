@@ -344,20 +344,20 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
                 
                 try {
                     
-                	String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
-                	
-                	// Changed to asynchronous EJB call.
-                	getJobFactoryService().createJob(jobID, request);
+                    String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
+                    
+                    // Changed to asynchronous EJB call.
+                    getJobFactoryService().createJob(jobID, request);
                         
                     getRequestArchiveService().archiveRequest(
                             request, 
                             jobID);
     
                     message = new JobTrackerMessage.JobTrackerMessageBuilder()
-                    		.jobID(jobID)
-                    		.userName(request.getUserName())
-                    		.state(JobStateType.NOT_STARTED)
-                    		.build();
+                            .jobID(jobID)
+                            .userName(request.getUserName())
+                            .state(JobStateType.NOT_STARTED)
+                            .build();
         
                 }
                 catch (ServiceUnavailableException sue) {
@@ -424,40 +424,40 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             }
             
             if (LOGGER.isDebugEnabled()) {
-	            LOGGER.debug("Incoming request parsed [ "
-	                    + request.toString()
-	                    + " ].");
+                LOGGER.debug("Incoming request parsed [ "
+                        + request.toString()
+                        + " ].");
             }
             
             try {
                 
-            	String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
-            	
-            	// Changed to asynchronous EJB call.
-            	getJobFactoryService().createJob(jobID, request);
+                String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
+                
+                // Changed to asynchronous EJB call.
+                getJobFactoryService().createJob(jobID, request);
                     
                 getRequestArchiveService().archiveRequest(
                         request, 
                         jobID);
 
                 message = new JobTrackerMessage.JobTrackerMessageBuilder()
-                		.jobID(jobID)
-                		.userName(request.getUserName())
-                		.state(JobStateType.NOT_STARTED)
-                		.build();
+                        .jobID(jobID)
+                        .userName(request.getUserName())
+                        .state(JobStateType.NOT_STARTED)
+                        .build();
     
             }
             catch (ServiceUnavailableException sue) {
-            	LOGGER.error("Internal system failure.  Target EJB service "
-            			+ "is unavailable.  Exception message => [ "
-            			+ sue.getMessage()
-            			+ " ].");
+                LOGGER.error("Internal system failure.  Target EJB service "
+                        + "is unavailable.  Exception message => [ "
+                        + sue.getMessage()
+                        + " ].");
                 return Response.serverError().build();
             }
             catch (NamingException ne) {
                 LOGGER.error("Internal system failure.  An unexpected JNDI "
-                		+ "NamingException encountered while looking up "
-                		+ "EJBs.  Error message [ "
+                        + "NamingException encountered while looking up "
+                        + "EJBs.  Error message [ "
                         + ne.getMessage()
                         + " ].");
                 return Response.serverError().build();
@@ -516,10 +516,10 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
             
             try {
                 
-            	String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
-            	
-            	// Changed to asynchronous EJB call.
-            	getJobFactoryService().createJob(jobID, request);
+                String jobID = FileUtils.generateUniqueToken(JOB_ID_LENGTH);
+                
+                // Changed to asynchronous EJB call.
+                getJobFactoryService().createJob(jobID, request);
                     
                 getRequestArchiveService().archiveRequest(
                         request, 
@@ -527,10 +527,10 @@ public class Bundler extends PropertyLoader implements BundlerConstantsI {
 
                 // Build the return message.
                 message = new JobTrackerMessage.JobTrackerMessageBuilder()
-                		.jobID(jobID)
-                		.userName(request.getUserName())
-                		.state(JobStateType.NOT_STARTED)
-                		.build();
+                        .jobID(jobID)
+                        .userName(request.getUserName())
+                        .state(JobStateType.NOT_STARTED)
+                        .build();
    
             }
             catch (ServiceUnavailableException sue) {

@@ -23,8 +23,8 @@ public interface BundlerI {
      * processing.
      */
     public void addFileCompletionListener(FileCompletionListenerI listener);
-	
-	 /**
+    
+     /**
      * Bundle each file in the input list.  Each entry in the list will contain
      * the URI of the target file to bundle and the path within the archive in 
      * which to place the target file.  The files will be bundled in accordance 

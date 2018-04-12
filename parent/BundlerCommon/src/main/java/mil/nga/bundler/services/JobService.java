@@ -29,17 +29,17 @@ import mil.nga.bundler.exceptions.ServiceUnavailableException;
  */
 public class JobService implements BundlerConstantsI, Closeable {
 
-	/**
+    /**
      * Set up the Log4j system for use throughout the class
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
             JobService.class);
     
-	/**
-	 * EntityManager object used throughout the class.
-	 */
-	private EntityManager em;
-	
+    /**
+     * EntityManager object used throughout the class.
+     */
+    private EntityManager em;
+    
     /**
      * Default constructor. 
      */
@@ -54,29 +54,29 @@ public class JobService implements BundlerConstantsI, Closeable {
      * construct the EntityManager. 
      */
     private EntityManager getEntityManager() 
-    		throws ServiceUnavailableException {
-    	if (em == null) {
-    		if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("Creating un-managed EntityManager.");
-    		}
-    		EntityManagerFactory emFactory =  
-    				Persistence.createEntityManagerFactory(
-    						APPLICATION_PERSISTENCE_CONTEXT);
-    		
-    		if (emFactory != null) {
-    			em = emFactory.createEntityManager();
-    		}
-    		else {
-    			LOGGER.warn("The EntityManagerFactory object is null.  Unable "
-    					+ "to start the JPA subsystem.");
-    		}
-    		if (em == null) {
-    			throw new ServiceUnavailableException(
-        				"Unable to start the JPA subsystem.  Unable to "
-    					+ "construct the EntityManager.");
-    		}
-    	}
-    	return em;
+            throws ServiceUnavailableException {
+        if (em == null) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Creating un-managed EntityManager.");
+            }
+            EntityManagerFactory emFactory =  
+                    Persistence.createEntityManagerFactory(
+                            APPLICATION_PERSISTENCE_CONTEXT);
+            
+            if (emFactory != null) {
+                em = emFactory.createEntityManager();
+            }
+            else {
+                LOGGER.warn("The EntityManagerFactory object is null.  Unable "
+                        + "to start the JPA subsystem.");
+            }
+            if (em == null) {
+                throw new ServiceUnavailableException(
+                        "Unable to start the JPA subsystem.  Unable to "
+                        + "construct the EntityManager.");
+            }
+        }
+        return em;
     }
     
     
@@ -93,7 +93,7 @@ public class JobService implements BundlerConstantsI, Closeable {
         if ((jobID != null) && (!jobID.isEmpty())) {
             try {
                 
-            	CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+                CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<Job> cq = cb.createQuery(Job.class);
                 Root<Job> root = cq.from(Job.class);
                 
@@ -114,9 +114,9 @@ public class JobService implements BundlerConstantsI, Closeable {
                 
             }
             catch (NoResultException nre) {
-            	LOGGER.warn("Unable to find Job associated with job ID [ "
-            			+ jobID
-            			+ " ].  Returned Job will be null.");
+                LOGGER.warn("Unable to find Job associated with job ID [ "
+                        + jobID
+                        + " ].  Returned Job will be null.");
             }
         }
         else {
@@ -137,7 +137,7 @@ public class JobService implements BundlerConstantsI, Closeable {
         List<String> jobIDs = null;
         
         try {
-        	
+            
             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
             CriteriaQuery<Job> cq =
                             cb.createQuery(Job.class);
@@ -146,12 +146,12 @@ public class JobService implements BundlerConstantsI, Closeable {
             Query query = getEntityManager().createQuery(cq);
             jobIDs = query.getResultList();
             
-	    }
-	    catch (NoResultException nre) {
-	    	LOGGER.warn("Unable to find any job IDs in the data store.  "
-	    			+ "Returned list will be empty.");
-	    	jobIDs = new ArrayList<String>();
-	    }
+        }
+        catch (NoResultException nre) {
+            LOGGER.warn("Unable to find any job IDs in the data store.  "
+                    + "Returned list will be empty.");
+            jobIDs = new ArrayList<String>();
+        }
         return jobIDs;
     }
     
@@ -163,19 +163,19 @@ public class JobService implements BundlerConstantsI, Closeable {
      * @return The container managed Job object.
      */
     public Job update(Job job) throws ServiceUnavailableException {
-    	
-    	long start      = System.currentTimeMillis();
+        
+        long start      = System.currentTimeMillis();
         Job  managedJob = null;
         
         if (job != null) {
-        	
-        	if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("...beginning update of job [ "
-    					+ job.getJobID()
-    					+ " ]...");
-    		}
-        	
-        	getEntityManager().getTransaction().begin();
+            
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("...beginning update of job [ "
+                        + job.getJobID()
+                        + " ]...");
+            }
+            
+            getEntityManager().getTransaction().begin();
             managedJob = getEntityManager().merge(job);
             getEntityManager().getTransaction().commit();
             
@@ -199,19 +199,19 @@ public class JobService implements BundlerConstantsI, Closeable {
      * @param job The Job object to persist.
      */
     public void persist(Job job) throws ServiceUnavailableException {
-    	
-    	long start = System.currentTimeMillis();
-    	
+        
+        long start = System.currentTimeMillis();
+        
         if (job != null) {
-        	
-        	if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("...beginning persist of job [ "
-    					+ job.getJobID()
-    					+ " ]...");
-    		}
-        	
-        	getEntityManager().getTransaction().begin();
-        	getEntityManager().persist(job);
+            
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("...beginning persist of job [ "
+                        + job.getJobID()
+                        + " ]...");
+            }
+            
+            getEntityManager().getTransaction().begin();
+            getEntityManager().persist(job);
             getEntityManager().getTransaction().commit();
             
             if (LOGGER.isDebugEnabled()) {
@@ -234,9 +234,9 @@ public class JobService implements BundlerConstantsI, Closeable {
      */
     @Override
     public void close() {
-    	if (em != null) {
-    		em.close();
-    	}
+        if (em != null) {
+            em.close();
+        }
     }
     
 }

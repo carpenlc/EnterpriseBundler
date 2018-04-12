@@ -11,11 +11,11 @@ import java.io.Serializable;
 public class FileEntryDecorator implements Serializable {
     
     /**
-	 * Eclipse-generated serialVersionUID
-	 */
-	private static final long serialVersionUID = 5061739379976688490L;
+     * Eclipse-generated serialVersionUID
+     */
+    private static final long serialVersionUID = 5061739379976688490L;
 
-	/**
+    /**
      * <code>FileEntry</code> object to decorate.
      */
     protected FileEntry element;

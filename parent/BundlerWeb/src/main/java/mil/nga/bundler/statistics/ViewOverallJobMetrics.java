@@ -61,12 +61,12 @@ public class ViewOverallJobMetrics
      */
     @PostConstruct
     public void initialize() {
-    	
+        
         if (getMetricsService() != null) {
-        	try {
+            try {
             metrics = getMetricsService().getMetrics();
-        	}
-        	catch (Exception e) {}
+            }
+            catch (Exception e) {}
         }
         else {
             LOGGER.error("Unable to obtain a reference to the "

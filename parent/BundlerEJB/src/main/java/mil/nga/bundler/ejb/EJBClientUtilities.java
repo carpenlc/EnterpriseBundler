@@ -176,7 +176,7 @@ public class EJBClientUtilities {
      */
     public ArchiveJobService getArchiveJobService() {
         
-    	ArchiveJobService service = null;
+        ArchiveJobService service = null;
         Object           ejb     = getEJB(ArchiveJobService.class);
         
         if (ejb != null) {
@@ -209,7 +209,7 @@ public class EJBClientUtilities {
      */
     public BundlerService getBundlerService() {
         
-    	BundlerService service = null;
+        BundlerService service = null;
         Object         ejb     = getEJB(BundlerService.class);
         
         if (ejb != null) {
@@ -242,7 +242,7 @@ public class EJBClientUtilities {
      */
     public FileCompletionListener getFileCompletionListener() {
         
-    	FileCompletionListener service = null;
+        FileCompletionListener service = null;
         Object               ejb     = getEJB(FileCompletionListener.class);
         
         if (ejb != null) {
@@ -275,7 +275,7 @@ public class EJBClientUtilities {
      */
     public FileEntryService getFileEntryService() {
         
-    	FileEntryService service = null;
+        FileEntryService service = null;
         Object           ejb     = getEJB(FileEntryService.class);
         
         if (ejb != null) {

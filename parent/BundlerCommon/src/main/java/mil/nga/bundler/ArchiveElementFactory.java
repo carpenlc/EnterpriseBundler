@@ -553,50 +553,50 @@ public class ArchiveElementFactory {
     }
     
     public List<ArchiveElement> getArchiveElements(FileRequest request) {
-    	List<ArchiveElement> elements = new ArrayList<ArchiveElement>();
-    	if (request != null) {
-	        if ((request.getFile() != null) && (!request.getFile().isEmpty())) { 
-	            try {
-	                URI uri = getURI(request.getFile());
-	                Path p = Paths.get(uri);
-	                if (Files.isDirectory(p)) {
-	                    elements.addAll(
-	                            getURIArchiveElements(
-	                                    getFileList(uri),
-	                                    p.toString(),
-	                                    request.getArchivePath()));
-	                }
-	                else {
-	                    if (request.getArchivePath() != null) {
-	                        elements.add(getArchiveElement(request.getFile(), request.getArchivePath()));
-	                    }
-	                    else {
-	                        elements.add(getArchiveElement(request.getFile()));
-	                    }
-	                }
-	            }
-	            catch (FileNotFoundException fnfe) {
-	                LOGGER.warn("Target directory [ "
-	                        + request.getFile()
-	                        + " ] does not exist on the file system.  Exception "
-	                        + "message => [ "
-	                        + fnfe.getMessage()
-	                        + " ].");
-	            }
-	            catch (IOException ioe) {
-	                LOGGER.error("Unexpected IOException raised while attempting "
-	                        + "to walk the file tree for directory [ "
-	                        + request.getFile()
-	                        + " ].  Exception message => [ "
-	                        + ioe.getMessage());
-	            }
-	        }
-    	}
-    	else {
-    		
-    	}
+        List<ArchiveElement> elements = new ArrayList<ArchiveElement>();
+        if (request != null) {
+            if ((request.getFile() != null) && (!request.getFile().isEmpty())) { 
+                try {
+                    URI uri = getURI(request.getFile());
+                    Path p = Paths.get(uri);
+                    if (Files.isDirectory(p)) {
+                        elements.addAll(
+                                getURIArchiveElements(
+                                        getFileList(uri),
+                                        p.toString(),
+                                        request.getArchivePath()));
+                    }
+                    else {
+                        if (request.getArchivePath() != null) {
+                            elements.add(getArchiveElement(request.getFile(), request.getArchivePath()));
+                        }
+                        else {
+                            elements.add(getArchiveElement(request.getFile()));
+                        }
+                    }
+                }
+                catch (FileNotFoundException fnfe) {
+                    LOGGER.warn("Target directory [ "
+                            + request.getFile()
+                            + " ] does not exist on the file system.  Exception "
+                            + "message => [ "
+                            + fnfe.getMessage()
+                            + " ].");
+                }
+                catch (IOException ioe) {
+                    LOGGER.error("Unexpected IOException raised while attempting "
+                            + "to walk the file tree for directory [ "
+                            + request.getFile()
+                            + " ].  Exception message => [ "
+                            + ioe.getMessage());
+                }
+            }
+        }
+        else {
+            
+        }
         return elements;   
-    	
+        
     }
     /**
      * This method signature accepts a single <code>String</code> filename 
@@ -708,11 +708,11 @@ public class ArchiveElementFactory {
         }
         
         try {
-        	URI uri = (new ArchiveElementFactory()).getURI("/tmp/test");
-        	System.out.println("URI : " + uri.toString());
+            URI uri = (new ArchiveElementFactory()).getURI("/tmp/test");
+            System.out.println("URI : " + uri.toString());
         }
         catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
         }
         
     }

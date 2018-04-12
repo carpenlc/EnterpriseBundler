@@ -37,8 +37,8 @@ public class FileRequest implements Serializable {
      * No-arg constructor required by JAX-B.
      */
     public FileRequest(FileRequestBuilder builder) {
-    	file = builder.file;
-    	path = builder.path;
+        file = builder.file;
+        path = builder.path;
     } 
     
     /**
@@ -88,7 +88,7 @@ public class FileRequest implements Serializable {
         sb.append(getFile());
         sb.append(" ]");
         if (getArchivePath() != null) {
-        	sb.append(", Archive Path => [ ");
+            sb.append(", Archive Path => [ ");
             sb.append(getArchivePath());
             sb.append(" ]");
         }
@@ -104,11 +104,11 @@ public class FileRequest implements Serializable {
      */
     @JsonPOJOBuilder(withPrefix = "")
     public static class FileRequestBuilder {
-    	
-    	// Private internal members
-    	private String file;
-    	private String path;
-    	
+        
+        // Private internal members
+        private String file;
+        private String path;
+        
         /**
          * Method used to actually construct the FileRequest object.
          * 
@@ -119,8 +119,8 @@ public class FileRequest implements Serializable {
         public FileRequest build() 
                 throws IllegalStateException {
             
-        	FileRequest object = new FileRequest(this);
-        	validateFileRequestObject(object);
+            FileRequest object = new FileRequest(this);
+            validateFileRequestObject(object);
             return object;
             
         }
@@ -133,12 +133,12 @@ public class FileRequest implements Serializable {
          */
         @JsonProperty(value="file")
         public FileRequestBuilder file(String value) {
-        	if ((value != null) && (!value.isEmpty())) {
-        		file = value.trim();
-        	}
-        	else {
-        		file = null;
-        	}
+            if ((value != null) && (!value.isEmpty())) {
+                file = value.trim();
+            }
+            else {
+                file = null;
+            }
             return this;
         }
         
@@ -150,12 +150,12 @@ public class FileRequest implements Serializable {
          */
         @JsonProperty(value="archive_path")
         public FileRequestBuilder archivePath(String value) {
-        	if ((value != null) && (!value.isEmpty())) {
-        		path = value.trim();
-        	}
-        	else {
+            if ((value != null) && (!value.isEmpty())) {
+                path = value.trim();
+            }
+            else {
                 path = null;
-        	}
+            }
             return this;
         }
         
@@ -170,10 +170,10 @@ public class FileRequest implements Serializable {
                 FileRequest object) 
                     throws IllegalStateException {
             if (object != null) {
-            	if (object.file == null) {
-            		throw new IllegalStateException("Input file name is null "
-            				+ "or empty.  Target file name cannot be empty.");
-            	}
+                if (object.file == null) {
+                    throw new IllegalStateException("Input file name is null "
+                            + "or empty.  Target file name cannot be empty.");
+                }
             }
         }
     }

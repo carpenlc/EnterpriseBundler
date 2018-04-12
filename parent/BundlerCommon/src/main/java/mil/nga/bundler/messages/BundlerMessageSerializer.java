@@ -117,7 +117,7 @@ public class BundlerMessageSerializer {
      */
     public BundleRequestMessage deserializeToBundleRequestMessage(String json) {
         
-    	BundleRequestMessage deserialized = null;
+        BundleRequestMessage deserialized = null;
         
         try {
             if (json != null) {
@@ -167,7 +167,7 @@ public class BundlerMessageSerializer {
      */
     public JobTrackerMessage deserializeToJobTrackerMessage(String json) {
         
-    	JobTrackerMessage deserialized = null;
+        JobTrackerMessage deserialized = null;
         
         try {
             if (json != null) {
@@ -217,7 +217,7 @@ public class BundlerMessageSerializer {
      */
     public FileRequest deserializeToFileRequest(String json) {
         
-    	FileRequest deserialized = null;
+        FileRequest deserialized = null;
         
         try {
             if (json != null) {

@@ -68,8 +68,8 @@ public class BZip2Archiver
             //        Files.newInputStream(
             //                Paths.get(inputFile),
             //                StandardOpenOption.READ));
-        	BufferedInputStream bIn = new BufferedInputStream(
-        	          Files.newInputStream(Paths.get(inputFile)));
+            BufferedInputStream bIn = new BufferedInputStream(
+                      Files.newInputStream(Paths.get(inputFile)));
             BZip2CompressorOutputStream bzOut = new BZip2CompressorOutputStream(
                     Files.newOutputStream(
                             Paths.get(outputFile), 

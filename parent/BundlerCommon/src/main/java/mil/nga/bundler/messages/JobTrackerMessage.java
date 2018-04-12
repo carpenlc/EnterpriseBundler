@@ -61,8 +61,8 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
      * @param The builder object. 
      */
     private JobTrackerMessage(JobTrackerMessageBuilder builder) {
-    	this.numArchives         = builder.numArchives;
-    	this.numArchivesComplete = builder.numArchivesComplete;
+        this.numArchives         = builder.numArchives;
+        this.numArchivesComplete = builder.numArchivesComplete;
         this.elapsedTime         = builder.elapsedTime;
         this.numHashesComplete   = builder.numHashesComplete;
         this.numFiles            = builder.numFiles;
@@ -72,7 +72,7 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
         this.archives            = builder.archives;
         this.jobID               = builder.jobID;
         this.state               = builder.state;
-    	this.userName            = builder.userName;
+        this.userName            = builder.userName;
     }
         
     /**
@@ -258,8 +258,8 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
     @JsonPOJOBuilder(withPrefix = "")
     public static class JobTrackerMessageBuilder implements BundlerConstantsI {
         
-    	// Private internal members
-    	private int             numArchives         = 0;
+        // Private internal members
+        private int             numArchives         = 0;
         private int             numArchivesComplete = 0;
         private long            elapsedTime         = 0L;
         private int             numHashesComplete   = 0;
@@ -308,9 +308,9 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
          * @throws IllegalStateException If any individual fields are invalid.
          */
         public JobTrackerMessage build() throws IllegalStateException {
-        	JobTrackerMessage object = new JobTrackerMessage(this);
-        	validateJobTrackerMessage(object);
-        	return object;
+            JobTrackerMessage object = new JobTrackerMessage(this);
+            validateJobTrackerMessage(object);
+            return object;
         }
         
         /**
@@ -437,96 +437,96 @@ public class JobTrackerMessage implements BundlerConstantsI, Serializable {
          * are not populated.
          */
         public void validateJobTrackerMessage(JobTrackerMessage object) 
-        		throws IllegalStateException {
-        	
-        	if ((object.getNumArchives() < 0) || 
-        			(object.getNumArchives() > MAX_NUM_ARCHIVES)) {
-        		throw new IllegalStateException("numArchives parameter out "
-        				+ "of range.  Value supplied [ "
-        				+ object.getNumArchives()
-        				+ " ].");
-        	}
+                throws IllegalStateException {
+            
+            if ((object.getNumArchives() < 0) || 
+                    (object.getNumArchives() > MAX_NUM_ARCHIVES)) {
+                throw new IllegalStateException("numArchives parameter out "
+                        + "of range.  Value supplied [ "
+                        + object.getNumArchives()
+                        + " ].");
+            }
             if ((object.getNumArchivesComplete() < 0) ||
                     (object.getNumArchivesComplete() > MAX_NUM_ARCHIVES)) {
-        		throw new IllegalStateException("numArchivesComplete "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getNumArchivesComplete()
-        				+ " ].");
+                throw new IllegalStateException("numArchivesComplete "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getNumArchivesComplete()
+                        + " ].");
             }
             if (object.getNumArchivesComplete() > object.getNumArchives()) {
-        		throw new IllegalStateException("numArchivesComplete "
-        				+ "parameter out of range.  numArchivesComplete > "
-        				+ "numArchives.  Value supplied [ "
-        				+ object.getNumArchivesComplete()
-        				+ " ].");
+                throw new IllegalStateException("numArchivesComplete "
+                        + "parameter out of range.  numArchivesComplete > "
+                        + "numArchives.  Value supplied [ "
+                        + object.getNumArchivesComplete()
+                        + " ].");
             }
             if (object.getElapsedTime() < 0) {
-        		throw new IllegalStateException("elapsedTime "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getElapsedTime()
-        				+ " ].");
+                throw new IllegalStateException("elapsedTime "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getElapsedTime()
+                        + " ].");
             }
             if ((object.getNumHashesComplete() < 0) ||
                     (object.getNumHashesComplete() > MAX_NUM_ARCHIVES)) {
-        		throw new IllegalStateException("numHashesComplete "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getNumHashesComplete()
-        				+ " ].");
+                throw new IllegalStateException("numHashesComplete "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getNumHashesComplete()
+                        + " ].");
             }
             if (object.getNumHashesComplete() > object.getNumArchives()) {
-        		throw new IllegalStateException("numHashesComplete "
-        				+ "parameter out of range.  numHashesComplete > "
-        				+ "numArchives.  Value supplied [ "
-        				+ object.getNumHashesComplete()
-        				+ " ].");
+                throw new IllegalStateException("numHashesComplete "
+                        + "parameter out of range.  numHashesComplete > "
+                        + "numArchives.  Value supplied [ "
+                        + object.getNumHashesComplete()
+                        + " ].");
             }
 
             if (object.getNumFiles() < 0) { 
-        		throw new IllegalStateException("numFiles "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getNumFiles()
-        				+ " ].");
+                throw new IllegalStateException("numFiles "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getNumFiles()
+                        + " ].");
             }
             if (object.getNumFilesComplete() < 0) {
-        		throw new IllegalStateException("numFilesComplete "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getNumFilesComplete()
-        				+ " ].");
+                throw new IllegalStateException("numFilesComplete "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getNumFilesComplete()
+                        + " ].");
             }
             if (object.getNumFilesComplete() > object.getNumFiles()) {
-        		throw new IllegalStateException("numFilesComplete "
-        				+ "parameter out of range.  numFilesComplete > "
-        				+ "numFiles.  Value supplied [ "
-        				+ object.getNumFilesComplete()
-        				+ " ].");
+                throw new IllegalStateException("numFilesComplete "
+                        + "parameter out of range.  numFilesComplete > "
+                        + "numFiles.  Value supplied [ "
+                        + object.getNumFilesComplete()
+                        + " ].");
             }
             if (object.getTotalSize() < 0) { 
-        		throw new IllegalStateException("totalSize "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getTotalSize()
-        				+ " ].");
+                throw new IllegalStateException("totalSize "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getTotalSize()
+                        + " ].");
             }
             if (object.getSizeComplete() < 0) {
-        		throw new IllegalStateException("sizeComplete "
-        				+ "parameter out of range.  Value supplied [ "
-        				+ object.getSizeComplete()
-        				+ " ].");
+                throw new IllegalStateException("sizeComplete "
+                        + "parameter out of range.  Value supplied [ "
+                        + object.getSizeComplete()
+                        + " ].");
             }
             if (object.getSizeComplete() > object.getTotalSize()) {
-        		throw new IllegalStateException("sizeComplete "
-        				+ "parameter out of range.  sizeComplete > "
-        				+ "totalSize.  Value supplied [ "
-        				+ object.getSizeComplete()
-        				+ " ].");
+                throw new IllegalStateException("sizeComplete "
+                        + "parameter out of range.  sizeComplete > "
+                        + "totalSize.  Value supplied [ "
+                        + object.getSizeComplete()
+                        + " ].");
             }
             if (object.getState() == null) {
-           		throw new IllegalStateException("Job state not populated!");
+                   throw new IllegalStateException("Job state not populated!");
             }
             if ((object.getJobID() == null) || (object.getJobID().isEmpty())) {
-            	throw new IllegalStateException("Job ID is not populated!");
+                throw new IllegalStateException("Job ID is not populated!");
             }
             if ((object.getUserName() == null) || (object.getUserName().isEmpty())) {
-            	throw new IllegalStateException("User name is not populated!");
+                throw new IllegalStateException("User name is not populated!");
             }
         }
     }

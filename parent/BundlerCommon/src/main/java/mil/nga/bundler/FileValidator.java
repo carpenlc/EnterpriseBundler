@@ -129,8 +129,8 @@ public class FileValidator {
         if ((requestedFile != null) && 
                 (requestedFile.getFile() != null) && 
                 (!requestedFile.getFile().isEmpty())) {
-        	
-        	URI  uri  = URIUtils.getInstance().getURI(requestedFile.getFile());
+            
+            URI  uri  = URIUtils.getInstance().getURI(requestedFile.getFile());
             Path file = Paths.get(uri);
             
             if (Files.exists(file)) {
@@ -172,7 +172,7 @@ public class FileValidator {
         if ((requestedFile != null) && 
                 (!requestedFile.isEmpty())) {
             URI uri = URIUtils.getInstance().getURI(requestedFile);
-        	Path file = Paths.get(uri);
+            Path file = Paths.get(uri);
             if ((Files.exists(file)) && (!Files.isDirectory(file))) {
                 try {
                     long size = Files.size(file);
@@ -249,8 +249,8 @@ public class FileValidator {
         if ((filesRequested != null) && (!filesRequested.isEmpty())) { 
             for (String file : filesRequested) {
                 if ((file != null) && (!file.isEmpty())) {
-                	
-                	URI  uri = URIUtils.getInstance().getURI(file);
+                    
+                    URI  uri = URIUtils.getInstance().getURI(file);
                     Path p   = Paths.get(uri);
                     
                     if (Files.isDirectory(p)) {
@@ -260,12 +260,12 @@ public class FileValidator {
                             if ((files != null) && (!files.isEmpty())) { 
                                 for (Path name : files) {
                                     expandedList.add(
-                                    		URIUtils.getInstance().getURI(
-                                    				name.toString()).toString());
+                                            URIUtils.getInstance().getURI(
+                                                    name.toString()).toString());
                                 }
                             }
                             else {
-                            	LOGGER.warn("Directory contains no files.");
+                                LOGGER.warn("Directory contains no files.");
                             }
                         }
                         catch (IOException ioe) {
@@ -309,46 +309,46 @@ public class FileValidator {
                 if ((file != null) && 
                         (file.getFile() != null) && 
                         (!file.getFile().isEmpty())) {
-                	
-                	URI  uri = URIUtils.getInstance().getURI(file.getFile());
+                    
+                    URI  uri = URIUtils.getInstance().getURI(file.getFile());
                     Path p   = Paths.get(uri);
                     
                     if (LOGGER.isDebugEnabled()) {
-	                    LOGGER.debug("Validating [ "
-	                    		+ uri.toString()
-	                    		+ " ].");
+                        LOGGER.debug("Validating [ "
+                                + uri.toString()
+                                + " ].");
                     }
                     
                     if (Files.isDirectory(p)) {
-                    	
-                    	if (LOGGER.isDebugEnabled()) {
-	                    	LOGGER.debug("File [ "
-	                    			+ uri.toString()
-	                    			+ " ] is a directory.");
-                    	}
                         
-                    	String baseDir = p.toAbsolutePath().toString();
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("File [ "
+                                    + uri.toString()
+                                    + " ] is a directory.");
+                        }
+                        
+                        String baseDir = p.toAbsolutePath().toString();
                         try {
-                        	
+                            
                             List<URI> files = FileFinder.listFiles(uri);
                             
                             if ((files != null) && (!files.isEmpty())) { 
                                 for (URI name : files) {
-                                	
+                                    
                                     expandedList.add(
                                             new FileRequest.FileRequestBuilder()
-                                            		.file(name.toString())
-                                            		.archivePath(
-                                            				PathGenerator.getInstance()
-                                            					.getEntryPath(
-                                            							baseDir, 
-                                            							file.getArchivePath(), 
-                                            							name.toString()))
+                                                    .file(name.toString())
+                                                    .archivePath(
+                                                            PathGenerator.getInstance()
+                                                                .getEntryPath(
+                                                                        baseDir, 
+                                                                        file.getArchivePath(), 
+                                                                        name.toString()))
                                             .build());
                                 }
                             }
                             else {
-                            	LOGGER.warn("Directory contains no files.");
+                                LOGGER.warn("Directory contains no files.");
                             }
                         }
                         catch (IOException ioe) {

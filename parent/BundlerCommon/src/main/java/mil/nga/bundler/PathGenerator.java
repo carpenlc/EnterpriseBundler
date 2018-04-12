@@ -142,23 +142,23 @@ public class PathGenerator
      * @param entry FileEntry object associated with one file to be archived.
      */
     public void setOneEntry(FileEntry entry) {
-    	
-    	String path;
-    	
-    	// Use the URI class to strip off the scheme/authority sections.
-    	try {
-    		URI uri = new URI(entry.getFilePath());
-    		path = uri.getPath();
-    	}
-    	catch (URISyntaxException use) {
-    		LOGGER.warn("Unable to convert the absolute file path [ " 
-    				+ entry.getFilePath() 
-    				+ " ] to a URI.  Using the absolute file path as-is.  "
-    				+ "Exception message => [ "
-    				+ use.getMessage()
-    				+ " ].");
-    		path   = entry.getFilePath();
-    	}
+        
+        String path;
+        
+        // Use the URI class to strip off the scheme/authority sections.
+        try {
+            URI uri = new URI(entry.getFilePath());
+            path = uri.getPath();
+        }
+        catch (URISyntaxException use) {
+            LOGGER.warn("Unable to convert the absolute file path [ " 
+                    + entry.getFilePath() 
+                    + " ] to a URI.  Using the absolute file path as-is.  "
+                    + "Exception message => [ "
+                    + use.getMessage()
+                    + " ].");
+            path   = entry.getFilePath();
+        }
         
         if ((entry.getEntryPath() == null) || (entry.getEntryPath().isEmpty())) {
             // If the entry path wasn't supplied, calculate it.
@@ -211,31 +211,31 @@ public class PathGenerator
             String archivePath, 
             String absolutePath) {
         
-    	// Use the URI class to strip off the scheme/authority sections.
-    	try {
-    		URI uri = new URI(absolutePath);
-    		absolutePath = uri.getPath();
-    	}
-    	catch (URISyntaxException use) {
-    		LOGGER.warn("Unable to convert the absolute file path [ " 
-    				+ absolutePath 
-    				+ " ] to a URI.  Using the absolute file path as-is.  "
-    				+ "Exception message => [ "
-    				+ use.getMessage()
-    				+ " ].");
-    	}
+        // Use the URI class to strip off the scheme/authority sections.
+        try {
+            URI uri = new URI(absolutePath);
+            absolutePath = uri.getPath();
+        }
+        catch (URISyntaxException use) {
+            LOGGER.warn("Unable to convert the absolute file path [ " 
+                    + absolutePath 
+                    + " ] to a URI.  Using the absolute file path as-is.  "
+                    + "Exception message => [ "
+                    + use.getMessage()
+                    + " ].");
+        }
 
-    	String entryPath = absolutePath;
+        String entryPath = absolutePath;
         
-    	// TODO: Test code.  Remove.
-    	LOGGER.info("getEntryPath() called with baseDir => [ "
-    			+ baseDir
-    			+ " ], archivePath => [ "
-    			+ archivePath
-    			+ " ], and absolutePath => [ "
-    			+ absolutePath 
-    			+ " ].");
-    	
+        // TODO: Test code.  Remove.
+        LOGGER.info("getEntryPath() called with baseDir => [ "
+                + baseDir
+                + " ], archivePath => [ "
+                + archivePath
+                + " ], and absolutePath => [ "
+                + absolutePath 
+                + " ].");
+        
         // if the archivePath isn't supplied, do nothing.
         // If the archive path is supplied, append it to whatever is left over.
         if ((archivePath != null) && (!archivePath.isEmpty())) {
@@ -264,13 +264,13 @@ public class PathGenerator
         
         }
         else {
-        	entryPath = getEntryPath(absolutePath);
+            entryPath = getEntryPath(absolutePath);
         }
         
         // TODO: Test code. Remove.
         LOGGER.info("getEntryPath() returning [ "
-        		+ entryPath
-        		+ " ].");
+                + entryPath
+                + " ].");
         
         return entryPath;
     }

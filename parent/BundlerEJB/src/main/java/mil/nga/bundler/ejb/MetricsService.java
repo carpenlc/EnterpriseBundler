@@ -50,28 +50,28 @@ public class MetricsService implements BundlerConstantsI {
      * @return A constructed EntityManager object.
      */
     private EntityManager getEntityManager() 
-    		throws ServiceUnavailableException {
-    	if (em == null) {
-    		if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("Container-injected EntityManager is null.  "
-    					+ "Creating un-managed EntityManager.");
-    		}
-    		EntityManagerFactory emFactory = 
-    				Persistence.createEntityManagerFactory(
-    						APPLICATION_PERSISTENCE_CONTEXT);
-    		if (emFactory != null) {
-    			em = emFactory.createEntityManager();
-    		}
-    		else {
-    			LOGGER.warn("Unable to create un-managed EntityManager object.");
-    		}
-    		if (em == null) {
-    			throw new ServiceUnavailableException(
-        				"Unable to start the JPA subsystem.  The injected "
-        				+ "EntityManager object is null.");
-    		}
-    	}
-    	return em;
+            throws ServiceUnavailableException {
+        if (em == null) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Container-injected EntityManager is null.  "
+                        + "Creating un-managed EntityManager.");
+            }
+            EntityManagerFactory emFactory = 
+                    Persistence.createEntityManagerFactory(
+                            APPLICATION_PERSISTENCE_CONTEXT);
+            if (emFactory != null) {
+                em = emFactory.createEntityManager();
+            }
+            else {
+                LOGGER.warn("Unable to create un-managed EntityManager object.");
+            }
+            if (em == null) {
+                throw new ServiceUnavailableException(
+                        "Unable to start the JPA subsystem.  The injected "
+                        + "EntityManager object is null.");
+            }
+        }
+        return em;
     }
     
 

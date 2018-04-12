@@ -79,10 +79,10 @@ public class FileSystemFactory
         String secretKey  = null;
         
         try {
-        	iamRole    = getProperty(IAM_ROLE_PROPERTY);
-        	s3EndPoint = getProperty(S3_END_POINT_PROPERTY);
-        	accessKey  = getProperty(ACCESS_KEY_PROPERTY);
-        	secretKey  = getProperty(SECRET_KEY_PROPERTY);
+            iamRole    = getProperty(IAM_ROLE_PROPERTY);
+            s3EndPoint = getProperty(S3_END_POINT_PROPERTY);
+            accessKey  = getProperty(ACCESS_KEY_PROPERTY);
+            secretKey  = getProperty(SECRET_KEY_PROPERTY);
         }
         catch (PropertiesNotLoadedException pnle) {
             LOGGER.warn("An unexpected PropertiesNotLoadedException " 
@@ -102,16 +102,16 @@ public class FileSystemFactory
      * @param props Populated properties file.
      */
     private FileSystemFactory(Properties props) {
-    	if (props != null) {
-    		setIAMRole(props.getProperty(IAM_ROLE_PROPERTY));
-    		setS3EndPoint(props.getProperty(S3_END_POINT_PROPERTY));
-    		setAccessKey(props.getProperty(ACCESS_KEY_PROPERTY));
-    		setSecretKey(props.getProperty(SECRET_KEY_PROPERTY));
-    	}
-    	else {
-    		LOGGER.error("Input properties file is null.  S3 filesystem will "
-    				+ "not be available.");
-    	}
+        if (props != null) {
+            setIAMRole(props.getProperty(IAM_ROLE_PROPERTY));
+            setS3EndPoint(props.getProperty(S3_END_POINT_PROPERTY));
+            setAccessKey(props.getProperty(ACCESS_KEY_PROPERTY));
+            setSecretKey(props.getProperty(SECRET_KEY_PROPERTY));
+        }
+        else {
+            LOGGER.error("Input properties file is null.  S3 filesystem will "
+                    + "not be available.");
+        }
     }
     
     /**
@@ -132,14 +132,14 @@ public class FileSystemFactory
      */
     public void loadS3Filesystem() throws IllegalStateException {
         
-    	String         uriString = "s3://" + getS3EndPoint() + "/";
-    	Map<String, ?> env       = null;
-    	
+        String         uriString = "s3://" + getS3EndPoint() + "/";
+        Map<String, ?> env       = null;
+        
         // Ensure the s3 filesystem is not already loaded.
         if (!s3FileSystemLoaded) {
-        	
-        	LOGGER.info("Initializing the NIO2 S3 file system provider");
-        	
+            
+            LOGGER.info("Initializing the NIO2 S3 file system provider");
+            
             if ((getIAMRole() != null) && 
                     (!getIAMRole().isEmpty())) {
                 
@@ -150,9 +150,9 @@ public class FileSystemFactory
         
             }
             else if ((getAccessKey() != null) && 
-            			(!getAccessKey().isEmpty()) && (getSecretKey() != null) && 
-            			(!getSecretKey().isEmpty())) {
-            	
+                        (!getAccessKey().isEmpty()) && (getSecretKey() != null) && 
+                        (!getSecretKey().isEmpty())) {
+                
                 env = ImmutableMap.<String, Object> builder()
                         .put(com.upplication.s3fs.AmazonS3Factory.ACCESS_KEY, 
                             getAccessKey())
@@ -162,36 +162,36 @@ public class FileSystemFactory
                 
             } 
             else {
-            	throw new IllegalStateException("AWS authentication "
-            			+ "properties not defined.  Either [ "
-            			+ IAM_ROLE_PROPERTY
-            			+ " ] or BOTH [ "
-            			+ ACCESS_KEY_PROPERTY 
-            			+ " ] and [ "
-            			+ SECRET_KEY_PROPERTY
-            			+ " ] must be defined.");
-            	
+                throw new IllegalStateException("AWS authentication "
+                        + "properties not defined.  Either [ "
+                        + IAM_ROLE_PROPERTY
+                        + " ] or BOTH [ "
+                        + ACCESS_KEY_PROPERTY 
+                        + " ] and [ "
+                        + SECRET_KEY_PROPERTY
+                        + " ] must be defined.");
+                
             }
             
             if (env != null) {
-            	
+                
                 try {
-                	if (LOGGER.isDebugEnabled()) {
-                		
-                		StringBuilder sb   = new StringBuilder();
-                		Set<String>   keys = env.keySet();
-                		
-                		for (String key : keys) {
-                			sb.append(" Key => [ ");
-                			sb.append(key);
-                			sb.append(" ], Value => [ ");
-                			sb.append((String)env.get(key));
-                			sb.append(" ] ");
-                		}
-                		LOGGER.debug("Initializing S3 filesystem with => "
-                				+ sb.toString());
-                	}
-                	
+                    if (LOGGER.isDebugEnabled()) {
+                        
+                        StringBuilder sb   = new StringBuilder();
+                        Set<String>   keys = env.keySet();
+                        
+                        for (String key : keys) {
+                            sb.append(" Key => [ ");
+                            sb.append(key);
+                            sb.append(" ], Value => [ ");
+                            sb.append((String)env.get(key));
+                            sb.append(" ] ");
+                        }
+                        LOGGER.debug("Initializing S3 filesystem with => "
+                                + sb.toString());
+                    }
+                    
                     // Add the s3 file system provider
                     FileSystems.newFileSystem(
                         new URI(uriString), 
@@ -217,9 +217,9 @@ public class FileSystemFactory
                 catch (URISyntaxException use) { }
             }
             else {
-            	LOGGER.error("Unexpected situation encountered in which the "
-            			+ "Map object used to authenticate to AWS is "
-            			+ "null.  Unable to load the S3 file system.");
+                LOGGER.error("Unexpected situation encountered in which the "
+                        + "Map object used to authenticate to AWS is "
+                        + "null.  Unable to load the S3 file system.");
             }
         }
         else {
@@ -229,14 +229,14 @@ public class FileSystemFactory
         }
     }
     
-	/**
-	 * Getter method for the access key that will be used for authentication to
-	 * AWS.
-	 * @return The access key.
-	 */
-	public String getAccessKey() {
-	    return accessKey;
-	}
+    /**
+     * Getter method for the access key that will be used for authentication to
+     * AWS.
+     * @return The access key.
+     */
+    public String getAccessKey() {
+        return accessKey;
+    }
 
     /**
      * Getter method for the IAM Role that will be used for authentication to
@@ -252,18 +252,18 @@ public class FileSystemFactory
      * @return The target S3 end-point.
      */
     public String getS3EndPoint() {
-    	return s3EndPoint;
+        return s3EndPoint;
     }
     
-	/**
-	 * Getter method for the secret key that will be used for authentication to
-	 * AWS.
-	 * @return The secret key.
-	 */
-	public String getSecretKey() {
-	    return secretKey;
-	}
-	
+    /**
+     * Getter method for the secret key that will be used for authentication to
+     * AWS.
+     * @return The secret key.
+     */
+    public String getSecretKey() {
+        return secretKey;
+    }
+    
     /**
      * Getter method for the singleton instance of the FileSystemFactory.
      * @return Handle to the singleton instance of the FileSystemFactory.
@@ -304,12 +304,12 @@ public class FileSystemFactory
      * @param value The target S3 end-point.
      */
     public void setS3EndPoint(String value) {
-    	if ((value == null) || (value.isEmpty())) {
-    		s3EndPoint = DEFAULT_S3_ENDPOINT;
-    	}
-    	else {
-    		s3EndPoint = value.trim();
-    	}
+        if ((value == null) || (value.isEmpty())) {
+            s3EndPoint = DEFAULT_S3_ENDPOINT;
+        }
+        else {
+            s3EndPoint = value.trim();
+        }
     }
     
     /**
@@ -341,9 +341,9 @@ public class FileSystemFactory
          * @return The singleton instance of the factory.
          */
         public static FileSystemFactory getFactorySingleton() {
-        	if (factory == null) {
-        		factory = new FileSystemFactory();
-        	}
+            if (factory == null) {
+                factory = new FileSystemFactory();
+            }
             return factory;
         }
         
@@ -352,9 +352,9 @@ public class FileSystemFactory
          * @return The singleton instance of the factory.
          */
         public static FileSystemFactory getFactorySingleton(Properties props) {
-        	if (factory == null) {
-        		factory = new FileSystemFactory(props);
-        	}
+            if (factory == null) {
+                factory = new FileSystemFactory(props);
+            }
             return factory;
         }
         

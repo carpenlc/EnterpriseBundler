@@ -112,30 +112,30 @@ public class JobRunnerService
             job.setState(JobStateType.IN_PROGRESS);
             job.setStartTime(System.currentTimeMillis());
             try {
-	            if (getJobService() != null) {
-	                job = getJobService().update(job);
-	            }
-	            
-	            for (ArchiveJob archive : job.getArchives()) {
-	                
-	                ArchiveMessage archiveMsg = new 
-	                		ArchiveMessage.ArchiveMessageBuilder()
-	                        	.jobId(archive.getJobID())
-	                        	.archiveId(archive.getArchiveID())
-	                        	.build();
-	                
-	                if (LOGGER.isDebugEnabled()) {
-	                    LOGGER.info("Placing the following message on "
-	                            + "the JMS queue [ "
-	                            + archiveMsg.toString()
-	                            + " ].");
-	                }
-	                super.notify(ARCHIVER_DEST_Q, archiveMsg); 
-	            }
-	        }
-	        catch (ServiceUnavailableException sue) {
-	        	LOGGER.error("Unable to start the JPA subsystem.");
-	        }
+                if (getJobService() != null) {
+                    job = getJobService().update(job);
+                }
+                
+                for (ArchiveJob archive : job.getArchives()) {
+                    
+                    ArchiveMessage archiveMsg = new 
+                            ArchiveMessage.ArchiveMessageBuilder()
+                                .jobId(archive.getJobID())
+                                .archiveId(archive.getArchiveID())
+                                .build();
+                    
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.info("Placing the following message on "
+                                + "the JMS queue [ "
+                                + archiveMsg.toString()
+                                + " ].");
+                    }
+                    super.notify(ARCHIVER_DEST_Q, archiveMsg); 
+                }
+            }
+            catch (ServiceUnavailableException sue) {
+                LOGGER.error("Unable to start the JPA subsystem.");
+            }
         }
     }
 }

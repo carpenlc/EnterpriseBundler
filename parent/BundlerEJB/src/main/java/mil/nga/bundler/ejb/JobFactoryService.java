@@ -86,9 +86,9 @@ public class JobFactoryService
      */
     @PostConstruct
     private void init() {
-    	String stagingArea = null;
+        String stagingArea = null;
         try {
-        	stagingArea = super.getProperty(STAGING_DIRECTORY_PROPERTY);
+            stagingArea = super.getProperty(STAGING_DIRECTORY_PROPERTY);
         }
         catch (PropertiesNotLoadedException pnle) {
             LOGGER.error("An unexpected PropertiesNotLoadedException " 
@@ -114,9 +114,9 @@ public class JobFactoryService
                     .getInstance()
                     .getJobRunnerService();
             if (jobRunner == null) {
-            	throw new ServiceUnavailableException("Unable to look up "
+                throw new ServiceUnavailableException("Unable to look up "
                         + "target EJB [ "
-            			+ JobRunnerService.class.getCanonicalName()
+                        + JobRunnerService.class.getCanonicalName()
                         + " ].");
             }
         }
@@ -137,9 +137,9 @@ public class JobFactoryService
      //               .getInstance()
      //               .getJobService();
      //       if (jobService == null) {
-     //       	throw new ServiceUnavailableException("Unable to look up "
+     //           throw new ServiceUnavailableException("Unable to look up "
      //                   + "target EJB [ "
-     //       			+ JobService.class.getCanonicalName()
+     //                   + JobService.class.getCanonicalName()
      //                   + " ].");
      //       }
      //   }
@@ -154,12 +154,12 @@ public class JobFactoryService
      * @return The name of the output hash file.
      */
     private String getHashFile(String archiveFile) {
-    	String temp = null;
-    	if ((archiveFile != null) && (!archiveFile.isEmpty())) {
-	    	temp = FileUtils.removeExtension(archiveFile);
-	    	temp = temp + "." + HASH_FILE_EXTENSION;
-    	}
-    	return temp;
+        String temp = null;
+        if ((archiveFile != null) && (!archiveFile.isEmpty())) {
+            temp = FileUtils.removeExtension(archiveFile);
+            temp = temp + "." + HASH_FILE_EXTENSION;
+        }
+        return temp;
     }
     
     /**
@@ -225,7 +225,7 @@ public class JobFactoryService
      * @return The target size in bytes.
      */
     private long getSizeInBytes(long sizeMB) {
-    	return sizeMB * BYTES_PER_MEGABYTE;
+        return sizeMB * BYTES_PER_MEGABYTE;
     }
     
     /**
@@ -238,48 +238,48 @@ public class JobFactoryService
      * @return
      */
     private ArchiveJob createArchiveJobInstance(
-    		String  jobID,
-    		Archive archive) {
-    	
-    	int        numFiles   = 0;
-    	long       size       = 0;
-    	ArchiveJob archiveJob = null;
-    	
-    	if ((archive.getElementList() != null) && 
-    			(archive.getElementList().size() > 0)) {
-    		
-    		archiveJob = new ArchiveJob(
-        			jobID, archive.getID(), archive.getType());
-	    	archiveJob.setArchive(
-	    			archive.getOutputFile().toString());
-	    	archiveJob.setArchiveURL(
-	    			UrlGenerator.getInstance().toURL(
-	    					archiveJob.getArchive()));
-	    	archiveJob.setHash(getHashFile(archiveJob.getArchive()));
-	    	archiveJob.setHashURL(
-	    			UrlGenerator.getInstance().toURL(
-	    					archiveJob.getHash()));
-	    	archiveJob.setArchiveState(JobStateType.NOT_STARTED);
-	    	
-    		for (ArchiveElement element : archive.getElementList()) {
-    			numFiles++;
-    			size += element.getSize();
-	    		archiveJob.add(
-	    				createFileEntryInstance(
-	    						jobID, 
-	    						archive.getID(), 
-	    						element));
-	    	}
-    		
-    		archiveJob.setNumFiles(numFiles);
-    		archiveJob.setSize(size);
-    		
-    	}
-    	else {
-    		LOGGER.error("The input Archive object contains no associated files "
-    				+ "to archive.  A null ArchiveJob will be returned.");
-    	}
-    	return archiveJob;
+            String  jobID,
+            Archive archive) {
+        
+        int        numFiles   = 0;
+        long       size       = 0;
+        ArchiveJob archiveJob = null;
+        
+        if ((archive.getElementList() != null) && 
+                (archive.getElementList().size() > 0)) {
+            
+            archiveJob = new ArchiveJob(
+                    jobID, archive.getID(), archive.getType());
+            archiveJob.setArchive(
+                    archive.getOutputFile().toString());
+            archiveJob.setArchiveURL(
+                    UrlGenerator.getInstance().toURL(
+                            archiveJob.getArchive()));
+            archiveJob.setHash(getHashFile(archiveJob.getArchive()));
+            archiveJob.setHashURL(
+                    UrlGenerator.getInstance().toURL(
+                            archiveJob.getHash()));
+            archiveJob.setArchiveState(JobStateType.NOT_STARTED);
+            
+            for (ArchiveElement element : archive.getElementList()) {
+                numFiles++;
+                size += element.getSize();
+                archiveJob.add(
+                        createFileEntryInstance(
+                                jobID, 
+                                archive.getID(), 
+                                element));
+            }
+            
+            archiveJob.setNumFiles(numFiles);
+            archiveJob.setSize(size);
+            
+        }
+        else {
+            LOGGER.error("The input Archive object contains no associated files "
+                    + "to archive.  A null ArchiveJob will be returned.");
+        }
+        return archiveJob;
     }
     
     /**
@@ -292,15 +292,15 @@ public class JobFactoryService
      * @return A constructed and populated <code>FileEntry</code> object.
      */
     private FileEntry createFileEntryInstance(
-    		String jobID, 
-    		long archiveID,
-    		ArchiveElement element) {
-    	return new FileEntry(
-    			jobID, 
-    			archiveID, 
-    			element.getURI().toString(), 
-    			element.getEntryPath(), 
-    			element.getSize());
+            String jobID, 
+            long archiveID,
+            ArchiveElement element) {
+        return new FileEntry(
+                jobID, 
+                archiveID, 
+                element.getURI().toString(), 
+                element.getEntryPath(), 
+                element.getSize());
     }
     
     /**
@@ -314,17 +314,17 @@ public class JobFactoryService
      * @return A failed Job.
      */
     private Job createBogusJobInstance(
-    		String        jobID, 
-    		String        userName, 
-    		ArchiveType   type,
-    		long          archiveSize) {
-    	Job job = new Job();
-    	job.setJobID(jobID);
-    	job.setUserName(userName);
-    	job.setArchiveType(type);
-    	job.setArchiveSize(getSizeInBytes(archiveSize));
-    	job.setState(JobStateType.INVALID_REQUEST);
-    	return job;
+            String        jobID, 
+            String        userName, 
+            ArchiveType   type,
+            long          archiveSize) {
+        Job job = new Job();
+        job.setJobID(jobID);
+        job.setUserName(userName);
+        job.setArchiveType(type);
+        job.setArchiveSize(getSizeInBytes(archiveSize));
+        job.setState(JobStateType.INVALID_REQUEST);
+        return job;
     }
     
     /**
@@ -338,256 +338,256 @@ public class JobFactoryService
      * @return A constructed and populated Job object.
      */
     private Job createJobInstance(
-    		String        jobID, 
-    		String        userName, 
-    		ArchiveType   type,
-    		long         archiveSize,
-    		List<Archive> archives) {
-    	
-    	int  numFiles    = 0;
-    	int  numArchives = 0;
-    	long size        = 0;
-    	Job  job         = new Job();
-    	
-    	job.setJobID(jobID);
-    	job.setUserName(userName);
-    	job.setArchiveType(type);
-    	job.setArchiveSize(getSizeInBytes(archiveSize));
-    	
-    	if ((archives != null) && (archives.size() > 0)) {
-    		for (Archive archive : archives) {
-    			ArchiveJob aJob = createArchiveJobInstance(jobID, archive);
-    			if (aJob != null) {
-    				numArchives++;
-    				numFiles += aJob.getNumFiles();
-    				size     += aJob.getSize();
-    				job.addArchive(aJob);
-    			}
-    			else {
-    				LOGGER.warn("Null ArchiveJob object received.  "
-    						+ "The ArchiveJob will not be added to the "
-    						+ "target job.");
-    			}
-        	}
-    	}
-    	else {
-    		LOGGER.error("There are no archives in the target job.  Setting "
-    				+ "job state to INVALID_REQUEST.");
-    		job.setState(JobStateType.INVALID_REQUEST);
-    	}
-    	
-    	job.setTotalSize(size);
-    	job.setNumFiles(numFiles);
-    	job.setNumArchives(numArchives);
-    	
-    	return job;
+            String        jobID, 
+            String        userName, 
+            ArchiveType   type,
+            long         archiveSize,
+            List<Archive> archives) {
+        
+        int  numFiles    = 0;
+        int  numArchives = 0;
+        long size        = 0;
+        Job  job         = new Job();
+        
+        job.setJobID(jobID);
+        job.setUserName(userName);
+        job.setArchiveType(type);
+        job.setArchiveSize(getSizeInBytes(archiveSize));
+        
+        if ((archives != null) && (archives.size() > 0)) {
+            for (Archive archive : archives) {
+                ArchiveJob aJob = createArchiveJobInstance(jobID, archive);
+                if (aJob != null) {
+                    numArchives++;
+                    numFiles += aJob.getNumFiles();
+                    size     += aJob.getSize();
+                    job.addArchive(aJob);
+                }
+                else {
+                    LOGGER.warn("Null ArchiveJob object received.  "
+                            + "The ArchiveJob will not be added to the "
+                            + "target job.");
+                }
+            }
+        }
+        else {
+            LOGGER.error("There are no archives in the target job.  Setting "
+                    + "job state to INVALID_REQUEST.");
+            job.setState(JobStateType.INVALID_REQUEST);
+        }
+        
+        job.setTotalSize(size);
+        job.setNumFiles(numFiles);
+        job.setNumArchives(numArchives);
+        
+        return job;
     }
 
     @Asynchronous
     public void createJob(
-    		String jobID, 
-    		BundleRequestMessage request) throws ServiceUnavailableException {
-    	
-    	long startTime = System.currentTimeMillis();
-    	Job  job       = null;
-    	
-    	try {
-    		
-    		if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("Beginning validation for job [ "
-    					+ jobID
-    					+ " ].");
-    		}
-    		
-	    	// Validate and expand the input file list.
-	        List<FileEntry> files = FileValidator
-	                .getInstance()
-	                .validate(request.getFiles());
-	    
-    		if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("Validation for job [ "
-    					+ jobID
-    					+ " ] completed in [ "
-    					+ (System.currentTimeMillis() - startTime)
-    					+ " ] ms.");
-    		}
-    		
-	        if ((files != null) && (!files.isEmpty())) {
-	        	
-	        	if (LOGGER.isDebugEnabled()) {
-		        	LOGGER.debug("Input request resulted in [ "
-		        			+ files.size()
-		        			+ " ] validated files to bundle.");
-		        }
-	        	
-		        ArchiveJobFactory factory = new ArchiveJobFactory(
-		        		request.getType(),
-		        		request.getMaxSize(),
-		        		jobID,
-		        		request.getOutputFilename());
-		        
-		        List<Archive> archives = factory
-		        		.createArchivesFromFileEntry(files);
-		        
-		        if ((archives != null) && (archives.size() > 0)) {
-			        job = createJobInstance(
-			        		jobID, 
-			        		request.getUserName(), 
-			        		request.getType(), 
-			        		request.getMaxSize(),
-			        		archives);
-		        }
-		        else {
-		        	LOGGER.error("There are no archive jobs to process.  "
-		        			+ "Setting job state to INVALID_REQUEST.");	
-		        	job = createBogusJobInstance(
-			        		jobID, 
-			        		request.getUserName(), 
-			        		request.getType(), 
-			        		request.getMaxSize());
-		        }
-	        }
-	        else {
-	        	LOGGER.error("Validation algorithm revealed no files to "
-	        			+ "bundle.  Setting job state to INVALID_REQUEST.");
-	        	job = createBogusJobInstance(
-		        		jobID, 
-		        		request.getUserName(), 
-		        		request.getType(), 
-		        		request.getMaxSize());
-	        }
+            String jobID, 
+            BundleRequestMessage request) throws ServiceUnavailableException {
         
-    	}
-    	catch (InvalidRequestException ire) {
-    		LOGGER.error("InvalidRequestException raised while validating "
-    				+ "the input job.  Exception message => [ "
-    				+ ire.getMessage()
-    				+ " ].");
-    		job = createBogusJobInstance(
-	        		jobID, 
-	        		request.getUserName(), 
-	        		request.getType(), 
-	        		request.getMaxSize());
-    	}
-    	
-    	// We had to eliminate the use of the injected JobService EJB.
-    	// NGA's infrastructure was so atrociously slow we could not complete
-    	// the validation of the incoming job before the container tore 
-    	// down the underlying transactions.
-    	try (JobService jobService = new JobService()) {
-    		jobService.persist(job);    		
-    		if (LOGGER.isDebugEnabled()) {
-        		LOGGER.debug("Job ID [ "
-        				+ jobID 
-        				+ " created in [ "
-        				+ (System.currentTimeMillis() - startTime)
-        				+ " ].");
-        	}
-    		runJob(job);
-    	}
-    	catch (ServiceUnavailableException sue) {
-    		LOGGER.error("Unable to persist job [ "
-    				+ job.getJobID()
-    				+ " ].  Error message => [ "
-    				+ sue.getMessage()
-    				+ " ].  The target job will not be started.");
-    	}
+        long startTime = System.currentTimeMillis();
+        Job  job       = null;
+        
+        try {
+            
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Beginning validation for job [ "
+                        + jobID
+                        + " ].");
+            }
+            
+            // Validate and expand the input file list.
+            List<FileEntry> files = FileValidator
+                    .getInstance()
+                    .validate(request.getFiles());
+        
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Validation for job [ "
+                        + jobID
+                        + " ] completed in [ "
+                        + (System.currentTimeMillis() - startTime)
+                        + " ] ms.");
+            }
+            
+            if ((files != null) && (!files.isEmpty())) {
+                
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Input request resulted in [ "
+                            + files.size()
+                            + " ] validated files to bundle.");
+                }
+                
+                ArchiveJobFactory factory = new ArchiveJobFactory(
+                        request.getType(),
+                        request.getMaxSize(),
+                        jobID,
+                        request.getOutputFilename());
+                
+                List<Archive> archives = factory
+                        .createArchivesFromFileEntry(files);
+                
+                if ((archives != null) && (archives.size() > 0)) {
+                    job = createJobInstance(
+                            jobID, 
+                            request.getUserName(), 
+                            request.getType(), 
+                            request.getMaxSize(),
+                            archives);
+                }
+                else {
+                    LOGGER.error("There are no archive jobs to process.  "
+                            + "Setting job state to INVALID_REQUEST.");    
+                    job = createBogusJobInstance(
+                            jobID, 
+                            request.getUserName(), 
+                            request.getType(), 
+                            request.getMaxSize());
+                }
+            }
+            else {
+                LOGGER.error("Validation algorithm revealed no files to "
+                        + "bundle.  Setting job state to INVALID_REQUEST.");
+                job = createBogusJobInstance(
+                        jobID, 
+                        request.getUserName(), 
+                        request.getType(), 
+                        request.getMaxSize());
+            }
+        
+        }
+        catch (InvalidRequestException ire) {
+            LOGGER.error("InvalidRequestException raised while validating "
+                    + "the input job.  Exception message => [ "
+                    + ire.getMessage()
+                    + " ].");
+            job = createBogusJobInstance(
+                    jobID, 
+                    request.getUserName(), 
+                    request.getType(), 
+                    request.getMaxSize());
+        }
+        
+        // We had to eliminate the use of the injected JobService EJB.
+        // NGA's infrastructure was so atrociously slow we could not complete
+        // the validation of the incoming job before the container tore 
+        // down the underlying transactions.
+        try (JobService jobService = new JobService()) {
+            jobService.persist(job);            
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Job ID [ "
+                        + jobID 
+                        + " created in [ "
+                        + (System.currentTimeMillis() - startTime)
+                        + " ].");
+            }
+            runJob(job);
+        }
+        catch (ServiceUnavailableException sue) {
+            LOGGER.error("Unable to persist job [ "
+                    + job.getJobID()
+                    + " ].  Error message => [ "
+                    + sue.getMessage()
+                    + " ].  The target job will not be started.");
+        }
     }
     
     @Asynchronous
     public void createJob(
-    		String jobID, 
-    		BundleRequest request) throws ServiceUnavailableException {
-    	
-    	long startTime = System.currentTimeMillis();
-    	Job  job       = null;
-    	
-    	try {
-    		
-	    	// Validate and expand the input file list.
-	        List<FileEntry> files = FileValidator
-	                .getInstance()
-	                .validateStringList(request.getFiles());
-	        
-	        if ((files != null) && (!files.isEmpty())) {
-	        
-	        	if (LOGGER.isDebugEnabled()) {
-		        	LOGGER.debug("Input request resulted in [ "
-		        			+ files.size()
-		        			+ " ] validated files to bundle.");
-		        }
-	        	
-		        ArchiveJobFactory factory = new ArchiveJobFactory(
-		        		request.getType(),
-		        		request.getMaxSize(),
-		        		jobID,
-		        		request.getOutputFilename());
-		        
-		        List<Archive> archives = factory
-		        		.createArchivesFromFileEntry(files);
-		        
-		        if ((archives != null) && (archives.size() > 0)) {
-			        job = createJobInstance(
-			        		jobID, 
-			        		request.getUserName(), 
-			        		request.getType(), 
-			        		request.getMaxSize(),
-			        		archives);
-		        }
-		        else {
-		        	LOGGER.error("There are no archive jobs to process.  "
-		        			+ "Setting job state to INVALID_REQUEST.");	
-		        	job = createBogusJobInstance(
-			        		jobID, 
-			        		request.getUserName(), 
-			        		request.getType(), 
-			        		request.getMaxSize());
-		        }
-	        }
-	        else {
-	        	LOGGER.error("Validation algorithm revealed no files to "
-	        			+ "bundle.  Setting job state to INVALID_REQUEST.");
-	        	job = createBogusJobInstance(
-		        		jobID, 
-		        		request.getUserName(), 
-		        		request.getType(), 
-		        		request.getMaxSize());
-	        }
-	    }
-		catch (InvalidRequestException ire) {
-			LOGGER.error("InvalidRequestException raised while validating "
-					+ "the input job.  Exception message => [ "
-					+ ire.getMessage()
-					+ " ].");
-			job = createBogusJobInstance(
-	        		jobID, 
-	        		request.getUserName(), 
-	        		request.getType(), 
-	        		request.getMaxSize());
-		}
-    	
-    	// We had to eliminate the use of the injected JobService EJB.
-    	// NGA's infrastructure was so atrociously slow we could not complete
-    	// the validation of the incoming job before the container tore 
-    	// down the underlying transactions.
-    	try (JobService jobService = new JobService()) {
-    		jobService.persist(job);    		
-    		if (LOGGER.isDebugEnabled()) {
-        		LOGGER.debug("Job ID [ "
-        				+ jobID 
-        				+ " created in [ "
-        				+ (System.currentTimeMillis() - startTime)
-        				+ " ].");
-        	}
-    		runJob(job);
-    	}
-    	catch (ServiceUnavailableException sue) {
-    		LOGGER.error("Unable to persist job [ "
-    				+ job.getJobID()
-    				+ " ].  Error message => [ "
-    				+ sue.getMessage()
-    				+ " ].  The target job will not be started.");
-    	}
+            String jobID, 
+            BundleRequest request) throws ServiceUnavailableException {
+        
+        long startTime = System.currentTimeMillis();
+        Job  job       = null;
+        
+        try {
+            
+            // Validate and expand the input file list.
+            List<FileEntry> files = FileValidator
+                    .getInstance()
+                    .validateStringList(request.getFiles());
+            
+            if ((files != null) && (!files.isEmpty())) {
+            
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Input request resulted in [ "
+                            + files.size()
+                            + " ] validated files to bundle.");
+                }
+                
+                ArchiveJobFactory factory = new ArchiveJobFactory(
+                        request.getType(),
+                        request.getMaxSize(),
+                        jobID,
+                        request.getOutputFilename());
+                
+                List<Archive> archives = factory
+                        .createArchivesFromFileEntry(files);
+                
+                if ((archives != null) && (archives.size() > 0)) {
+                    job = createJobInstance(
+                            jobID, 
+                            request.getUserName(), 
+                            request.getType(), 
+                            request.getMaxSize(),
+                            archives);
+                }
+                else {
+                    LOGGER.error("There are no archive jobs to process.  "
+                            + "Setting job state to INVALID_REQUEST.");    
+                    job = createBogusJobInstance(
+                            jobID, 
+                            request.getUserName(), 
+                            request.getType(), 
+                            request.getMaxSize());
+                }
+            }
+            else {
+                LOGGER.error("Validation algorithm revealed no files to "
+                        + "bundle.  Setting job state to INVALID_REQUEST.");
+                job = createBogusJobInstance(
+                        jobID, 
+                        request.getUserName(), 
+                        request.getType(), 
+                        request.getMaxSize());
+            }
+        }
+        catch (InvalidRequestException ire) {
+            LOGGER.error("InvalidRequestException raised while validating "
+                    + "the input job.  Exception message => [ "
+                    + ire.getMessage()
+                    + " ].");
+            job = createBogusJobInstance(
+                    jobID, 
+                    request.getUserName(), 
+                    request.getType(), 
+                    request.getMaxSize());
+        }
+        
+        // We had to eliminate the use of the injected JobService EJB.
+        // NGA's infrastructure was so atrociously slow we could not complete
+        // the validation of the incoming job before the container tore 
+        // down the underlying transactions.
+        try (JobService jobService = new JobService()) {
+            jobService.persist(job);            
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Job ID [ "
+                        + jobID 
+                        + " created in [ "
+                        + (System.currentTimeMillis() - startTime)
+                        + " ].");
+            }
+            runJob(job);
+        }
+        catch (ServiceUnavailableException sue) {
+            LOGGER.error("Unable to persist job [ "
+                    + job.getJobID()
+                    + " ].  Error message => [ "
+                    + sue.getMessage()
+                    + " ].  The target job will not be started.");
+        }
     }
 
     /**
@@ -597,31 +597,31 @@ public class JobFactoryService
      */
     public void runJob(Job job) throws ServiceUnavailableException {
         LOGGER.debug("runJob() method called.");
-    	if (job != null) {
-    		if (job.getState() == JobStateType.NOT_STARTED) {
-    			createOutputDirectory(job.getJobID());
-	    		if (getJobRunnerService() != null) {
-	    			LOGGER.info("Starting job ID [ "
-	    					+ job.getJobID()
-	    					+ " ].");
-	    			getJobRunnerService().run(job);
-	    		}
+        if (job != null) {
+            if (job.getState() == JobStateType.NOT_STARTED) {
+                createOutputDirectory(job.getJobID());
+                if (getJobRunnerService() != null) {
+                    LOGGER.info("Starting job ID [ "
+                            + job.getJobID()
+                            + " ].");
+                    getJobRunnerService().run(job);
+                }
                 else {
                     LOGGER.error("Unable to obtain a reference to the"
                             + " JobRunnerService.  Job ID [ "
                             + job.getJobID()
                             + " ] will not start.");
                 }
-    		}
-    		else {
-    			LOGGER.warn("Attempted to start a job with a state of [ "
-    					+ job.getState().getText()
-    					+ " ].  Job will not be started.");
-    		}
-    	}
-    	else {
-    		LOGGER.warn("Input job is null.  Nothing to do.");
-    	}
+            }
+            else {
+                LOGGER.warn("Attempted to start a job with a state of [ "
+                        + job.getState().getText()
+                        + " ].  Job will not be started.");
+            }
+        }
+        else {
+            LOGGER.warn("Input job is null.  Nothing to do.");
+        }
     }
     
     /**
@@ -629,10 +629,10 @@ public class JobFactoryService
      * @param value
      */
     private void setStagingArea(String value) {
-    	if ((value == null) || (value.isEmpty())) {
-    		value = System.getProperty("java.io.tmpdir");
-    	}
-    	stagingArea = URIUtils.getInstance().getURI(value);
+        if ((value == null) || (value.isEmpty())) {
+            value = System.getProperty("java.io.tmpdir");
+        }
+        stagingArea = URIUtils.getInstance().getURI(value);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Output staging area set to [ "
                 + stagingArea

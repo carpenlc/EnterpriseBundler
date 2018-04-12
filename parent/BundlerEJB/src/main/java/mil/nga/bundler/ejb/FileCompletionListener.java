@@ -33,13 +33,13 @@ import mil.nga.bundler.types.JobStateType;
 @Stateful
 @LocalBean
 public class FileCompletionListener 
-		implements Serializable, FileCompletionListenerI {
+        implements Serializable, FileCompletionListenerI {
 
-	/**
+    /**
      * Set up the Log4j system for use throughout the class
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
-    		FileCompletionListener.class);
+            FileCompletionListener.class);
     
     /**
      * The job ID that this listener is associated with. 
@@ -68,7 +68,7 @@ public class FileCompletionListener
      * @return Reference to the FileEntryService EJB.
      */
     private FileEntryService getFileEntryService() 
-    		throws ServiceUnavailableException {
+            throws ServiceUnavailableException {
         if (fileEntryService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to FileEntryService.  Attempting to "
@@ -78,7 +78,7 @@ public class FileCompletionListener
                     .getFileEntryService();
             if (fileEntryService == null) {
                 throw new ServiceUnavailableException("Unable to obtain a "
-                		+ "reference to [ "
+                        + "reference to [ "
                         + FileEntryService.class.getCanonicalName()
                         + " ].");
             }
@@ -97,32 +97,32 @@ public class FileCompletionListener
      */
     @Override
     public void notify(ArchiveElement element) {
-    	if (element != null) {
-    		if (LOGGER.isDebugEnabled()) {
-    	    	LOGGER.debug("Notify method called for job ID [ "
-    	    			+ getJobID() 
-    	    			+ " ], archive ID [ "
-    	    			+ getArchiveID()
-    	    			+ " ].  Element completed => [ "
-    	    			+ element.toString()
-    	    			+ " ].");
-    		}
-    		try {
-	    		if (getFileEntryService() != null) {
-	    			getFileEntryService().updateState(
-	    					getJobID(),
-	    					getArchiveID(),
-	    					element.getURI().toString(),
-	    					JobStateType.COMPLETE);
-	    		}
-    		}
-    		catch (ServiceUnavailableException sue) {
-            	LOGGER.error("Internal system failure.  Target EJB service "
-            			+ "is unavailable.  Exception message => [ "
-            			+ sue.getMessage()
-            			+ " ].");
-    		}
-    	}
+        if (element != null) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Notify method called for job ID [ "
+                        + getJobID() 
+                        + " ], archive ID [ "
+                        + getArchiveID()
+                        + " ].  Element completed => [ "
+                        + element.toString()
+                        + " ].");
+            }
+            try {
+                if (getFileEntryService() != null) {
+                    getFileEntryService().updateState(
+                            getJobID(),
+                            getArchiveID(),
+                            element.getURI().toString(),
+                            JobStateType.COMPLETE);
+                }
+            }
+            catch (ServiceUnavailableException sue) {
+                LOGGER.error("Internal system failure.  Target EJB service "
+                        + "is unavailable.  Exception message => [ "
+                        + sue.getMessage()
+                        + " ].");
+            }
+        }
     }
     
     /**
@@ -130,7 +130,7 @@ public class FileCompletionListener
      * @return value The archive ID.
      */
     public long getArchiveID() {
-    	return archiveID;
+        return archiveID;
     }
     
     /**
@@ -138,7 +138,7 @@ public class FileCompletionListener
      * @return value The job ID.
      */
     public String getJobID() {
-    	return jobID;
+        return jobID;
     }
     
     /**
@@ -146,7 +146,7 @@ public class FileCompletionListener
      * @param value The archive ID.
      */
     public void setArchiveID(long value) {
-    	this.archiveID = value;
+        this.archiveID = value;
     }
     
     /**
@@ -154,6 +154,6 @@ public class FileCompletionListener
      * @param value The job ID.
      */
     public void setJobID(String value) {
-    	this.jobID = value;
+        this.jobID = value;
     }
 }

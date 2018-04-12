@@ -66,16 +66,16 @@ public abstract class Archiver {
      * @param listener Listener to be notified when a file completes update processing.
      */
     public void addFileCompletionListener(FileCompletionListenerI listener) {
-    	if (listener != null) {
-    		if (listeners == null) {
-    			listeners = new ArrayList<FileCompletionListenerI>();
-    		}
-    		synchronized (MUTEX) {
-    			if (!listeners.contains(listener)) {
-    				listeners.add(listener);
-    			}
-    		}
-    	}
+        if (listener != null) {
+            if (listeners == null) {
+                listeners = new ArrayList<FileCompletionListenerI>();
+            }
+            synchronized (MUTEX) {
+                if (!listeners.contains(listener)) {
+                    listeners.add(listener);
+                }
+            }
+        }
     }
     
     /**
@@ -124,20 +124,20 @@ public abstract class Archiver {
      * it's internal state.
      */
     public void notify(ArchiveElement value) {
-    	if ((listeners != null) && (listeners.size() > 0)) {
-    		List<FileCompletionListenerI> localListeners = null;
-    		synchronized(MUTEX) {
-    			localListeners = new ArrayList<FileCompletionListenerI>(listeners);
-    		}
-    		for (FileCompletionListenerI listener : localListeners) {
-    			listener.notify(value);
-    		}
-     	}
-    	else {
-    		LOGGER.info("Archive of file => [ "
-    				+ value.toString() 
-    				+ " ] complete.");
-    	}
+        if ((listeners != null) && (listeners.size() > 0)) {
+            List<FileCompletionListenerI> localListeners = null;
+            synchronized(MUTEX) {
+                localListeners = new ArrayList<FileCompletionListenerI>(listeners);
+            }
+            for (FileCompletionListenerI listener : localListeners) {
+                listener.notify(value);
+            }
+         }
+        else {
+            LOGGER.info("Archive of file => [ "
+                    + value.toString() 
+                    + " ] complete.");
+        }
     }
     
     /**

@@ -89,9 +89,9 @@ public class ArchiverMDB implements MessageListener, BundlerConstantsI {
      * a reference to the target EJB.
      */
     private BundlerService getBundlerService() 
-    		throws ServiceUnavailableException {
+            throws ServiceUnavailableException {
         
-    	if (bundlerService == null) {
+        if (bundlerService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to BundlerService.  Attempting to "
                     + "look it up via JNDI.");
@@ -100,7 +100,7 @@ public class ArchiverMDB implements MessageListener, BundlerConstantsI {
                     .getBundlerService();
             if (bundlerService == null) {
                 throw new ServiceUnavailableException("Unable to obtain a "
-                		+ "reference to [ "
+                        + "reference to [ "
                         + BundlerService.class.getCanonicalName()
                         + " ].");
             }
@@ -119,21 +119,21 @@ public class ArchiverMDB implements MessageListener, BundlerConstantsI {
      */
     @Override
     public void onMessage(Message message) {
-    	
+        
         try {
             
             ObjectMessage objMessage = (ObjectMessage)message;
             ArchiveMessage archiveMsg = (ArchiveMessage)objMessage.getObject();
             
             if (archiveMsg != null) {
-            	LOGGER.info("ArchiverMDB received notification to process [ " 
-	                    + archiveMsg.toString()
-	                    + " ].");
-	            getBundlerService().handleMessage(archiveMsg);
+                LOGGER.info("ArchiverMDB received notification to process [ " 
+                        + archiveMsg.toString()
+                        + " ].");
+                getBundlerService().handleMessage(archiveMsg);
             }
             else {
-            	LOGGER.error("Internal system failure.  Unable to unpack the "
-        			+ "incoming JMS message.");
+                LOGGER.error("Internal system failure.  Unable to unpack the "
+                    + "incoming JMS message.");
             }
             
         }
@@ -145,10 +145,10 @@ public class ArchiverMDB implements MessageListener, BundlerConstantsI {
                     + " ].");
         }
         catch (ServiceUnavailableException sue) {
-        	LOGGER.error("Internal system failure.  Target EJB service "
-        			+ "is unavailable.  Exception message => [ "
-        			+ sue.getMessage()
-        			+ " ].");
+            LOGGER.error("Internal system failure.  Target EJB service "
+                    + "is unavailable.  Exception message => [ "
+                    + sue.getMessage()
+                    + " ].");
         }
     }
     

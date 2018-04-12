@@ -322,11 +322,11 @@ public class JobTrackerMDB implements MessageListener {
                  + je.getMessage()
                  + " ].");
          }
-		 catch (ServiceUnavailableException sue) {
-        	LOGGER.error("Internal system failure.  Target EJB service "
-        			+ "is unavailable.  Exception message => [ "
-        			+ sue.getMessage()
-        			+ " ].");
-		 }
+         catch (ServiceUnavailableException sue) {
+            LOGGER.error("Internal system failure.  Target EJB service "
+                    + "is unavailable.  Exception message => [ "
+                    + sue.getMessage()
+                    + " ].");
+         }
     }
 }

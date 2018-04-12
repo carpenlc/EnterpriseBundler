@@ -69,12 +69,12 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
      * @param The builder object. 
      */
     private BundleRequestMessage(BundleRequestMessageBuilder builder) {
-    	redirect       = builder.redirect;
-    	maxSize        = builder.maxSize;
-    	outputFilename = builder.outputFilename;
-    	userName       = builder.userName;
-    	type           = builder.type;
-    	files          = builder.files;
+        redirect       = builder.redirect;
+        maxSize        = builder.maxSize;
+        outputFilename = builder.outputFilename;
+        userName       = builder.userName;
+        type           = builder.type;
+        files          = builder.files;
     }
     
     /**
@@ -86,9 +86,9 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
             files = new ArrayList<FileRequest>();
         }
         files.add(new FileRequest.FileRequestBuilder()
-        		.file(file)
-        		.archivePath(path)
-        		.build());
+                .file(file)
+                .archivePath(path)
+                .build());
     }
     
     /**
@@ -98,12 +98,12 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
      * @param value The <code>FileRequest</code> object to add.
      */
     public void add(FileRequest value) {
-    	if (files == null) {
+        if (files == null) {
             files = new ArrayList<FileRequest>();
         }
-    	if (value != null) {
-    		files.add(value);
-    	}
+        if (value != null) {
+            files.add(value);
+        }
     }
     
     /**
@@ -241,11 +241,11 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
     @JsonPOJOBuilder(withPrefix = "")
     public static class BundleRequestMessageBuilder implements BundlerConstantsI {
     
-    	// Private internal members
-    	private int               maxSize        = -1;
+        // Private internal members
+        private int               maxSize        = -1;
         private boolean          redirect       = false;
-    	private String            outputFilename = null;
-    	private String            userName       = null;
+        private String            outputFilename = null;
+        private String            userName       = null;
         private ArchiveType       type           = ArchiveType.ZIP;
         private List<FileRequest> files          = new ArrayList<FileRequest>();
         
@@ -256,8 +256,8 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
          * @throws IllegalStateException If any individual fields are invalid.
          */
         public BundleRequestMessage build() throws IllegalStateException {
-        	validateBundleRequestMessageObject();
-        	return new BundleRequestMessage(this);
+            validateBundleRequestMessageObject();
+            return new BundleRequestMessage(this);
         }
         
         /**
@@ -268,8 +268,8 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
          */
         @JsonProperty(value="max_size")
         public BundleRequestMessageBuilder maxSize(int value) {
-        	maxSize = value;
-        	return this;
+            maxSize = value;
+            return this;
         }
         
         /**
@@ -294,8 +294,8 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
          */
         @JsonProperty(value="type")
         public BundleRequestMessageBuilder type(ArchiveType value) {
-        	type = value;
-        	return this;
+            type = value;
+            return this;
         }
         
         /**
@@ -327,8 +327,8 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
          */
         @JsonProperty(value="files")
         public BundleRequestMessageBuilder files(List<FileRequest> values) {
-        	files = values;
-        	return this;
+            files = values;
+            return this;
         }
         
         /**
@@ -340,16 +340,16 @@ public class BundleRequestMessage implements Serializable, BundlerConstantsI {
          * are not populated.
          */
         private void validateBundleRequestMessageObject() throws IllegalStateException {
-        	
-        	if ((maxSize <= MIN_ARCHIVE_SIZE) || (maxSize > MAX_ARCHIVE_SIZE)) {
-        		maxSize = DEFAULT_ARCHIVE_SIZE;
-        	}
-        	if ((userName == null) || (userName.isEmpty())) {
-        		userName = DEFAULT_USERNAME;
-        	}
-        	if ((outputFilename == null) || (outputFilename.isEmpty())) {
-        		outputFilename = FileNameGenerator.getFileName();
-        	}
+            
+            if ((maxSize <= MIN_ARCHIVE_SIZE) || (maxSize > MAX_ARCHIVE_SIZE)) {
+                maxSize = DEFAULT_ARCHIVE_SIZE;
+            }
+            if ((userName == null) || (userName.isEmpty())) {
+                userName = DEFAULT_USERNAME;
+            }
+            if ((outputFilename == null) || (outputFilename.isEmpty())) {
+                outputFilename = FileNameGenerator.getFileName();
+            }
         }
     }
 }

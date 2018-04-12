@@ -152,10 +152,10 @@ public class FileNameGenerator
             sb.append(pathSeparator);
         }
         if (!jobID.isEmpty()) {
-	        sb.append(jobID);
-	        if (!sb.toString().endsWith(pathSeparator)) {
-	            sb.append(pathSeparator);
-	        }
+            sb.append(jobID);
+            if (!sb.toString().endsWith(pathSeparator)) {
+                sb.append(pathSeparator);
+            }
         }
         sb.append(filenameTemplate);
         if (ID > 0) {
@@ -195,7 +195,7 @@ public class FileNameGenerator
             uri = URIUtils.getInstance().getURI(filePath);
         }
         else {
-        	LOGGER.warn("Input file path is null.  Unable to create URI.");
+            LOGGER.warn("Input file path is null.  Unable to create URI.");
         }
         return uri;
     }
@@ -288,18 +288,18 @@ public class FileNameGenerator
      * the output file names.
      */
     public String toString() {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("FileNameGenerator Parameters : ");
-    	sb.append("Archive Type => [ ");
-    	sb.append(type.getText());
-    	sb.append(" ], Job ID => [ ");
-    	sb.append(jobID);
-    	sb.append(" ], filename template => [ ");
-    	sb.append(filenameTemplate);
-    	sb.append(" ], staging area => [ ");
-    	sb.append(stagingArea);
-    	sb.append(" ].");
-    	return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("FileNameGenerator Parameters : ");
+        sb.append("Archive Type => [ ");
+        sb.append(type.getText());
+        sb.append(" ], Job ID => [ ");
+        sb.append(jobID);
+        sb.append(" ], filename template => [ ");
+        sb.append(filenameTemplate);
+        sb.append(" ], staging area => [ ");
+        sb.append(stagingArea);
+        sb.append(" ].");
+        return sb.toString();
     }
     
     public static void main (String[] args) {

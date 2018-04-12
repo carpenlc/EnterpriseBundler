@@ -16,17 +16,17 @@ import org.slf4j.LoggerFactory;
  * @author L. Craig Carpenter
  */
 public class URIUtils implements Serializable {
-	
+    
     /**
-	 * Eclipse-generated serialVersionUID
-	 */
-	private static final long serialVersionUID = -7224296438362779391L;
-	
-	/**
+     * Eclipse-generated serialVersionUID
+     */
+    private static final long serialVersionUID = -7224296438362779391L;
+    
+    /**
      * Set up the Log4j system for use throughout the class
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
-    		URIUtils.class);
+            URIUtils.class);
     
     /**
      * Return a singleton instance to the FileGenerator object.
@@ -47,12 +47,12 @@ public class URIUtils implements Serializable {
         URI newURI = null;
         if (uri != null) {
             try {
-            	newURI = new URI(
-            			"file",
-            			uri.getAuthority(),
-            			uri.getPath(),
-            			uri.getFragment(),
-            			uri.getQuery());
+                newURI = new URI(
+                        "file",
+                        uri.getAuthority(),
+                        uri.getPath(),
+                        uri.getFragment(),
+                        uri.getQuery());
             }
             // We're making a URI out of a URI here so this exception can 
             // never be thrown here - just eat it.
@@ -68,16 +68,16 @@ public class URIUtils implements Serializable {
      * @return Associated URI to the same target file.  May be null.
      */
     public URI getURI(String filePath) throws FileSystemNotFoundException {
-    	URI uri = null;
-    	
-    	// For large jobs, this debug message results in a large amount of 
-    	// disk IO
-    	// if (LOGGER.isDebugEnabled()) {
-    	//	LOGGER.debug("Converting [ " + filePath + " ] to URI.");
-    	// }
-    	
+        URI uri = null;
+        
+        // For large jobs, this debug message results in a large amount of 
+        // disk IO
+        // if (LOGGER.isDebugEnabled()) {
+        //    LOGGER.debug("Converting [ " + filePath + " ] to URI.");
+        // }
+        
         if ((filePath != null) && (!filePath.isEmpty())) {
-        	// Create the URI from the input file path. 
+            // Create the URI from the input file path. 
             uri = URI.create(filePath);
             
             // For backwards compatibility, if the scheme is not supplied, we 

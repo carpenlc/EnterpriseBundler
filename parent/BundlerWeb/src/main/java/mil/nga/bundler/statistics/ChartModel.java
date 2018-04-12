@@ -98,10 +98,10 @@ public class ChartModel implements BundlerConstantsI {
                         + " ].");
             }
             try {
-            	jobs = getJobService().getJobsByDate(startTime, endTime);
+                jobs = getJobService().getJobsByDate(startTime, endTime);
             }
             catch (ServiceUnavailableException sue) {
-            	
+                
             }
         }
         else { 
@@ -141,10 +141,10 @@ public class ChartModel implements BundlerConstantsI {
                         + " ].");
             }
             try {
-            	jobs = getJobService().getJobsByDate(startTime, endTime);
+                jobs = getJobService().getJobsByDate(startTime, endTime);
             }
             catch (ServiceUnavailableException sue) {
-            	
+                
             }
         }
         else { 

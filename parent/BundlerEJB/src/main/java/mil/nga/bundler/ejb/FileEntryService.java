@@ -32,7 +32,7 @@ public class FileEntryService implements BundlerConstantsI {
      * Set up the Log4j system for use throughout the class
      */        
     private static final Logger LOGGER = LoggerFactory.getLogger(
-    		FileEntryService.class);
+            FileEntryService.class);
     
     /**
      * JPA persistence entity manager.
@@ -52,28 +52,28 @@ public class FileEntryService implements BundlerConstantsI {
      * @return A constructed EntityManager object.
      */
     private EntityManager getEntityManager() 
-    		throws ServiceUnavailableException {
-    	if (em == null) {
-    		if (LOGGER.isDebugEnabled()) {
-    			LOGGER.debug("Container-injected EntityManager is null.  "
-    					+ "Creating un-managed EntityManager.");
-    		}
-    		EntityManagerFactory emFactory = 
-    				Persistence.createEntityManagerFactory(
-    						APPLICATION_PERSISTENCE_CONTEXT);
-    		if (emFactory != null) {
-    			em = emFactory.createEntityManager();
-    		}
-    		else {
-    			LOGGER.warn("Unable to create un-managed EntityManager object.");
-    		}
-    		if (em == null) {
-    			throw new ServiceUnavailableException(
-        				"Unable to start the JPA subsystem.  The injected "
-        				+ "EntityManager object is null.");
-    		}
-    	}
-    	return em;
+            throws ServiceUnavailableException {
+        if (em == null) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Container-injected EntityManager is null.  "
+                        + "Creating un-managed EntityManager.");
+            }
+            EntityManagerFactory emFactory = 
+                    Persistence.createEntityManagerFactory(
+                            APPLICATION_PERSISTENCE_CONTEXT);
+            if (emFactory != null) {
+                em = emFactory.createEntityManager();
+            }
+            else {
+                LOGGER.warn("Unable to create un-managed EntityManager object.");
+            }
+            if (em == null) {
+                throw new ServiceUnavailableException(
+                        "Unable to start the JPA subsystem.  The injected "
+                        + "EntityManager object is null.");
+            }
+        }
+        return em;
     }
     
     /**
@@ -89,66 +89,66 @@ public class FileEntryService implements BundlerConstantsI {
      * @return The associated <code>FileEntry</code> object.
      */
     public FileEntry getFileEntry(
-    		String jobID, 
-    		long archiveID, 
-    		String uri) throws ServiceUnavailableException {
-    	
-    	long      startTime = System.currentTimeMillis();
-    	FileEntry fileEntry  = null;
+            String jobID, 
+            long archiveID, 
+            String uri) throws ServiceUnavailableException {
+        
+        long      startTime = System.currentTimeMillis();
+        FileEntry fileEntry  = null;
         
         if ((jobID != null) && (!jobID.isEmpty())) {
-        	if ((uri != null) && (!uri.isEmpty())) { 
-        		try {
-	                CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-	                CriteriaQuery<FileEntry> cq = cb.createQuery(FileEntry.class);
-	                Root<FileEntry> root = cq.from(FileEntry.class);
-	                
-	                // Add the "where" clause
-	                cq.where(
-	                        cb.equal(
-	                                root.get("jobID"), 
-	                                cb.parameter(String.class, "jobID")),
-	                        cb.equal(root.get("archiveID"), 
-	                        		cb.parameter(Long.class, "archiveID")),
-	                        cb.equal(root.get("path"), 
-	                        		cb.parameter(String.class, "path")));
-	                
-	                // Create the query
-	                Query query = getEntityManager().createQuery(cq);
-	                
-	                // Set the values for the where clause
-	                query.setParameter("jobID", jobID);
-	                query.setParameter("archiveID", archiveID);
-	                query.setParameter("path", uri);
-	                
-	                // Retrieve the data
-	                fileEntry = (FileEntry)query.getSingleResult();
-	                
-	                if (LOGGER.isDebugEnabled()) {
-	                	LOGGER.debug("Target FileEntry record => [ "
-	                			+ fileEntry.toString()
-	                			+ " ] retrieved in [ "
-	                			+ (System.currentTimeMillis() - startTime)
-	                			+ " ] ms.");
-	                }
-        		}
+            if ((uri != null) && (!uri.isEmpty())) { 
+                try {
+                    CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+                    CriteriaQuery<FileEntry> cq = cb.createQuery(FileEntry.class);
+                    Root<FileEntry> root = cq.from(FileEntry.class);
+                    
+                    // Add the "where" clause
+                    cq.where(
+                            cb.equal(
+                                    root.get("jobID"), 
+                                    cb.parameter(String.class, "jobID")),
+                            cb.equal(root.get("archiveID"), 
+                                    cb.parameter(Long.class, "archiveID")),
+                            cb.equal(root.get("path"), 
+                                    cb.parameter(String.class, "path")));
+                    
+                    // Create the query
+                    Query query = getEntityManager().createQuery(cq);
+                    
+                    // Set the values for the where clause
+                    query.setParameter("jobID", jobID);
+                    query.setParameter("archiveID", archiveID);
+                    query.setParameter("path", uri);
+                    
+                    // Retrieve the data
+                    fileEntry = (FileEntry)query.getSingleResult();
+                    
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Target FileEntry record => [ "
+                                + fileEntry.toString()
+                                + " ] retrieved in [ "
+                                + (System.currentTimeMillis() - startTime)
+                                + " ] ms.");
+                    }
+                }
                 catch (NoResultException nre) {
                     LOGGER.info("javax.persistence.NoResultException "
                             + "encountered.  Error message [ "
                             + nre.getMessage()
                             + " ].  Returned FileEntry object will be null.");
                 }
-        	}
-        	else {
+            }
+            else {
                 LOGGER.warn("The input URI is null or empty.  Unable to "
                         + "retrieve an associated FileEntry object.The "
                         + "returned FileEntry object will be null.");
-        	}
+            }
         }
         else {
             LOGGER.warn("The input job ID is null or empty.  Unable to "
                     + "retrieve an associated FileEntry object.  The "
-            		+ "returned FileEntry object will be null.");
+                    + "returned FileEntry object will be null.");
         }
         return fileEntry;
     }
@@ -166,61 +166,61 @@ public class FileEntryService implements BundlerConstantsI {
      */
     @Asynchronous
     public void updateState (
-    		String jobID, 
-    		long archiveID, 
-			String uri,
-	 		JobStateType state) throws ServiceUnavailableException {
-    	
-    	long startTime = System.currentTimeMillis();
-    	
+            String jobID, 
+            long archiveID, 
+            String uri,
+             JobStateType state) throws ServiceUnavailableException {
+        
+        long startTime = System.currentTimeMillis();
+        
         if ((jobID != null) && (!jobID.isEmpty())) {
-        	if ((uri != null) && (!uri.isEmpty())) {
-        		if (state != null) {
-        			
-        			FileEntry entry = getFileEntry(jobID, archiveID, uri);
-        			if (entry != null) {
-        				
-        				entry.setFileState(state);
-        				
-        				getEntityManager().merge(entry);
-        				getEntityManager().flush();
+            if ((uri != null) && (!uri.isEmpty())) {
+                if (state != null) {
+                    
+                    FileEntry entry = getFileEntry(jobID, archiveID, uri);
+                    if (entry != null) {
+                        
+                        entry.setFileState(state);
+                        
+                        getEntityManager().merge(entry);
+                        getEntityManager().flush();
                         
                         if (LOGGER.isDebugEnabled()) {
-    	                	LOGGER.debug("FileEntry state updated in [ "
-    	                			+ (System.currentTimeMillis() - startTime)
-    	                			+ " ] ms.");
-        				}
-        			}
-        			else {
-        				LOGGER.error("Unable to find FileEntry object "
-        						+ "for job ID [ "
-        						+ jobID
-                        		+ " ], archive ID [ "
-                        		+ archiveID
-                        		+ " ], and URI [ "
-                        		+ uri
-                        		+ " ].  State cannot be updated.");
-        			}
-        		}
-        		else {
+                            LOGGER.debug("FileEntry state updated in [ "
+                                    + (System.currentTimeMillis() - startTime)
+                                    + " ] ms.");
+                        }
+                    }
+                    else {
+                        LOGGER.error("Unable to find FileEntry object "
+                                + "for job ID [ "
+                                + jobID
+                                + " ], archive ID [ "
+                                + archiveID
+                                + " ], and URI [ "
+                                + uri
+                                + " ].  State cannot be updated.");
+                    }
+                }
+                else {
                     LOGGER.warn("The input FileEntry state is null.  "
-                    		+ "Unable to update state for job ID [ "
-                    		+ jobID
-                    		+ " ], archive ID [ "
-                    		+ archiveID
-                    		+ " ], and URI [ "
-                    		+ uri
-                    		+ " ].");
-        		}
-        	}
-        	else {
+                            + "Unable to update state for job ID [ "
+                            + jobID
+                            + " ], archive ID [ "
+                            + archiveID
+                            + " ], and URI [ "
+                            + uri
+                            + " ].");
+                }
+            }
+            else {
                 LOGGER.warn("The input URI is null or empty.  Unable to "
                         + "update state for job ID [ "
                         + jobID
-                		+ " ] and archive ID [ "
-                		+ archiveID
-                		+ " ].");
-        	}
+                        + " ] and archive ID [ "
+                        + archiveID
+                        + " ].");
+            }
         }
         else {
             LOGGER.warn("The input job ID is null or empty.  "

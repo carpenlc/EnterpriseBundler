@@ -58,9 +58,9 @@ public class JobTrackerService {
                     .getInstance()
                     .getJobService();
             if (jobService == null) {
-            	throw new ServiceUnavailableException("Unable to look up "
+                throw new ServiceUnavailableException("Unable to look up "
                         + "target EJB [ "
-            			+ JobService.class.getCanonicalName()
+                        + JobService.class.getCanonicalName()
                         + " ].");
             }
         }
@@ -93,15 +93,15 @@ public class JobTrackerService {
      * JobTrackerMessage object.
      */
     private void getJobTrackerMessage(Job job, JobTrackerMessageBuilder builder) {
-    	
-    	int  numArchivesComplete = 0;
+        
+        int  numArchivesComplete = 0;
         long numFilesComplete    = 0L;
         long totalSizeComplete   = 0L;
         
-    	if (job != null) {
-    		
-    		// Copy data from the Job object into the JobTrackerMessageBuilder
-    		builder.jobID(job.getJobID());
+        if (job != null) {
+            
+            // Copy data from the Job object into the JobTrackerMessageBuilder
+            builder.jobID(job.getJobID());
             builder.userName(job.getUserName());
             builder.numFiles(job.getNumFiles());
             builder.totalSize(job.getTotalSize());
@@ -111,9 +111,9 @@ public class JobTrackerService {
           
             // Calculate the remaining fields
             if ((job.getArchives() != null) && (job.getArchives().size() > 0)) {
-            	
-            	for (ArchiveJob archive : job.getArchives()) {
-            		if (archive.getArchiveState() == JobStateType.COMPLETE) {
+                
+                for (ArchiveJob archive : job.getArchives()) {
+                    if (archive.getArchiveState() == JobStateType.COMPLETE) {
                         numArchivesComplete++;
                         builder.archive(archive);
                     }
@@ -134,8 +134,8 @@ public class JobTrackerService {
                                 + " ] does not contain a list of files to "
                                 + "archive.");
                     }
-            	}
-            	builder.numArchivesComplete(numArchivesComplete);
+                }
+                builder.numArchivesComplete(numArchivesComplete);
                 // The number of hashes complete is maintained for backwards 
                 // compatibility.  It will always be the same as the number of 
                 // archives complete
@@ -144,16 +144,16 @@ public class JobTrackerService {
                 builder.sizeComplete(totalSizeComplete);
             }
             else {
-            	LOGGER.error("The job ID requested [ "
-            			+ job.getJobID()
-            			+ " ] does not contain any individual archive jobs.  "
-            			+ "This is invalid.");
+                LOGGER.error("The job ID requested [ "
+                        + job.getJobID()
+                        + " ] does not contain any individual archive jobs.  "
+                        + "This is invalid.");
             }
-    	}
-    	else {
-    		LOGGER.warn("Input Job object is null but the database tier did "
-    				+ "not raise a NoResultException.");
-    	}
+        }
+        else {
+            LOGGER.warn("Input Job object is null but the database tier did "
+                    + "not raise a NoResultException.");
+        }
     }
     
     /**
@@ -166,27 +166,27 @@ public class JobTrackerService {
      */
     public JobTrackerMessage getJobTracker(String jobID) {
         
-    	JobTrackerMessageBuilder builder = 
-    			new JobTrackerMessage.JobTrackerMessageBuilder();
+        JobTrackerMessageBuilder builder = 
+                new JobTrackerMessage.JobTrackerMessageBuilder();
         
         if ((jobID != null) && (!jobID.isEmpty())) {
-        	builder.jobID(jobID);
+            builder.jobID(jobID);
             try {
-            	getJobTrackerMessage(getJobService().getJob(jobID), builder); 
+                getJobTrackerMessage(getJobService().getJob(jobID), builder); 
             }
             catch (NoResultException nre) {
-            	LOGGER.warn("The database tier raised a NoResultsException "
-            			+ "while looking up job ID [ "
-            			+ jobID
-            			+ " ].  Exception message => [ "
-            			+ nre.getMessage()
-            			+ " ].");
+                LOGGER.warn("The database tier raised a NoResultsException "
+                        + "while looking up job ID [ "
+                        + jobID
+                        + " ].  Exception message => [ "
+                        + nre.getMessage()
+                        + " ].");
             }
             catch (ServiceUnavailableException sue) {
-            	LOGGER.error("Internal system failure.  Target EJB service "
-            			+ "is unavailable.  Exception message => [ "
-            			+ sue.getMessage()
-            			+ " ].");
+                LOGGER.error("Internal system failure.  Target EJB service "
+                        + "is unavailable.  Exception message => [ "
+                        + sue.getMessage()
+                        + " ].");
             }
         }
         else {

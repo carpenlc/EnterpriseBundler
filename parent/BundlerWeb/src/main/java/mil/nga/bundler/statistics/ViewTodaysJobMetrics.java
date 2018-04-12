@@ -72,7 +72,7 @@ public class ViewTodaysJobMetrics
                     .getJobService();
             if (jobService == null) {
                 throw new ServiceUnavailableException("Unable to obtain a "
-                		+ "reference to [ "
+                        + "reference to [ "
                         + JobService.class.getCanonicalName()
                         + " ].");
             }
@@ -101,13 +101,13 @@ public class ViewTodaysJobMetrics
             
         }
         catch (ServiceUnavailableException sue) {
-        	
-        	LOGGER.error("Internal system failure.  Target EJB service "
-        			+ "is unavailable.  Exception message => [ "
-        			+ sue.getMessage()
-        			+ " ].");
-        	jobList = new ArrayList<Job>();
-        	
+            
+            LOGGER.error("Internal system failure.  Target EJB service "
+                    + "is unavailable.  Exception message => [ "
+                    + sue.getMessage()
+                    + " ].");
+            jobList = new ArrayList<Job>();
+            
         }
         return jobList;
     }

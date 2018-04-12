@@ -36,7 +36,7 @@ import mil.nga.util.URIUtils;
 @Stateless
 @LocalBean
 public class BundlerService 
-		extends NotificationService implements BundlerConstantsI {
+        extends NotificationService implements BundlerConstantsI {
 
     /**
      * Set up the Log4j system for use throughout the class
@@ -96,15 +96,15 @@ public class BundlerService
                 // performance.
                 FileCompletionListener listener = getFileCompletionListener();
                 if (listener != null) {
-                	listener.setJobID(jobID);
-                	listener.setArchiveID(archiveID);
-                	bundler.addFileCompletionListener(listener);
+                    listener.setJobID(jobID);
+                    listener.setArchiveID(archiveID);
+                    bundler.addFileCompletionListener(listener);
                 }
                 
                 // Here's where the magic happens.
                 bundler.bundle(
-                		getArchiveElements(archive.getFiles()), 
-                		URIUtils.getInstance().getURI(archive.getArchive()));
+                        getArchiveElements(archive.getFiles()), 
+                        URIUtils.getInstance().getURI(archive.getArchive()));
                
                 // Generate the hash file associated with the output archive.
                 if (getHashGeneratorService() != null) {
@@ -145,10 +145,10 @@ public class BundlerService
         
         }
         catch (ServiceUnavailableException sue) {
-        	LOGGER.error("Internal system failure.  Target EJB service "
-        			+ "is unavailable.  Exception message => [ "
-        			+ sue.getMessage()
-        			+ " ].");
+            LOGGER.error("Internal system failure.  Target EJB service "
+                    + "is unavailable.  Exception message => [ "
+                    + sue.getMessage()
+                    + " ].");
         }
         catch (UnknownArchiveTypeException uate) {
             // We should never see this exception here.  However, we will log 
@@ -171,22 +171,22 @@ public class BundlerService
      * output may be empty, but it will not be null.
      */
     public List<ArchiveElement> getArchiveElements(List<FileEntry> files) {
-    	List<ArchiveElement> elements = new ArrayList<ArchiveElement>();
-    	if ((files != null) && (files.size() > 0)) {
-    		for (FileEntry file : files) {
-    			elements.add(new ArchiveElement.ArchiveElementBuilder()
-    								.size(file.getSize())
-    								.entryPath(file.getEntryPath())
-    								.uri(URIUtils.getInstance()
-    										.getURI(file.getFilePath()))
-    								.build());
-    		}
-    	}
-    	else {
-    		LOGGER.warn("Input list of FileEntry objects is null or empty.  "
-    				+ "Output list will also be empty.");
-    	}
-    	return elements;
+        List<ArchiveElement> elements = new ArrayList<ArchiveElement>();
+        if ((files != null) && (files.size() > 0)) {
+            for (FileEntry file : files) {
+                elements.add(new ArchiveElement.ArchiveElementBuilder()
+                                    .size(file.getSize())
+                                    .entryPath(file.getEntryPath())
+                                    .uri(URIUtils.getInstance()
+                                            .getURI(file.getFilePath()))
+                                    .build());
+            }
+        }
+        else {
+            LOGGER.warn("Input list of FileEntry objects is null or empty.  "
+                    + "Output list will also be empty.");
+        }
+        return elements;
     }
     
     /**
@@ -220,7 +220,7 @@ public class BundlerService
      * a reference to the target EJB.
      */
     private HashGeneratorService getHashGeneratorService() 
-    		throws ServiceUnavailableException {
+            throws ServiceUnavailableException {
         if (hashGeneratorService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to HashGeneratorService.  Attempting to "
@@ -230,7 +230,7 @@ public class BundlerService
                     .getHashGeneratorService();
             if (hashGeneratorService == null) {
                 throw new ServiceUnavailableException("Unable to obtain a "
-                		+ "reference to [ "
+                        + "reference to [ "
                         + HashGeneratorService.class.getCanonicalName()
                         + " ].");
             }
@@ -249,9 +249,9 @@ public class BundlerService
      * a reference to the target EJB.
      */
     private ArchiveJobService getArchiveJobService() 
-    		throws ServiceUnavailableException {
+            throws ServiceUnavailableException {
         
-    	if (archiveJobService == null) {
+        if (archiveJobService == null) {
             LOGGER.warn("Application container failed to inject the "
                     + "reference to ArchiveJobService.  Attempting to "
                     + "look it up via JNDI.");
@@ -260,7 +260,7 @@ public class BundlerService
                     .getArchiveJobService();
             if (archiveJobService == null) {
                 throw new ServiceUnavailableException("Unable to obtain a "
-                		+ "reference to [ "
+                        + "reference to [ "
                         + JobFactoryService.class.getCanonicalName()
                         + " ].");
             }
@@ -278,26 +278,26 @@ public class BundlerService
      */
     @Asynchronous
     public void handleMessage(ArchiveMessage message) {
-    	
-    	JobStateType endState;
-    	
-    	try {
-    		
-    		ArchiveJob archiveJob = getArchiveJobService().getArchiveJob(
-    				message.getJobId(), 
-    				message.getArchiveId());
+        
+        JobStateType endState;
+        
+        try {
+            
+            ArchiveJob archiveJob = getArchiveJobService().getArchiveJob(
+                    message.getJobId(), 
+                    message.getArchiveId());
                 
             if (archiveJob != null) {
                     
                 // Update the archive to reflect that archive processing 
                 // has started.
-            	archiveJob.setHostName(FileUtils.getHostName());
-            	archiveJob.setServerName(
+                archiveJob.setHostName(FileUtils.getHostName());
+                archiveJob.setServerName(
                                 EJBClientUtilities.getInstance().getServerName());
-            	archiveJob.setStartTime(System.currentTimeMillis());
-            	archiveJob.setArchiveState(JobStateType.IN_PROGRESS);    
+                archiveJob.setStartTime(System.currentTimeMillis());
+                archiveJob.setArchiveState(JobStateType.IN_PROGRESS);    
                         
-            	getArchiveJobService().update(archiveJob);
+                getArchiveJobService().update(archiveJob);
                         
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Creating output archive file for "
@@ -342,32 +342,32 @@ public class BundlerService
                 // implementation of the FileCompletionListener.  Go get 
                 // the latest ARCHIVE_JOB from the data store.
                 archiveJob = getArchiveJobService().getArchiveJob(
-                		message.getJobId(), 
-                		message.getArchiveId());
+                        message.getJobId(), 
+                        message.getArchiveId());
                 
                 if (archiveJob != null) {
-	                archiveJob.setArchiveState(endState);
-	                
-	                // Update the end time.
-	                archiveJob.setEndTime(System.currentTimeMillis());
-	                
-	                // Go get the final size of the output archive.
-	                archiveJob.setSize(getArchiveFileSize(
-	                                		archiveJob.getArchive()));
-	                        
-	                // Ensure the ArchiveJob is updated in the backing data store.
-	                getArchiveJobService().update(archiveJob);
+                    archiveJob.setArchiveState(endState);
+                    
+                    // Update the end time.
+                    archiveJob.setEndTime(System.currentTimeMillis());
+                    
+                    // Go get the final size of the output archive.
+                    archiveJob.setSize(getArchiveFileSize(
+                                            archiveJob.getArchive()));
+                            
+                    // Ensure the ArchiveJob is updated in the backing data store.
+                    getArchiveJobService().update(archiveJob);
             
                 }
                 else {
-                	LOGGER.error("Unable to retrieve the ArchiveJob object "
-                			+ "for job ID [ "
-                			+ message.getJobId()
-                			+ " ] and archive ID [ "
-                			+ message.getArchiveId()
-                			+ " ] from the data store.  Archive job status will "
-                			+ "not be updated here.  Will attempt to update "
-                			+ "the status on notification.");
+                    LOGGER.error("Unable to retrieve the ArchiveJob object "
+                            + "for job ID [ "
+                            + message.getJobId()
+                            + " ] and archive ID [ "
+                            + message.getArchiveId()
+                            + " ] from the data store.  Archive job status will "
+                            + "not be updated here.  Will attempt to update "
+                            + "the status on notification.");
                 }
             
                 if (LOGGER.isDebugEnabled()) {
@@ -384,17 +384,17 @@ public class BundlerService
             }
             else {
                 LOGGER.error("Unable to find an ARCHIVE_JOB matching "
-                		+ "archive message parameters => [ "
+                        + "archive message parameters => [ "
                         + message.toString()
                         + " ].");
             }
-    	}
-    	
+        }
+        
         catch (ServiceUnavailableException sue) {
-        	LOGGER.error("Internal system failure.  Target EJB service "
-        			+ "is unavailable.  Exception message => [ "
-        			+ sue.getMessage()
-        			+ " ].");
+            LOGGER.error("Internal system failure.  Target EJB service "
+                    + "is unavailable.  Exception message => [ "
+                    + sue.getMessage()
+                    + " ].");
         }
     }
     
@@ -408,21 +408,21 @@ public class BundlerService
         long size = 0L;
         
         if ((archive != null) && (!archive.isEmpty())) {
-        	URI output = URIUtils.getInstance().getURI(archive);
-        	
+            URI output = URIUtils.getInstance().getURI(archive);
+            
             Path p = Paths.get(output);
             if (Files.exists(p)) {
-            	try {
-            		size = Files.size(p);
-            	}
-            	catch (IOException ioe) {
-            		LOGGER.error("Unexpected IOException while attempting "
-            				+ "to obtain the size associated with file [ "
-            				+ output.toString()
-            				+ " ].  Exception message => [ "
-            				+ ioe.getMessage()
-            				+ " ].");
-            	}
+                try {
+                    size = Files.size(p);
+                }
+                catch (IOException ioe) {
+                    LOGGER.error("Unexpected IOException while attempting "
+                            + "to obtain the size associated with file [ "
+                            + output.toString()
+                            + " ].  Exception message => [ "
+                            + ioe.getMessage()
+                            + " ].");
+                }
             }
             else {
                 LOGGER.error("The expected output archive file [ "
@@ -431,9 +431,9 @@ public class BundlerService
             }
         }
         else {
-        	LOGGER.error("The identified output archive file is null or "
-        			+ "empty.  The final output archive size will not be "
-        			+ "set.");
+            LOGGER.error("The identified output archive file is null or "
+                    + "empty.  The final output archive size will not be "
+                    + "set.");
         }
         return size;
     }
@@ -448,19 +448,19 @@ public class BundlerService
      * the output files created.
      */
     private void notify(String jobID, long archiveID) {
-    	
-    	ArchiveMessage archiveMsg = new ArchiveMessage.ArchiveMessageBuilder()
+        
+        ArchiveMessage archiveMsg = new ArchiveMessage.ArchiveMessageBuilder()
                 .jobId(jobID)
                 .archiveId(archiveID)
                 .build();
                 
-    	if (LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Placing the following message on "
                     + "the JMS queue [ "
                     + archiveMsg.toString()
                     + " ].");
         }
-    	
+        
         super.notify(TRACKER_DEST_Q, archiveMsg);
                 
     }

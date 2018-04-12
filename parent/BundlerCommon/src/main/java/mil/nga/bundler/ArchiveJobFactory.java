@@ -47,9 +47,9 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * Default no-arg constructor
      */
     public ArchiveJobFactory() { 
-    	setArchiveType(ArchiveType.ZIP);
-    	setTargetArchiveSize(DEFAULT_ARCHIVE_SIZE);
-    	setFileNameGenerator();
+        setArchiveType(ArchiveType.ZIP);
+        setTargetArchiveSize(DEFAULT_ARCHIVE_SIZE);
+        setFileNameGenerator();
     }
     
     /**
@@ -58,9 +58,9 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * values for the target archive size and staging area.
      */
     public ArchiveJobFactory(ArchiveType type) {
-    	setArchiveType(type);
-    	setTargetArchiveSize(DEFAULT_ARCHIVE_SIZE);
-    	setFileNameGenerator();
+        setArchiveType(type);
+        setTargetArchiveSize(DEFAULT_ARCHIVE_SIZE);
+        setFileNameGenerator();
     }
 
     /**
@@ -74,10 +74,10 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * set to <code>DEFAULT_ARCHIVE_SIZE</code>
      */
     public ArchiveJobFactory(ArchiveType type, long targetArchiveSize) {
-    	setArchiveType(type);
-    	setTargetArchiveSize(targetArchiveSize);
-    	setTargetArchiveSize(DEFAULT_ARCHIVE_SIZE);
-    	setFileNameGenerator();
+        setArchiveType(type);
+        setTargetArchiveSize(targetArchiveSize);
+        setTargetArchiveSize(DEFAULT_ARCHIVE_SIZE);
+        setFileNameGenerator();
     }
     
     /**
@@ -93,12 +93,12 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @param jobID Output location for the archives to be constructed.
      */
     public ArchiveJobFactory(
-    		ArchiveType type, 
-    		long targetArchiveSize, 
-    		String jobID) {
-    	setArchiveType(type);
-    	setTargetArchiveSize(targetArchiveSize);
-    	setFileNameGenerator(jobID);
+            ArchiveType type, 
+            long targetArchiveSize, 
+            String jobID) {
+        setArchiveType(type);
+        setTargetArchiveSize(targetArchiveSize);
+        setFileNameGenerator(jobID);
     }
     
     /**
@@ -115,13 +115,13 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @param fileName The output filename template. 
      */
     public ArchiveJobFactory(
-    		ArchiveType type, 
-    		long targetArchiveSize, 
-    		String jobID,
-    		String fileName) {
-    	setArchiveType(type);
-    	setTargetArchiveSize(targetArchiveSize);
-    	setFileNameGenerator(jobID, fileName);
+            ArchiveType type, 
+            long targetArchiveSize, 
+            String jobID,
+            String fileName) {
+        setArchiveType(type);
+        setTargetArchiveSize(targetArchiveSize);
+        setFileNameGenerator(jobID, fileName);
     }
     
     /**
@@ -141,14 +141,14 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * archive files. 
      */
     public ArchiveJobFactory(
-    		ArchiveType type, 
-    		long targetArchiveSize, 
-    		String jobID,
-    		String fileName,
-    		String stagingArea) {
-    	setArchiveType(type);
-    	setTargetArchiveSize(targetArchiveSize);
-    	setFileNameGenerator("", fileName, stagingArea);
+            ArchiveType type, 
+            long targetArchiveSize, 
+            String jobID,
+            String fileName,
+            String stagingArea) {
+        setArchiveType(type);
+        setTargetArchiveSize(targetArchiveSize);
+        setFileNameGenerator("", fileName, stagingArea);
     }
     
     /**
@@ -161,87 +161,87 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @return The list of individual archives to be constructed.
      */
     public List<Archive> createArchivesFromFileEntry(List<FileEntry> fileList) {
-    	
-    	List<Archive> archives = new ArrayList<Archive>();
-    	long             startTime = System.currentTimeMillis();
-    	
-    	if (LOGGER.isDebugEnabled()) {
-    		LOGGER.debug("Generating archive jobs.");
-    		LOGGER.debug(this.toString());
-    	}
-    	
-    	if ((fileList != null) && (!fileList.isEmpty())) {
-    		
-    		// Get the estimated compressed size of each file.
+        
+        List<Archive> archives = new ArrayList<Archive>();
+        long             startTime = System.currentTimeMillis();
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Generating archive jobs.");
+            LOGGER.debug(this.toString());
+        }
+        
+        if ((fileList != null) && (!fileList.isEmpty())) {
+            
+            // Get the estimated compressed size of each file.
             List<ExtendedFileEntry> decorated = CompressionEstimator
                     .getInstance()
                     .getEstimatedCompressedSizeForFileEntry(
-                    		fileList, getArchiveType());
-    		
+                            fileList, getArchiveType());
+            
             
             if ((decorated != null) && (decorated.size() > 0)) {
-            	
-            	int counter = 0;
-	            Archive.ArchiveBuilder builder = new Archive.ArchiveBuilder();
-	            
-	            for (ExtendedFileEntry element : decorated) {
-	            	
-	            	// Will the file fit in the current archive?
-	                if ((builder.getSize() + element.getEstimatedCompressedSize()) <
-	                		getTargetArchiveSize()) {
-	                	
-	                	
-	                	// TODO: Remove the following
-	                	LOGGER.info("Adding => " + element.getArchiveElement().toString());
-	                	
-	                    builder.element(
-	                            element.getArchiveElement(), 
-	                            element.getEstimatedCompressedSize());
-	                }
-	                else {
-	                	
-	                    builder.type(getArchiveType());
-	                    builder.id(counter);
-	                    builder.outputFileName(
-	                    		getFileNameGenerator().getOutputFile(counter));
-	                    archives.add(builder.build());
-	                    
-	                    // TODO: Remove the following
-	                    LOGGER.info("Generating new archive.");
-	                    
-	                    builder = new Archive.ArchiveBuilder();
-	                    builder.element(
-	                            element.getArchiveElement(), 
-	                            element.getEstimatedCompressedSize());
-	                    counter++;
-	                }
-	            }
+                
+                int counter = 0;
+                Archive.ArchiveBuilder builder = new Archive.ArchiveBuilder();
+                
+                for (ExtendedFileEntry element : decorated) {
+                    
+                    // Will the file fit in the current archive?
+                    if ((builder.getSize() + element.getEstimatedCompressedSize()) <
+                            getTargetArchiveSize()) {
+                        
+                        
+                        // TODO: Remove the following
+                        LOGGER.info("Adding => " + element.getArchiveElement().toString());
+                        
+                        builder.element(
+                                element.getArchiveElement(), 
+                                element.getEstimatedCompressedSize());
+                    }
+                    else {
+                        
+                        builder.type(getArchiveType());
+                        builder.id(counter);
+                        builder.outputFileName(
+                                getFileNameGenerator().getOutputFile(counter));
+                        archives.add(builder.build());
+                        
+                        // TODO: Remove the following
+                        LOGGER.info("Generating new archive.");
+                        
+                        builder = new Archive.ArchiveBuilder();
+                        builder.element(
+                                element.getArchiveElement(), 
+                                element.getEstimatedCompressedSize());
+                        counter++;
+                    }
+                }
                 // TODO: Remove the following
                 LOGGER.info("Flushing files to archive [ " + counter + " ].");
                 builder.type(getArchiveType());
                 builder.id(counter);
                 builder.outputFileName(
-                		getFileNameGenerator().getOutputFile(counter));
+                        getFileNameGenerator().getOutputFile(counter));
                 archives.add(builder.build());
             }
             else {
-            	LOGGER.error("Unable to estimate the size of the target "
-            			+ "files.  The returned archive list will be empty.");
+                LOGGER.error("Unable to estimate the size of the target "
+                        + "files.  The returned archive list will be empty.");
             }
             
-    	}
+        }
         else {
             LOGGER.warn("The input list of FileEntry objects is null or "
                     + "empty.  The output list will be empty.");
         }
-    	
+        
         LOGGER.info("Archive job creation resulted in [ "
-        		+ archives.size()
-        		+ " ] archive jobs and completed in [ "
+                + archives.size()
+                + " ] archive jobs and completed in [ "
                 + (System.currentTimeMillis() - startTime)
                 + " ] ms.");
-    	
-    	return archives;
+        
+        return archives;
     }
     
     /**
@@ -254,67 +254,67 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @return The list of individual archives to be constructed.
      */
     public List<Archive> createArchives(List<ArchiveElement> fileList) {
-    	
-    	List<Archive> archives = new ArrayList<Archive>();
-    	long         startTime = System.currentTimeMillis();
-    	
-    	if (LOGGER.isDebugEnabled()) {
-    		LOGGER.debug("Generating archive jobs.");
-    		LOGGER.debug(this.toString());
-    	}
-    	
-    	if ((fileList != null) && (!fileList.isEmpty())) {
+        
+        List<Archive> archives = new ArrayList<Archive>();
+        long         startTime = System.currentTimeMillis();
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Generating archive jobs.");
+            LOGGER.debug(this.toString());
+        }
+        
+        if ((fileList != null) && (!fileList.isEmpty())) {
             
-    		// Get the estimated compressed size of each file.
+            // Get the estimated compressed size of each file.
             List<ExtendedArchiveElement> decorated = CompressionEstimator
                     .getInstance()
                     .getEstimatedCompressedSize(fileList, getArchiveType());
-    		
+            
             if ((decorated != null) && (decorated.size() > 0)) {
-            	
-            	int counter = 0;
-	            Archive.ArchiveBuilder builder = new Archive.ArchiveBuilder();
-	            
-	            for (ExtendedArchiveElement element : decorated) {
-	            	
-	            	// Will the file fit in the current archive?
-	                if ((builder.getSize() + element.getEstimatedCompressedSize()) <
-	                		getTargetArchiveSize()) {
-	                	
-	                    builder.element(
-	                            element.getArchiveElement(), 
-	                            element.getEstimatedCompressedSize());
-	                }
-	                else {
-	                	
-	                    builder.type(getArchiveType());
-	                    builder.id(counter);
-	                    builder.outputFileName(getFileNameGenerator().getOutputFile(counter));
-	                    archives.add(builder.build());
-	                    builder = new Archive.ArchiveBuilder();
-	                    builder.element(
-	                            element.getArchiveElement(), 
-	                            element.getEstimatedCompressedSize());
-	                    counter++;
-	                }
-	            }
+                
+                int counter = 0;
+                Archive.ArchiveBuilder builder = new Archive.ArchiveBuilder();
+                
+                for (ExtendedArchiveElement element : decorated) {
+                    
+                    // Will the file fit in the current archive?
+                    if ((builder.getSize() + element.getEstimatedCompressedSize()) <
+                            getTargetArchiveSize()) {
+                        
+                        builder.element(
+                                element.getArchiveElement(), 
+                                element.getEstimatedCompressedSize());
+                    }
+                    else {
+                        
+                        builder.type(getArchiveType());
+                        builder.id(counter);
+                        builder.outputFileName(getFileNameGenerator().getOutputFile(counter));
+                        archives.add(builder.build());
+                        builder = new Archive.ArchiveBuilder();
+                        builder.element(
+                                element.getArchiveElement(), 
+                                element.getEstimatedCompressedSize());
+                        counter++;
+                    }
+                }
             }
             else {
-            	LOGGER.error("Unable to estimate the size of the target "
-            			+ "files.  The returned archive list will be empty.");
+                LOGGER.error("Unable to estimate the size of the target "
+                        + "files.  The returned archive list will be empty.");
             }
             
-    	}
+        }
         else {
             LOGGER.warn("The input list of ArchiveElement objects is null or "
                     + "empty.  The output list will be empty.");
         }
-    	
+        
         LOGGER.info("Archive job creation completed in [ "
                 + (System.currentTimeMillis() - startTime)
                 + " ].");
-    	
-    	return archives;
+        
+        return archives;
     }
     
     /**
@@ -322,7 +322,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @param type The output archive type.
      */
     public ArchiveType getArchiveType() {
-    	return archiveType;
+        return archiveType;
     }
     
     /**
@@ -333,7 +333,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @param filename Filename template to use for output archives.
      */
     private FileNameGenerator getFileNameGenerator() {
-    	return fnGenerator;
+        return fnGenerator;
     }
     
     /**
@@ -342,7 +342,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @return The target archive size.
      */
     public long getTargetArchiveSize() {
-    	return targetArchiveSize;
+        return targetArchiveSize;
     }
     
     /**
@@ -350,7 +350,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @param type The output archive type.
      */
     private void setArchiveType(ArchiveType type) {
-    	archiveType = type;
+        archiveType = type;
     }
     
     /**
@@ -359,7 +359,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * <code>FileNameGenerator</code> object using all defaults.  
      */
     private void setFileNameGenerator() {
-    	fnGenerator = new FileNameGenerator(getArchiveType());
+        fnGenerator = new FileNameGenerator(getArchiveType());
     }
 
     /**
@@ -368,7 +368,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * <code>FileNameGenerator</code> object using a custom staging area.
      */
     private void setFileNameGenerator(String jobID) {
-    	fnGenerator = new FileNameGenerator(getArchiveType(), jobID);
+        fnGenerator = new FileNameGenerator(getArchiveType(), jobID);
     }
     
     /**
@@ -377,7 +377,7 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * <code>FileNameGenerator</code> object using a custom staging area.
      */
     private void setFileNameGenerator(String jobID, String fileName) {
-    	fnGenerator = new FileNameGenerator(getArchiveType(), jobID, fileName);
+        fnGenerator = new FileNameGenerator(getArchiveType(), jobID, fileName);
     }
     
     /**
@@ -388,8 +388,8 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * @param filename Filename template to use for output archives.
      */
     private void setFileNameGenerator(String jobID, String filename, String stagingArea) {
-    	fnGenerator = new FileNameGenerator(getArchiveType(), jobID, filename);
-    	fnGenerator.setStagingArea(stagingArea);
+        fnGenerator = new FileNameGenerator(getArchiveType(), jobID, filename);
+        fnGenerator.setStagingArea(stagingArea);
     }
     
     /**
@@ -401,30 +401,30 @@ public class ArchiveJobFactory implements BundlerConstantsI {
      * set to <code>DEFAULT_ARCHIVE_SIZE</code>
      */
     public void setTargetArchiveSize(long value) {
-    	if (value < MIN_ARCHIVE_SIZE) {
-    		targetArchiveSize = MIN_ARCHIVE_SIZE * BYTES_PER_MEGABYTE;
-    	}
-    	else if (value > MAX_ARCHIVE_SIZE) {
-    		targetArchiveSize = MAX_ARCHIVE_SIZE * BYTES_PER_MEGABYTE;
-    	}
-    	else {
-    		targetArchiveSize = value * BYTES_PER_MEGABYTE;
-    	}
+        if (value < MIN_ARCHIVE_SIZE) {
+            targetArchiveSize = MIN_ARCHIVE_SIZE * BYTES_PER_MEGABYTE;
+        }
+        else if (value > MAX_ARCHIVE_SIZE) {
+            targetArchiveSize = MAX_ARCHIVE_SIZE * BYTES_PER_MEGABYTE;
+        }
+        else {
+            targetArchiveSize = value * BYTES_PER_MEGABYTE;
+        }
     }
     
     /**
      * Print out the parameters that will be used for debugging purposes.
      */
     public String toString() {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("ArchiveJobFactory Parameters : ");
-    	sb.append("Archive Type => [ ");
-    	sb.append(getArchiveType().getText());
-    	sb.append(" ], Target archive size => [ ");
-    	sb.append(getTargetArchiveSize());
-    	sb.append(" ].");
-    	sb.append(System.getProperty("line.separator"));
-    	sb.append(getFileNameGenerator().toString());
-    	return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("ArchiveJobFactory Parameters : ");
+        sb.append("Archive Type => [ ");
+        sb.append(getArchiveType().getText());
+        sb.append(" ], Target archive size => [ ");
+        sb.append(getTargetArchiveSize());
+        sb.append(" ].");
+        sb.append(System.getProperty("line.separator"));
+        sb.append(getFileNameGenerator().toString());
+        return sb.toString();
     }
 }

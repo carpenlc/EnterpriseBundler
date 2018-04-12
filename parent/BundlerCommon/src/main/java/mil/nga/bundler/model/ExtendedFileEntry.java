@@ -17,11 +17,11 @@ public class ExtendedFileEntry
 
 
     /**
-	 * Eclipse-generated serialVersionUID
-	 */
-	private static final long serialVersionUID = 2772049575476679678L;
+     * Eclipse-generated serialVersionUID
+     */
+    private static final long serialVersionUID = 2772049575476679678L;
 
-	/**
+    /**
      * Estimated compressed size of parent file.
      */
     private final long estimatedCompressedSize;
@@ -99,12 +99,12 @@ public class ExtendedFileEntry
      * @return A new ArchiveElement object.
      */
     public ArchiveElement getArchiveElement() {
-    	return new ArchiveElement.ArchiveElementBuilder()
-    			.entryPath(getFileEntry().getEntryPath())
-    			.size(getFileEntry().getSize())
-    			.uri(URIUtils.getInstance()
-    					.getURI(getFileEntry().getFilePath()))
-    			.build();
+        return new ArchiveElement.ArchiveElementBuilder()
+                .entryPath(getFileEntry().getEntryPath())
+                .size(getFileEntry().getSize())
+                .uri(URIUtils.getInstance()
+                        .getURI(getFileEntry().getFilePath()))
+                .build();
     }
     
     /**
