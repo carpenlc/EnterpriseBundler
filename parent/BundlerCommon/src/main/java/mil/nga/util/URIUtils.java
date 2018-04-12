@@ -70,9 +70,11 @@ public class URIUtils implements Serializable {
     public URI getURI(String filePath) throws FileSystemNotFoundException {
     	URI uri = null;
     	
-    	if (LOGGER.isDebugEnabled()) {
-    		LOGGER.debug("Converting [ " + filePath + " ] to URI.");
-    	}
+    	// For large jobs, this debug message results in a large amount of 
+    	// disk IO
+    	// if (LOGGER.isDebugEnabled()) {
+    	//	LOGGER.debug("Converting [ " + filePath + " ] to URI.");
+    	// }
     	
         if ((filePath != null) && (!filePath.isEmpty())) {
         	// Create the URI from the input file path. 
@@ -115,5 +117,4 @@ public class URIUtils implements Serializable {
             return instance;
         }
     }
-    
 }
