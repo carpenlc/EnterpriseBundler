@@ -61,7 +61,7 @@ public class JobService implements BundlerConstantsI, Closeable {
             }
             EntityManagerFactory emFactory =  
                     Persistence.createEntityManagerFactory(
-                            APPLICATION_PERSISTENCE_CONTEXT);
+                    		UNMANAGED_APPLICATION_PERSISTENCE_CONTEXT);
             
             if (emFactory != null) {
                 em = emFactory.createEntityManager();
