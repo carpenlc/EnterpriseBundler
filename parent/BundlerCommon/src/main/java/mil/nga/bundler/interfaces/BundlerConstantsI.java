@@ -32,6 +32,11 @@ public interface BundlerConstantsI {
     public static final String APPLICATION_PERSISTENCE_CONTEXT = "BundlerJPA";
     
     /**
+     * The name of the unmanaged JPA persistence context used throughout the application.
+     */
+    public static final String UNMANAGED_APPLICATION_PERSISTENCE_CONTEXT = "BundlerJPA-unmanaged";
+    
+    /**
      * Property defining the "base" URL for the output archives (i.e. 
      * the base staging directory will be replaced with this URL allowing
      * HTTP/HTTPS access to the output archives).
@@ -172,14 +177,14 @@ public interface BundlerConstantsI {
      * The name of the destination queue on which Archiver jobs will be 
      * placed.
      */
-    //public static final String ARCHIVER_DEST_Q = "queue/ArchiverMessageQ";
-    public static final String ARCHIVER_DEST_Q = "queue/ArchiverMessageQ_TEST";
+    public static final String ARCHIVER_DEST_Q = "queue/ArchiverMessageQ";
+    //public static final String ARCHIVER_DEST_Q = "queue/ArchiverMessageQ_TEST";
     
     /**
      * The name of the destination queue on which completed archive jobs 
      * will be placed.
      */
-    //public static final String TRACKER_DEST_Q = "queue/TrackerMessageQ";
-    public static final String TRACKER_DEST_Q = "queue/TrackerMessageQ_TEST";
+    public static final String TRACKER_DEST_Q = "queue/TrackerMessageQ";
+    //public static final String TRACKER_DEST_Q = "queue/TrackerMessageQ_TEST";
     
 }

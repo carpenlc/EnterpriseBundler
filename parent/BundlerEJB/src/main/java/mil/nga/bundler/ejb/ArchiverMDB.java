@@ -55,7 +55,7 @@ import mil.nga.bundler.messages.ArchiveMessage;
                                 // not deploy.
                                 @ActivationConfigProperty(
                                                 propertyName = "destination",
-                                                propertyValue = "queue/ArchiverMessageQ_TEST"),
+                                                propertyValue = "queue/ArchiverMessageQ"),
                                 @ActivationConfigProperty(
                                                 propertyName = "acknowledgeMode",
                                                 propertyValue = "Auto-acknowledge")

@@ -15,6 +15,7 @@ import mil.nga.bundler.messages.ArchiveMessage;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.Job;
+import mil.nga.bundler.services.JobService;
 import mil.nga.bundler.types.JobStateType;
 
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
                         // not deploy.
                         @ActivationConfigProperty(
                                         propertyName = "destination",
-                                        propertyValue = "queue/TrackerMessageQ_TEST"),
+                                        propertyValue = "queue/TrackerMessageQ"),
                         @ActivationConfigProperty(
                                         propertyName = "acknowledgeMode",
                                         propertyValue = "Auto-acknowledge")
@@ -61,8 +62,8 @@ public class JobTrackerMDB implements MessageListener {
     /**
      * Container-injected reference to the JobService EJB.
      */
-    @EJB
-    JobService jobService;
+    //@EJB
+    //JobService jobService;
     
     /**
      * Default constructor. 
@@ -74,17 +75,17 @@ public class JobTrackerMDB implements MessageListener {
      * 
      * @return Reference to the JobService EJB.
      */
-    private JobService getJobService() {
-        if (jobService == null) {
-            LOGGER.warn("Application container failed to inject the "
-                    + "reference to JobService.  Attempting to "
-                    + "look it up via JNDI.");
-            jobService = EJBClientUtilities
-                    .getInstance()
-                    .getJobService();
-        }
-        return jobService;
-    }
+    //private JobService getJobService() {
+    //    if (jobService == null) {
+    //        LOGGER.warn("Application container failed to inject the "
+    //                + "reference to JobService.  Attempting to "
+    //                + "look it up via JNDI.");
+    //        jobService = EJBClientUtilities
+    //                .getInstance()
+    //                .getJobService();
+    //    }
+    //    return jobService;
+    //}
     
     /**
      * Calculate the number of archives complete by looping through the 
@@ -271,7 +272,7 @@ public class JobTrackerMDB implements MessageListener {
      * @see MessageListener#onMessage(Message)
      */
     public void onMessage(Message message) {
-        try {
+        try (JobService jobService = new JobService()) {
                 
              ObjectMessage  objMessage = (ObjectMessage)message;
              ArchiveMessage archiveMsg = (ArchiveMessage)objMessage.getObject();
@@ -281,17 +282,15 @@ public class JobTrackerMDB implements MessageListener {
                  LOGGER.info("Archive completed for archive [ "
                          + archiveMsg.toString()
                          + " ].");
-
-                 if (getJobService() != null) {
                      
-                     Job job = getJobService().getJob(archiveMsg.getJobId());
+                     Job job = jobService.getJob(archiveMsg.getJobId());
                      
                      if (job != null) {
                          ArchiveJob archive = job.getArchive(archiveMsg.getArchiveId());
                          if (archive != null) {
                              checkArchive(archive);
                              updateJobState(job, archive);
-                             getJobService().update(job);
+                             jobService.update(job);
                          }
                          else {
                               LOGGER.error("Unable to retrieve Archive "
@@ -309,11 +308,7 @@ public class JobTrackerMDB implements MessageListener {
                                  + " ].");
                      }
                  }
-                 else {
-                     LOGGER.error("The application container did not inject "
-                             + "JobFactoryService EJB into the MDB.");
-                 }
-             }
+             
          }
          catch (JMSException je) {
              LOGGER.error("Unexpected JMSException encountered while "
