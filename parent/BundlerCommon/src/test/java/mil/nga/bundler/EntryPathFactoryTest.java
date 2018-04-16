@@ -19,7 +19,7 @@ import mil.nga.util.URIUtils;
  * @author L. Craig Carpenter
  */
 public class EntryPathFactoryTest {
-
+	
     /**
      * Properties object populated in the init method.
      */

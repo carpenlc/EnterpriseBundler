@@ -12,6 +12,7 @@ import mil.nga.bundler.exceptions.PropertiesNotLoadedException;
 import mil.nga.bundler.interfaces.BundlerConstantsI;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
+import mil.nga.util.URIUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +143,7 @@ public class PathGenerator
      * @param entry FileEntry object associated with one file to be archived.
      */
     public void setOneEntry(FileEntry entry) {
-        
+
         String path;
         
         // Use the URI class to strip off the scheme/authority sections.
