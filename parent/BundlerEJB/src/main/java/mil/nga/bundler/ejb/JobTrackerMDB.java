@@ -15,7 +15,6 @@ import mil.nga.bundler.messages.ArchiveMessage;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.Job;
-import mil.nga.bundler.services.JobService;
 import mil.nga.bundler.types.JobStateType;
 
 import org.slf4j.Logger;
@@ -62,8 +61,8 @@ public class JobTrackerMDB implements MessageListener {
     /**
      * Container-injected reference to the JobService EJB.
      */
-    //@EJB
-    //JobService jobService;
+    @EJB
+    JobService jobService;
     
     /**
      * Default constructor. 
@@ -75,17 +74,23 @@ public class JobTrackerMDB implements MessageListener {
      * 
      * @return Reference to the JobService EJB.
      */
-    //private JobService getJobService() {
-    //    if (jobService == null) {
-    //        LOGGER.warn("Application container failed to inject the "
-    //                + "reference to JobService.  Attempting to "
-    //                + "look it up via JNDI.");
-    //        jobService = EJBClientUtilities
-    //                .getInstance()
-    //                .getJobService();
-    //    }
-    //    return jobService;
-    //}
+    private JobService getJobService() throws ServiceUnavailableException {
+        if (jobService == null) {
+            LOGGER.warn("Application container failed to inject the "
+                    + "reference to JobService.  Attempting to "
+                    + "look it up via JNDI.");
+            jobService = EJBClientUtilities
+                    .getInstance()
+                    .getJobService();
+            if (jobService == null) {
+                throw new ServiceUnavailableException("Unable to look up "
+                        + "target EJB [ "
+                        + JobService.class.getCanonicalName()
+                        + " ].");
+            }
+        }
+        return jobService;
+    }
     
     /**
      * Calculate the number of archives complete by looping through the 
@@ -272,7 +277,8 @@ public class JobTrackerMDB implements MessageListener {
      * @see MessageListener#onMessage(Message)
      */
     public void onMessage(Message message) {
-        try (JobService jobService = new JobService()) {
+    	
+        try {
                 
              ObjectMessage  objMessage = (ObjectMessage)message;
              ArchiveMessage archiveMsg = (ArchiveMessage)objMessage.getObject();
@@ -282,33 +288,33 @@ public class JobTrackerMDB implements MessageListener {
                  LOGGER.info("Archive completed for archive [ "
                          + archiveMsg.toString()
                          + " ].");
+            
+                 JobService jobService = getJobService();
+                 Job job = jobService.getJob(archiveMsg.getJobId());
                      
-                     Job job = jobService.getJob(archiveMsg.getJobId());
-                     
-                     if (job != null) {
-                         ArchiveJob archive = job.getArchive(archiveMsg.getArchiveId());
-                         if (archive != null) {
-                             checkArchive(archive);
-                             updateJobState(job, archive);
-                             jobService.update(job);
-                         }
-                         else {
-                              LOGGER.error("Unable to retrieve Archive "
-                                     + "associated with job ID [ "
-                                     + archiveMsg.getJobId()
-                                     + " ] and archive ID [ "
-                                     + archiveMsg.getArchiveId()
-                                     + " ].");
-                         }
+                 if (job != null) {
+                     ArchiveJob archive = job.getArchive(archiveMsg.getArchiveId());
+                     if (archive != null) {
+                         checkArchive(archive);
+                         updateJobState(job, archive);
+                         jobService.update(job);
                      }
                      else {
+                          LOGGER.error("Unable to retrieve Archive "
+                                 + "associated with job ID [ "
+                                 + archiveMsg.getJobId()
+                                 + " ] and archive ID [ "
+                                 + archiveMsg.getArchiveId()
+                                 + " ].");
+                     }
+                 }
+                 else {
                          LOGGER.error("Unable to retrieve Job associated with "
                                  + "job ID [ "
                                  + archiveMsg.getJobId()
                                  + " ].");
-                     }
                  }
-             
+             }
          }
          catch (JMSException je) {
              LOGGER.error("Unexpected JMSException encountered while "

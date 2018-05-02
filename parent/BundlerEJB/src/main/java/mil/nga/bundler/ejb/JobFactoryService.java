@@ -30,7 +30,6 @@ import mil.nga.bundler.model.ArchiveElement;
 import mil.nga.bundler.model.ArchiveJob;
 import mil.nga.bundler.model.FileEntry;
 import mil.nga.bundler.model.Job;
-import mil.nga.bundler.services.JobService;
 import mil.nga.bundler.types.ArchiveType;
 import mil.nga.bundler.types.JobStateType;
 import mil.nga.util.FileUtils;
@@ -60,8 +59,8 @@ public class JobFactoryService
     /**
      * Container-injected reference to the JobService EJB.
      */
-    //@EJB
-    //JobService jobService;
+    @EJB
+    JobService jobService;
     
     /**
      * Container-injected reference to the JobRunnerService EJB.
@@ -128,23 +127,23 @@ public class JobFactoryService
      * 
      * @return Reference to the JobService EJB.
      */
-    //private JobService getJobService() throws ServiceUnavailableException {
-    //    if (jobService == null) {
-   //        LOGGER.warn("Application container failed to inject the "
-     //               + "reference to JobService.  Attempting to "
-     //               + "look it up via JNDI.");
-     //       jobService = EJBClientUtilities
-     //               .getInstance()
-     //               .getJobService();
-     //       if (jobService == null) {
-     //           throw new ServiceUnavailableException("Unable to look up "
-     //                   + "target EJB [ "
-     //                   + JobService.class.getCanonicalName()
-     //                   + " ].");
-     //       }
-     //   }
-     //   return jobService;
-    //}
+    private JobService getJobService() throws ServiceUnavailableException {
+        if (jobService == null) {
+           LOGGER.warn("Application container failed to inject the "
+                    + "reference to JobService.  Attempting to "
+                    + "look it up via JNDI.");
+           jobService = EJBClientUtilities
+                    .getInstance()
+                    .getJobService();
+            if (jobService == null) {
+                throw new ServiceUnavailableException("Unable to look up "
+                        + "target EJB [ "
+                        + JobService.class.getCanonicalName()
+                        + " ].");
+            }
+        }
+        return jobService;
+    }
     
     /**
      * Generate the name of the accompanying hash file from the calculated
@@ -474,24 +473,16 @@ public class JobFactoryService
         // NGA's infrastructure was so atrociously slow we could not complete
         // the validation of the incoming job before the container tore 
         // down the underlying transactions.
-        try (JobService jobService = new JobService()) {
-            jobService.persist(job);            
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Job ID [ "
-                        + jobID 
-                        + " created in [ "
-                        + (System.currentTimeMillis() - startTime)
-                        + " ].");
-            }
-            runJob(job);
+        JobService jobService = getJobService();
+        jobService.persist(job);            
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job ID [ "
+                + jobID 
+                + " created in [ "
+                + (System.currentTimeMillis() - startTime)
+                + " ].");
         }
-        catch (ServiceUnavailableException sue) {
-            LOGGER.error("Unable to persist job [ "
-                    + job.getJobID()
-                    + " ].  Error message => [ "
-                    + sue.getMessage()
-                    + " ].  The target job will not be started.");
-        }
+        runJob(job);
     }
     
     @Asynchronous
@@ -566,28 +557,16 @@ public class JobFactoryService
                     request.getMaxSize());
         }
         
-        // We had to eliminate the use of the injected JobService EJB.
-        // NGA's infrastructure was so atrociously slow we could not complete
-        // the validation of the incoming job before the container tore 
-        // down the underlying transactions.
-        try (JobService jobService = new JobService()) {
-            jobService.persist(job);            
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Job ID [ "
-                        + jobID 
-                        + " created in [ "
-                        + (System.currentTimeMillis() - startTime)
-                        + " ].");
-            }
-            runJob(job);
+        JobService jobService = new JobService();
+        jobService.persist(job);            
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Job ID [ "
+                + jobID 
+                + " created in [ "
+                + (System.currentTimeMillis() - startTime)
+                + " ].");
         }
-        catch (ServiceUnavailableException sue) {
-            LOGGER.error("Unable to persist job [ "
-                    + job.getJobID()
-                    + " ].  Error message => [ "
-                    + sue.getMessage()
-                    + " ].  The target job will not be started.");
-        }
+        runJob(job);
     }
 
     /**
