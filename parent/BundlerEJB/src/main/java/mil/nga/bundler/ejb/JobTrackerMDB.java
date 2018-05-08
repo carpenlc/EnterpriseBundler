@@ -289,15 +289,14 @@ public class JobTrackerMDB implements MessageListener {
                          + archiveMsg.toString()
                          + " ].");
             
-                 JobService jobService = getJobService();
-                 Job job = jobService.getJob(archiveMsg.getJobId());
+                 Job job = getJobService().getJob(archiveMsg.getJobId());
                      
                  if (job != null) {
                      ArchiveJob archive = job.getArchive(archiveMsg.getArchiveId());
                      if (archive != null) {
                          checkArchive(archive);
                          updateJobState(job, archive);
-                         jobService.update(job);
+                         getJobService().update(job);
                      }
                      else {
                           LOGGER.error("Unable to retrieve Archive "

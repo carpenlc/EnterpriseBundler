@@ -473,8 +473,7 @@ public class JobFactoryService
         // NGA's infrastructure was so atrociously slow we could not complete
         // the validation of the incoming job before the container tore 
         // down the underlying transactions.
-        JobService jobService = getJobService();
-        jobService.persist(job);            
+        getJobService().persist(job);            
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Job ID [ "
                 + jobID 
@@ -557,8 +556,7 @@ public class JobFactoryService
                     request.getMaxSize());
         }
         
-        JobService jobService = new JobService();
-        jobService.persist(job);            
+        getJobService().persist(job);            
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Job ID [ "
                 + jobID 
