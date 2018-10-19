@@ -36,7 +36,7 @@
         <httpcore.version>4.4.6</httpcore.version>
         <httpclient.version>4.5.3</httpclient.version>
         <guava.version>19.0</guava.version>
-        <tika.version>1.16</tika.version>
+        <tika.version>1.19.1</tika.version>
         <s3fs.version>1.5.3</s3fs.version>
         <aws.sdk.version>1.11.128</aws.sdk.version>
         <c3p0.version>0.9.1.2</c3p0.version>
