@@ -77,8 +77,36 @@ public class FileFinder {
             if ((pattern == null) || (pattern.isEmpty())) {
                 throw new IOException("Usage error:  Search pattern not defined.");
             }
-            _matcher = FileSystems.getFileSystem(uri).getPathMatcher(
-                        "glob:" + pattern);
+            if (uri != null) {
+            	try {
+            		// It seems different platforms implement this functionality 
+            		// slightly differently.  JBoss (and some versions of Wildfly) 
+            		// were able to determine the file system from a URI containing 
+            		// the full path.  Tomcat was only able to obtain the FileSystem 
+            		// if the path was set to the root file system (i.e. '/').  The 
+            		// error was "IllegalStateException: Path component 
+            		// should be '/'"  Logic updated to retrieve the scheme 
+            		// from the input URI, add the "root" (i.e. '/') and then
+            		// combine them into a URI.
+            		URI scheme = new URI(
+            				uri.getScheme().toString() + "://" + "/");
+	            	_matcher = FileSystems.getFileSystem(scheme).getPathMatcher(
+	                        "glob:" + pattern);
+            	}
+            	catch (URISyntaxException use) {
+            		throw new IOException("Unable to construct the URI used to "
+            				+ "look up the target file system.  Input URI [ "
+            				+ uri.toString()
+            				+ " ].  Exception message => [ "
+            				+ use.getMessage()
+            				+ " ].");
+            	}
+            }
+            else {
+            	throw new IOException("Unable to construct the URI used to "
+            			+ "look up the target file system.  The input URI "
+            			+ "is null.");
+            }
         }
         
         /** 
