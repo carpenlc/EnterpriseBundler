@@ -44,6 +44,17 @@ public class BundlerService
     static final Logger LOGGER = LoggerFactory.getLogger(BundlerService.class);
     
     /**
+     * Maximum number of times to attempt to read the archive data from the 
+     * backing data source.
+     */
+    private static final int MAX_ATTEMPTS = 5;
+    
+    /**
+     * The amount of times to wait between database read attempts.
+     */
+    private static final long WAIT_TIME = 3000;
+    
+    /**
      * Container-injected reference to the JobService EJB.
      */
     @EJB
@@ -76,10 +87,45 @@ public class BundlerService
             throws ArchiveException, IOException { 
         
         long startTime = System.currentTimeMillis();
+        int  counter   = 0;
         
         try {
             
-            ArchiveJob archive = getArchiveJobService().getArchiveJob(jobID, archiveID);
+            ArchiveJob archive = getArchiveJobService()
+            		.getArchiveJob(jobID, archiveID);
+            
+            // We have run into situations where the JPA subsystem has not 
+            // flushed all of the data out to the backing data store at this 
+            // point in processing.  Additional logic has been inserted 
+            // here to perform multiple attempts before failing the job.
+            if (archive == null) {
+            	while ((counter < MAX_ATTEMPTS) && (archive == null)) {
+            		LOGGER.info("Unable to find archive to process for "
+                            + "job ID [ "
+                            + jobID
+                            + " ] and archive ID [ "
+                            + archiveID
+                            + " ].  Attempt number [ "
+                            + (counter + 1)
+                            + " ] out of a maximum of [ "
+                            + MAX_ATTEMPTS
+                            + " ] attempts.");
+            		try {
+						Thread.sleep(WAIT_TIME);
+            		}
+            		catch (InterruptedException ie) {
+            			LOGGER.debug("Unexpected InterruptedException raised "
+            					+ "while pausing execution.  Exception "
+            					+ "=> [ "
+            					+ ie.getMessage()
+            					+ " ].");
+            		}
+            		archive = getArchiveJobService()
+                    		.getArchiveJob(jobID, archiveID);
+            		counter++;
+            	}
+            }
+            
             
             if (archive != null) {
                 
@@ -140,7 +186,9 @@ public class BundlerService
                             + jobID
                             + " ] and archive ID [ "
                             + archiveID
-                            + " ].");
+                            + " ].  The maximum number of tries [ "
+                            + MAX_ATTEMPTS 
+                            + " ] were exceeded.");
             }
         
         }
