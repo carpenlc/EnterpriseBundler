@@ -52,7 +52,7 @@ public class BundlerService
     /**
      * The amount of times to wait between database read attempts.
      */
-    private static final long WAIT_TIME = 3000;
+    private static final long WAIT_TIME = 5000;
     
     /**
      * Container-injected reference to the JobService EJB.
@@ -328,6 +328,7 @@ public class BundlerService
     public void handleMessage(ArchiveMessage message) {
         
         JobStateType endState;
+        int  counter   = 0;
         
         try {
             
@@ -335,6 +336,39 @@ public class BundlerService
                     message.getJobId(), 
                     message.getArchiveId());
                 
+            // We have run into situations where the JPA subsystem has not 
+            // flushed all of the data out to the backing data store at this 
+            // point in processing.  Additional logic has been inserted 
+            // here to perform multiple attempts before failing the job.
+            if (archiveJob == null) {
+            	while ((counter < MAX_ATTEMPTS) && (archiveJob == null)) {
+            		LOGGER.info("Unable to find archive to process for "
+                            + "job ID [ "
+                            + message.getJobId()
+                            + " ] and archive ID [ "
+                            + message.getArchiveId()
+                            + " ].  Attempt number [ "
+                            + (counter + 1)
+                            + " ] out of a maximum of [ "
+                            + MAX_ATTEMPTS
+                            + " ] attempts.");
+            		try {
+						Thread.sleep(WAIT_TIME);
+            		}
+            		catch (InterruptedException ie) {
+            			LOGGER.debug("Unexpected InterruptedException raised "
+            					+ "while pausing execution.  Exception "
+            					+ "=> [ "
+            					+ ie.getMessage()
+            					+ " ].");
+            		}
+            		archiveJob = getArchiveJobService()
+                    		.getArchiveJob(message.getJobId(), message.getArchiveId());
+            		counter++;
+            	}
+            }
+            
+            
             if (archiveJob != null) {
                     
                 // Update the archive to reflect that archive processing 
