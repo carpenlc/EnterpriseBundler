@@ -78,6 +78,58 @@ public class BundlerService
     public BundlerService() { }
 
     /**
+     * Method introduced to attempt to work around some latency issues with 
+     * JPA flushing data to the backing data store for use by other nodes in 
+     * the cluster.
+     * 
+     * @param jobID The job ID to process.
+     * @param archiveID The ID of the archive to process.
+     * 
+     * @return The <code>ArchiveJob</code> to process.   May be null if the 
+     * data is not available.
+     */
+    private ArchiveJob getArchiveJob(String jobID, long archiveID) 
+    		throws ServiceUnavailableException {
+    	
+    	int        counter = 0;
+    	ArchiveJob archive = getArchiveJobService()
+        		.getArchiveJob(jobID, archiveID);
+        
+        // We have run into situations where the JPA subsystem has not 
+        // flushed all of the data out to the backing data store at this 
+        // point in processing.  Additional logic has been inserted 
+        // here to perform multiple attempts before failing the job.
+        if (archive == null) {
+        	while ((counter < MAX_ATTEMPTS) && (archive == null)) {
+        		LOGGER.info("Unable to find archive to process for "
+                        + "job ID [ "
+                        + jobID
+                        + " ] and archive ID [ "
+                        + archiveID
+                        + " ].  Attempt number [ "
+                        + (counter + 1)
+                        + " ] out of a maximum of [ "
+                        + MAX_ATTEMPTS
+                        + " ] attempts.");
+        		try {
+					Thread.sleep(WAIT_TIME);
+        		}
+        		catch (InterruptedException ie) {
+        			LOGGER.debug("Unexpected InterruptedException raised "
+        					+ "while pausing execution.  Exception "
+        					+ "=> [ "
+        					+ ie.getMessage()
+        					+ " ].");
+        		}
+        		archive = getArchiveJobService()
+                		.getArchiveJob(jobID, archiveID);
+        		counter++;
+        	}
+        }
+        return archive;
+    }
+    
+    /**
      * Method driving the creation of the output archive file.
      * 
      * @param job The managed JPA job object.
@@ -87,45 +139,10 @@ public class BundlerService
             throws ArchiveException, IOException { 
         
         long startTime = System.currentTimeMillis();
-        int  counter   = 0;
         
         try {
             
-            ArchiveJob archive = getArchiveJobService()
-            		.getArchiveJob(jobID, archiveID);
-            
-            // We have run into situations where the JPA subsystem has not 
-            // flushed all of the data out to the backing data store at this 
-            // point in processing.  Additional logic has been inserted 
-            // here to perform multiple attempts before failing the job.
-            if (archive == null) {
-            	while ((counter < MAX_ATTEMPTS) && (archive == null)) {
-            		LOGGER.info("Unable to find archive to process for "
-                            + "job ID [ "
-                            + jobID
-                            + " ] and archive ID [ "
-                            + archiveID
-                            + " ].  Attempt number [ "
-                            + (counter + 1)
-                            + " ] out of a maximum of [ "
-                            + MAX_ATTEMPTS
-                            + " ] attempts.");
-            		try {
-						Thread.sleep(WAIT_TIME);
-            		}
-            		catch (InterruptedException ie) {
-            			LOGGER.debug("Unexpected InterruptedException raised "
-            					+ "while pausing execution.  Exception "
-            					+ "=> [ "
-            					+ ie.getMessage()
-            					+ " ].");
-            		}
-            		archive = getArchiveJobService()
-                    		.getArchiveJob(jobID, archiveID);
-            		counter++;
-            	}
-            }
-            
+            ArchiveJob archive = getArchiveJob(jobID, archiveID);
             
             if (archive != null) {
                 
@@ -332,43 +349,10 @@ public class BundlerService
         
         try {
             
-            ArchiveJob archiveJob = getArchiveJobService().getArchiveJob(
+            ArchiveJob archiveJob = getArchiveJob(
                     message.getJobId(), 
                     message.getArchiveId());
-                
-            // We have run into situations where the JPA subsystem has not 
-            // flushed all of the data out to the backing data store at this 
-            // point in processing.  Additional logic has been inserted 
-            // here to perform multiple attempts before failing the job.
-            if (archiveJob == null) {
-            	while ((counter < MAX_ATTEMPTS) && (archiveJob == null)) {
-            		LOGGER.info("Unable to find archive to process for "
-                            + "job ID [ "
-                            + message.getJobId()
-                            + " ] and archive ID [ "
-                            + message.getArchiveId()
-                            + " ].  Attempt number [ "
-                            + (counter + 1)
-                            + " ] out of a maximum of [ "
-                            + MAX_ATTEMPTS
-                            + " ] attempts.");
-            		try {
-						Thread.sleep(WAIT_TIME);
-            		}
-            		catch (InterruptedException ie) {
-            			LOGGER.debug("Unexpected InterruptedException raised "
-            					+ "while pausing execution.  Exception "
-            					+ "=> [ "
-            					+ ie.getMessage()
-            					+ " ].");
-            		}
-            		archiveJob = getArchiveJobService()
-                    		.getArchiveJob(message.getJobId(), message.getArchiveId());
-            		counter++;
-            	}
-            }
-            
-            
+               
             if (archiveJob != null) {
                     
                 // Update the archive to reflect that archive processing 
